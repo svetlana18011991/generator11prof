@@ -68,24 +68,23 @@
         .pres-preview-card:hover { border-color: #ff8c00; transform: translateY(-3px); background: #333; }
         .pres-thumb { width: 100px; height: 70px; background-size: cover; border-radius: 4px; border: 1px solid #555; }
         
-        /* ИДЕАЛЬНАЯ ПЕЧАТЬ БЕЗ КОЛОНТИТУЛОВ, НО С ПОЛЯМИ! */
+        /* ИДЕАЛЬНАЯ ПЕЧАТЬ */
         @media screen { 
             #print-container, #print-footer { display: none !important; } 
         }
         @media print {
-            @page { margin: 0; size: A4; } /* 0 убирает даты и ссылки браузера */
+            @page { margin: 0; size: A4; } 
             
             body { 
                 background: #fff !important; 
                 margin: 0 !important; 
-                padding: 0 !important; /* Убираем паддинг у body, всё делают таблицы */
+                padding: 0 !important; 
                 color: #000 !important; 
             }
             
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
             #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
-            /* Наш собственный красивый колонтитул */
             #print-footer { 
                 display: block !important; 
                 position: fixed; 
@@ -99,8 +98,7 @@
                 z-index: 1000; 
             }
             
-            table.print-wrapper { width: 100%; border: none; border-collapse: collapse; }
-            li { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
+            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
         }
     </style>
@@ -125,7 +123,7 @@
         <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
             <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
             <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
-                Интерфейс обновлен! Проект работает через GitHub Pages, стикеры подгружаются корректно.
+                Интерфейс обновлен! Векторы в порядке, скролл в презентации исправлен, стикеры выровнены.
             </p>
         </div>
     </aside>
@@ -251,8 +249,8 @@
     let lastStickerPack = "";
 
     const sciQuotes = {
-        1: "«Математика — царица наук,<br>а арифметика — царица математики».<br>К. Ф. Гаусс",
-        2: "«Математика — это язык,<br>на котором говорят все точные науки».<br>Н. И. Лобачевский",
+        1: "«Математика — царица наук,<br>а арифметика —<br>царица математики».<br>К. Ф. Гаусс",
+        2: "«Математика — это язык,<br>на котором говорят<br>все точные науки».<br>Н. И. Лобачевский",
         3: "«То, что мы знаем, — это капля,<br>а то, что мы не знаем, — океан».<br>Исаак Ньютон",
         4: "«В геометрии нет царского пути».<br>Евклид",
         5: "«Числа правят миром».<br>Пифагор"
@@ -264,7 +262,6 @@
     let currentGeneratedTasks = [];
     let selectedBlockTitles = [];
 
-    // Глобальное хранилище холстов для предпросмотра
     window.mainCanvases = {}; 
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -368,15 +365,11 @@
         let sigPrint = (document.getElementById('toggle-signature').checked && teacherName !== '') ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${document.getElementById('teacher-gender').value === 'male' ? 'подготовил' : 'подготовила'}: ${teacherName}</div>` : "";
         
         document.getElementById('print-container').innerHTML = `
-            <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse;">
-                <thead><tr><td style="height: 20mm; border: none;"></td></tr></thead>
-                <tbody><tr><td style="padding: 0 20mm;">
-                    <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
-                    ${sigPrint}
-                    ${currentPrintHTML}
-                </td></tr></tbody>
-                <tfoot><tr><td style="height: 20mm; border: none;"></td></tr></tfoot>
-            </table>
+            <div style="padding: 20mm 20mm 30mm 20mm; box-sizing: border-box;">
+                <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
+                ${sigPrint}
+                ${currentPrintHTML}
+            </div>
         `;
 
         if (window.MathJax) { MathJax.typesetPromise(); }
@@ -388,11 +381,6 @@
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
-    }
-
-    // Хелпер для защиты точек от переноса на новую строку
-    function fixOrphans(str) {
-        return str ? str.replace(/(\$[^$]+\$)\s*([.,;!?])/g, '<span style="white-space: nowrap;">$1$2</span>') : "";
     }
 
     function generateVariant() {
@@ -456,11 +444,6 @@
             finalTasks.forEach(item => {
                 taskCounter++;
                 
-                // Исправляем отрывание точек во всех текстах задач
-                item.text = fixOrphans(item.text);
-                item.theory.theory_task = fixOrphans(item.theory.theory_task);
-                item.theory.theory_sol = fixOrphans(item.theory.theory_sol);
-                
                 let theoryHtml = `
                     <h3>Разбор аналогичного задания</h3>
                     <div style='background:#f9f9f9;padding:15px;border-left:4px solid #ff8c00;margin-bottom:15px;border-radius:6px;'>
@@ -473,7 +456,6 @@
                     <ul style='padding-left:20px;'>
                 `;
                 item.theory.tasks.forEach(t => {
-                    t.text = fixOrphans(t.text);
                     let tSvg = t.svg_code ? `<br><div style="margin:10px 0; max-width:300px;">${t.svg_code}</div>` : '';
                     theoryHtml += `<li style='margin-bottom:15px;'>${t.text}${tSvg}<br><span style='color:#003399;cursor:pointer;border-bottom:1px dashed #003399;' onclick='this.innerText="Ответ: ${t.answer}"; this.style.border="none"; this.style.fontWeight="bold";'>Показать ответ</span></li>`;
                 });
@@ -536,17 +518,27 @@
                 </div>`;
 
                 let taskHTMLInteractive = `<div style="margin-bottom:30px;clear:both;overflow:hidden;border-bottom:1px dashed #ddd;padding-bottom:20px;">
-                    <div style="display:flex;align-items:flex-start;gap:20px;">
+                    <div style="display:flex;align-items:flex-start;gap:15px;">
+                        <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
                         ${item.svg ? `<div style="flex-shrink:0;min-width:150px;">${item.svg}</div>` : ""}
-                        <div style="flex-grow:1;">${stickerHTML}<b>${taskCounter}. </b>${item.text}${interactiveInput}</div>
+                        <div style="flex-grow:1; min-width:0;">
+                            ${stickerHTML}
+                            ${item.text}
+                            ${interactiveInput}
+                        </div>
                     </div>
                     ${scratchpadHTML}
                 </div>`;
 
-                let taskHTMLPrint = `<div style="margin-bottom:40px;page-break-inside:avoid;break-inside:avoid;overflow:hidden;">
-                    <div style="display:flex;align-items:flex-start;gap:20px;">
+                let taskHTMLPrint = `<div class="task-print-block">
+                    <div style="display:flex;align-items:flex-start;gap:15px;">
+                        <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
                         ${item.svg ? `<div style="flex-shrink:0;min-width:150px;">${item.svg}</div>` : ""}
-                        <div style="flex-grow:1;">${stickerHTML}<b>${taskCounter}. </b>${item.text}<div style="margin-top:30px;font-size:18px;">Ответ: _______________________</div></div>
+                        <div style="flex-grow:1; min-width:0;">
+                            ${stickerHTML}
+                            ${item.text}
+                            <div style="margin-top:30px;font-size:18px;">Ответ: _______________________</div>
+                        </div>
                     </div>
                 </div>`;
 
@@ -832,31 +824,25 @@
                 color: #000 !important; 
                 font-family: 'Times New Roman', serif;
             }
-            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #print-container { display: block !important; width: 100%; padding: 20mm !important; box-sizing: border-box !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-footer-fixed { position: fixed; bottom: 8mm; left: 0; right: 0; text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); z-index: 1000; }
-            table.print-wrapper { width: 100%; border: none; border-collapse: collapse; }
-            tfoot.print-footer-space td { height: 15mm; border: none; }
-            div { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
+            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; overflow: hidden; }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
         }
         @media screen {
             body { background: #f4f7f6; font-family: 'Times New Roman', serif; padding: 40px; }
-            table.print-wrapper { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+            #print-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
             .print-footer-fixed { display: none; }
         }
     </style>
 </head>
 <body>
     <div class="print-footer-fixed">Шкатулка математических интерактивов</div>
-    <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse;">
-        <thead><tr><td style="height: 20mm; border: none;"></td></tr></thead>
-        <tbody><tr><td style="padding: 0 20mm;">
-            <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif;">Тренировочный вариант</h2>
-            ${sigPrint}
-            ${currentPrintHTML}
-        </td></tr></tbody>
-        <tfoot><tr><td style="height: 20mm; border: none;"></td></tr></tfoot>
-    </table>
+    <div id="print-container">
+        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px;">Тренировочный вариант</h2>
+        ${sigPrint}
+        ${currentPrintHTML}
+    </div>
     <script>setTimeout(function(){ window.print(); }, 1500);${SCRIPT_END}
 </body>
 </html>`;
@@ -891,16 +877,19 @@
                     <h3 style="font-family: 'Caveat', cursive; font-size: 39px; color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
                 </div>
                 
-                <div class="task-right-side" style="position: absolute; right: 5%; top: 22%; width: 50%; max-height: 70%; overflow-y: auto; background: rgba(255,255,255,0.95); padding: 40px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; text-align: center; font-size: 1.5em; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <div class="task-svg" style="margin-bottom: 25px; transform: scale(1.2); transform-origin: center;">${t.svg}</div>
-                    <div class="task-text" style="margin-bottom: 30px;">${t.text}</div>
-                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap;">
-                        <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
-                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
-                        <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px;" onclick="window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
+                <div class="task-right-side" style="position: absolute; right: 5%; top: 20%; width: 50%; height: 70%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; display: flex; flex-direction: column;">
+                    
+                    <div style="flex-grow: 1; overflow-y: auto; text-align: center; font-size: 1.5em; padding-right: 10px;">
+                        <div class="task-svg" style="margin-bottom: 25px; transform: scale(1.2); transform-origin: center;">${t.svg}</div>
+                        <div class="task-text" style="margin-bottom: 30px;">${t.text}</div>
+                        <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap;">
+                            <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
+                            <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
+                            <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px;" onclick="window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
+                        </div>
                     </div>
 
-                    <div id="draw-wrapper-pres-${i}" style="display:none; margin-top: 20px; width: 100%; transition: all 0.3s ease; clear: both; text-align: left;">
+                    <div id="draw-wrapper-pres-${i}" style="display:none; margin-top: 15px; flex-shrink: 0; width: 100%; transition: all 0.3s ease; text-align: left;">
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
                             <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                             <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
@@ -920,8 +909,9 @@
                             <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
                             <input type="hidden" id="tool-pres-${i}" value="pen">
                         </div>
-                        <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 250px;"><canvas id="canvas-pres-${i}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
+                        <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 200px;"><canvas id="canvas-pres-${i}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
                     </div>
+
                 </div>
                 <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
             </div>
@@ -1063,6 +1053,15 @@
                 </tr>\`;
             });
             tbody.innerHTML = html;
+        }
+
+        function openTheoryModalLocal(dataId) {
+            let el = document.getElementById(dataId);
+            if(el) {
+                document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
+                document.getElementById('modal-overlay').style.display = 'flex';
+                if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
+            }
         }
 
         ${CANVAS_LOGIC_SCRIPT}
