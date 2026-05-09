@@ -56,22 +56,27 @@
         .bg-summer { background: #f4f7f6 url('лето.jpg') center top / cover fixed; } 
         .bg-autumn { background: #f4f7f6 url('осень.jpg') center top / cover fixed; }
         
+        .timer-box-preview { position: absolute; top: 20px; right: 20px; background: #fff; border: 2px solid #ff8c00; color: #ff8c00; padding: 10px 15px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #proto-tooltip { position: fixed; background: rgba(255,255,255,0.98); border: 2px solid #ff8c00; border-radius: 8px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 350px; color: #333; display: none; z-index: 1000; pointer-events: none; }
+        #proto-tooltip svg { max-width: 100%; height: auto; margin-bottom: 10px; }
+        .custom-checkbox { width: 18px; height: 18px; accent-color: #ff8c00; margin-right: 10px; cursor: pointer; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; border: 2px solid #ff8c00; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .pres-preview-card { background: #2a2a2a; border: 1px solid #444; border-radius: 10px; padding: 15px; cursor: pointer; transition: 0.3s; margin-top: 20px; display: flex; align-items: center; gap: 15px; text-align: left; }
+        .pres-preview-card:hover { border-color: #ff8c00; transform: translateY(-3px); background: #333; }
+        .pres-thumb { width: 100px; height: 70px; background-size: cover; border-radius: 4px; border: 1px solid #555; }
+        
         svg { overflow: visible; }
         
         /* ИДЕАЛЬНАЯ ПЕЧАТЬ */
-        @media screen { 
-            #print-container, #print-footer-fixed { display: none !important; } 
-        }
+        @media screen { #print-container, #print-footer-fixed { display: none !important; } }
         @media print {
             @page { margin: 10mm 15mm; size: A4; } 
             body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; font-family: 'Times New Roman', serif; }
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
             #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            #print-footer-fixed { 
-                display: block !important; position: fixed; bottom: 5mm; left: 0; right: 0; 
-                text-align: center; font-family: 'Caveat', cursive; font-size: 18px; color: rgba(0,0,0,0.4); 
-                z-index: 9999; background: transparent;
-            }
+            #print-footer-fixed { display: block !important; position: fixed; bottom: 5mm; left: 0; right: 0; text-align: center; font-family: 'Caveat', cursive; font-size: 18px; color: rgba(0,0,0,0.4); z-index: 9999; background: transparent; }
             .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 20px; }
             svg { max-width: 100%; height: auto; margin: 5px 0; }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; margin-top: 15px; margin-bottom: 10px; }
@@ -90,7 +95,6 @@
         <p style="color: #bbb; font-size: 0.95em; margin-bottom: 25px; line-height: 1.4;">Учитель математики, репетитор и автор интерактивных материалов</p>
         
         <div style="text-align: center; margin-bottom: 12px; color: #888; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px;">Для связи</div>
-        
         <a href="https://t.me/interactiv_matematika" target="_blank" class="social-btn">Telegram</a>
         <a href="https://vk.com/interaktiv_matematika" target="_blank" class="social-btn">ВКонтакте</a>
         <a href="https://max.ru/c/-70932227200385/AZ29lb4dRPk" target="_blank" class="social-btn">МАКС</a>
@@ -98,7 +102,7 @@
         <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
             <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
             <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
-                Обновление: оптимизирована печать PDF, увеличены мотиваторы, плашка в презентации теперь строго над заданием.
+                Система полностью восстановлена! Плашка центрируется идеально.
             </p>
         </div>
     </aside>
@@ -144,10 +148,7 @@
 
         <div class="task-row" style="border-left-color: #4CAF50;">
             <div class="row-header">
-                <label style="cursor: pointer;">
-                    Таймер (минут)
-                    <span style="font-size: 0.85em; color: #888; font-weight: normal; margin-left: 10px;">(0 — обычный секундомер)</span>
-                </label>
+                <label style="cursor: pointer;">Таймер (минут)</label>
                 <input type="number" id="timer-input" min="0" value="0">
             </div>
         </div>
@@ -164,8 +165,6 @@
         <div id="dynamic-tasks"></div>
 
         <button class="btn-generate" onclick="generateVariant()">Сгенерировать вариант</button>
-        
-        <div id="info-board"></div>
         
         <div id="btn-group" class="btn-group">
             <button class="btn-dl btn-html" onclick="downloadStudentHTML()">💻 Интерактивный вариант</button>
@@ -220,10 +219,7 @@
     const ASSETS_URL = "https://svetlana18011991.github.io/generator11prof/"; 
     const SCRIPT_END = "</" + "script>";
 
-    let globalStickerPool = [];
-    let lastStickerPack = "";
-    let lastStickerId = -1;
-
+    let globalStickerPool = [], lastStickerPack = "", lastStickerId = -1;
     const sciQuotes = {
         1: "«Математика — царица наук,<br>а арифметика —<br>царица математики».<br>К. Ф. Гаусс",
         2: "«Математика — это язык,<br>на котором говорят<br>все точные науки».<br>Н. И. Лобачевский",
@@ -232,327 +228,109 @@
         5: "«Числа правят миром».<br>Пифагор"
     };
 
-    let currentInteractiveHTML = ""; 
-    let currentPrintHTML = ""; 
-    let currentAnswersHTML = "";
-    let currentGeneratedTasks = [];
-    let selectedBlockTitles = [];
-
+    let currentInteractiveHTML="", currentPrintHTML="", currentAnswersHTML="", currentGeneratedTasks=[], selectedBlockTitles=[];
     window.mainCanvases = {}; 
 
-    // --- УМНЫЙ АЛГОРИТМ: СТРЕЛОЧКИ + ЦЕНТРИРОВАНИЕ ---
     window.autoFixSVGArrows = function(container) {
         if(!container) return;
         let svgNs = 'http://www.w3.org/2000/svg';
-        
-        function getInheritedStrokeColor(el) {
-            let s = el.getAttribute('stroke') || el.style.stroke;
-            if (s && s !== 'none') return s;
-            if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') {
-                return getInheritedStrokeColor(el.parentElement);
-            }
-            return '#000';
-        }
-        
-        function getInheritedStrokeWidth(el) {
-            let sw = el.getAttribute('stroke-width') || el.style.strokeWidth;
-            if (sw) return parseFloat(sw);
-            if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') {
-                return getInheritedStrokeWidth(el.parentElement);
-            }
-            return 1;
-        }
-
+        function getInheritedStrokeColor(el) { let s = el.getAttribute('stroke') || el.style.stroke; if (s && s !== 'none') return s; if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') return getInheritedStrokeColor(el.parentElement); return '#000'; }
+        function getInheritedStrokeWidth(el) { let sw = el.getAttribute('stroke-width') || el.style.strokeWidth; if (sw) return parseFloat(sw); if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') return getInheritedStrokeWidth(el.parentElement); return 1; }
         container.querySelectorAll('svg').forEach(svg => {
             svg.style.overflow = 'visible';
-            
             function drawArrow(el) {
                 if (el.dataset.arrowDrawn) return;
-                let pts = null;
-                let tag = el.tagName.toLowerCase();
-                
-                if (tag === 'line') {
-                    pts = [
-                        {x: parseFloat(el.getAttribute('x1')), y: parseFloat(el.getAttribute('y1'))},
-                        {x: parseFloat(el.getAttribute('x2')), y: parseFloat(el.getAttribute('y2'))}
-                    ];
-                } else if (tag === 'path') {
-                    let d = el.getAttribute('d');
-                    if (!d || d.toLowerCase().includes('z') || d.toLowerCase().includes('c') || d.toLowerCase().includes('q')) return;
-                    let nums = d.match(/[+-]?\d*\.?\d+/g);
-                    if (nums && nums.length >= 4) {
-                        pts = [
-                            {x: parseFloat(nums[nums.length-4]), y: parseFloat(nums[nums.length-3])},
-                            {x: parseFloat(nums[nums.length-2]), y: parseFloat(nums[nums.length-1])}
-                        ];
-                    }
-                }
-                
+                let pts = null, tag = el.tagName.toLowerCase();
+                if (tag === 'line') { pts = [{x: parseFloat(el.getAttribute('x1')), y: parseFloat(el.getAttribute('y1'))}, {x: parseFloat(el.getAttribute('x2')), y: parseFloat(el.getAttribute('y2'))}]; }
+                else if (tag === 'path') { let d = el.getAttribute('d'); if (!d || d.toLowerCase().includes('z') || d.toLowerCase().includes('c') || d.toLowerCase().includes('q')) return; let nums = d.match(/[+-]?\d*\.?\d+/g); if (nums && nums.length >= 4) { pts = [{x: parseFloat(nums[nums.length-4]), y: parseFloat(nums[nums.length-3])}, {x: parseFloat(nums[nums.length-2]), y: parseFloat(nums[nums.length-1])}]; } }
                 if (pts && !isNaN(pts[0].x) && !isNaN(pts[1].y)) {
-                    let p1 = pts[0], p2 = pts[1];
-                    let dx = p2.x - p1.x, dy = p2.y - p1.y;
-                    let len = Math.sqrt(dx*dx + dy*dy);
+                    let p1 = pts[0], p2 = pts[1], dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.sqrt(dx*dx + dy*dy);
                     if (len > 0.1) {
-                        let angle = Math.atan2(dy, dx);
-                        let sw = getInheritedStrokeWidth(el);
-                        let headlen = Math.max(8, sw * 3.5); 
-                        let color = getInheritedStrokeColor(el);
-                        
+                        let angle = Math.atan2(dy, dx), sw = getInheritedStrokeWidth(el), headlen = Math.max(8, sw * 3.5), color = getInheritedStrokeColor(el);
                         let p3 = {x: p2.x - headlen * Math.cos(angle - Math.PI / 7), y: p2.y - headlen * Math.sin(angle - Math.PI / 7)};
                         let p4 = {x: p2.x - headlen * Math.cos(angle + Math.PI / 7), y: p2.y - headlen * Math.sin(angle + Math.PI / 7)};
-                        
                         let arrow = document.createElementNS(svgNs, 'polygon');
-                        arrow.setAttribute('points', `${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`);
-                        arrow.setAttribute('fill', color);
-                        el.parentNode.appendChild(arrow);
-                        el.dataset.arrowDrawn = "true";
+                        arrow.setAttribute('points', `${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`); arrow.setAttribute('fill', color);
+                        el.parentNode.appendChild(arrow); el.dataset.arrowDrawn = "true";
                     }
                 }
             }
-
-            svg.querySelectorAll('[marker-end]').forEach(el => {
-                el.removeAttribute('marker-end');
-                drawArrow(el);
-            });
+            svg.querySelectorAll('[marker-end]').forEach(el => { el.removeAttribute('marker-end'); drawArrow(el); });
         });
     };
 
     document.addEventListener('DOMContentLoaded', function() {
         let container = document.getElementById('dynamic-tasks');
-        if (!window.database || Object.keys(window.database).length === 0) {
-            document.getElementById('info-board').innerHTML = "<b>Критическая ошибка:</b> База данных пуста!";
-            return;
-        }
-
+        if (!window.database || Object.keys(window.database).length === 0) return;
         for (let tid in window.database) {
-            let data = window.database[tid];
-            let listHTML = "";
+            let data = window.database[tid], listHTML = "";
             data.prototypes.forEach((p, idx) => {
-                listHTML += `
-                <label class="proto-item" onmouseenter="showTooltip(${tid}, ${idx}, event)" onmouseleave="hideTooltip()" onmousemove="moveTooltip(event)">
-                    <input type="checkbox" id="proto-${tid}-${idx}" checked> 
-                    <span class="proto-label-text">${idx + 1}. ${p.desc} 👁️</span>
-                </label>`;
+                listHTML += `<label class="proto-item" onmouseenter="showTooltip(${tid}, ${idx}, event)" onmouseleave="hideTooltip()" onmousemove="moveTooltip(event)"><input type="checkbox" id="proto-${tid}-${idx}" checked> <span class="proto-label-text">${idx + 1}. ${p.desc} 👁️</span></label>`;
             });
-
-            container.innerHTML += `
-            <div class="task-row">
-                <div class="row-header">
-                    <label onclick="toggleSettings(${tid})">
-                        <span>${data.title} (${data.prototypes.length})</span>
-                        <button type="button" class="btn-settings" onclick="toggleSettings(${tid}); event.stopPropagation();">⚙️ Настроить</button>
-                    </label>
-                    <input type="number" id="count-${tid}" min="0" value="0">
-                </div>
-                <div id="protos-${tid}" class="proto-list">${listHTML}</div>
-            </div>`;
+            container.innerHTML += `<div class="task-row"><div class="row-header"><label onclick="toggleSettings(${tid})"><span>${data.title} (${data.prototypes.length})</span><button type="button" class="btn-settings" onclick="toggleSettings(${tid}); event.stopPropagation();">⚙️ Настроить</button></label><input type="number" id="count-${tid}" min="0" value="0"></div><div id="protos-${tid}" class="proto-list">${listHTML}</div></div>`;
         }
-        
-        let thumb1 = document.getElementById('thumb1');
-        if(thumb1) thumb1.style.backgroundImage = `url('${ASSETS_URL}p1.jpg')`;
+        let thumb1 = document.getElementById('thumb1'); if(thumb1) thumb1.style.backgroundImage = `url('${ASSETS_URL}p1.jpg')`;
     });
 
-    function handleThemeChange() {
-        let val = document.getElementById('theme-select').value;
-        document.getElementById('custom-bg-url').style.display = (val === 'custom') ? 'block' : 'none';
-        if(currentInteractiveHTML) renderPreview();
-    }
-
-    function handleSignatureChange() {
-        let isChecked = document.getElementById('toggle-signature').checked;
-        document.getElementById('signature-controls').style.display = isChecked ? 'flex' : 'none';
-        if(currentInteractiveHTML) renderPreview();
-    }
-
-    function toggleSettings(tid) {
-        let el = document.getElementById(`protos-${tid}`);
-        if (el) el.style.display = (el.style.display === 'grid') ? 'none' : 'grid';
-    }
-
+    function handleThemeChange() { document.getElementById('custom-bg-url').style.display = (document.getElementById('theme-select').value === 'custom') ? 'block' : 'none'; if(currentInteractiveHTML) renderPreview(); }
+    function handleSignatureChange() { document.getElementById('signature-controls').style.display = document.getElementById('toggle-signature').checked ? 'flex' : 'none'; if(currentInteractiveHTML) renderPreview(); }
+    function toggleSettings(tid) { let el = document.getElementById(`protos-${tid}`); if (el) el.style.display = (el.style.display === 'grid') ? 'none' : 'grid'; }
     const tooltip = document.getElementById('proto-tooltip');
-    function showTooltip(tid, index, e) {
-        let p = window.database[tid].prototypes[index];
-        tooltip.innerHTML = `${p.svg_code || ''}<div style="font-size: 0.9em;">${p.tasks[0].text}</div>`;
-        tooltip.style.display = 'block';
-        if (window.MathJax) MathJax.typesetPromise([tooltip]);
-        moveTooltip(e);
-    }
-
-    function moveTooltip(e) {
-        if (tooltip.style.display === 'block') {
-            let x = e.clientX + 15, y = e.clientY + 15;
-            if (x + tooltip.offsetWidth > window.innerWidth) x = window.innerWidth - tooltip.offsetWidth - 10;
-            if (y + tooltip.offsetHeight > window.innerHeight) y = window.innerHeight - tooltip.offsetHeight - 10;
-            tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
-        }
-    }
-
+    function showTooltip(tid, index, e) { let p = window.database[tid].prototypes[index]; tooltip.innerHTML = `${p.svg_code || ''}<div style="font-size: 0.9em;">${p.tasks[0].text}</div>`; tooltip.style.display = 'block'; if (window.MathJax) MathJax.typesetPromise([tooltip]); moveTooltip(e); }
+    function moveTooltip(e) { if (tooltip.style.display === 'block') { let x = e.clientX + 15, y = e.clientY + 15; if (x + tooltip.offsetWidth > window.innerWidth) x = window.innerWidth - tooltip.offsetWidth - 10; if (y + tooltip.offsetHeight > window.innerHeight) y = window.innerHeight - tooltip.offsetHeight - 10; tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px'; } }
     function hideTooltip() { tooltip.style.display = 'none'; }
-
-    function openTheoryModalLocal(dataId) {
-        let el = document.getElementById(dataId);
-        if(el) {
-            document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
-            document.getElementById('modal-overlay').style.display = 'flex';
-            if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
-        }
-    }
+    function openTheoryModalLocal(dataId) { let el = document.getElementById(dataId); if(el) { document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent); document.getElementById('modal-overlay').style.display = 'flex'; if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]); } }
 
     function renderPreview() {
-        let theme = document.getElementById("theme-select").value;
-        let timerValue = document.getElementById("timer-input").value;
+        let theme = document.getElementById("theme-select").value, timerValue = document.getElementById("timer-input").value;
         let timerDisplay = timerValue > 0 ? `<div class="timer-box-preview">⏱ ${timerValue}:00</div>` : `<div class="timer-box-preview">⏱ 00:00</div>`;
-        
-        let signatureHTML = "";
-        let teacherName = document.getElementById('teacher-name').value.trim();
-        if (document.getElementById('toggle-signature').checked && teacherName !== '') {
-            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
-            signatureHTML = `<div style="text-align: center; font-family: 'Caveat', cursive; font-size: 26px; color: #003399; margin-top: -10px; margin-bottom: 25px;">Вариант ${verb}: ${teacherName}</div>`;
-        }
-        
+        let signatureHTML = "", teacherName = document.getElementById('teacher-name').value.trim();
+        if (document.getElementById('toggle-signature').checked && teacherName !== '') { let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила'; signatureHTML = `<div style="text-align: center; font-family: 'Caveat', cursive; font-size: 26px; color: #003399; margin-top: -10px; margin-bottom: 25px;">Вариант ${verb}: ${teacherName}</div>`; }
         let previewCode = currentInteractiveHTML.replace(/class="btn-settings btn-help" style="display:none;/g, 'class="btn-settings btn-help" style="display:inline-flex;');
-        
         document.getElementById('output-section').innerHTML = `<div class="theme-wrapper bg-${theme}"><div class="preview-paper">${timerDisplay}<h1 style="color: #003399; text-align: center; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top: 0;">Тренировочный вариант</h1>${signatureHTML}${previewCode}</div></div>`;
-        
-        let sigPrint = (document.getElementById('toggle-signature').checked && teacherName !== '') ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${document.getElementById('teacher-gender').value === 'male' ? 'подготовил' : 'подготовила'}: ${teacherName}</div>` : "";
-        
-        document.getElementById('print-container').innerHTML = `
-            <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
-                <thead><tr><td style="height: 10mm; border: none;"></td></tr></thead>
-                <tbody>
-                    <tr><td style="padding: 0 10mm; page-break-inside: auto;">
-                        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
-                        ${sigPrint}
-                    </td></tr>
-                    <tr><td style="padding: 0 10mm; page-break-inside: auto;">
-                        ${currentPrintHTML}
-                    </td></tr>
-                </tbody>
-                <tfoot>
-                    <tr><td style="height: 15mm; border: none;"></td></tr>
-                </tfoot>
-            </table>
-        `;
-
-        if (window.MathJax) { MathJax.typesetPromise(); }
+        if (window.MathJax) MathJax.typesetPromise();
     }
 
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
+    function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
 
     function generateVariant() {
-        document.getElementById('info-board').style.display = 'none';
-        currentInteractiveHTML = ""; currentPrintHTML = ""; currentAnswersHTML = ""; currentGeneratedTasks = []; selectedBlockTitles = [];
-        window.mainCanvases = {}; 
-
-        let taskCounter = 0, hasContent = false;
-        let stickerPack = document.getElementById('sticker-select').value;
-        let maxStickers = (stickerPack === 'ro') ? 10 : 5;
-        let lastStickerAddedAt = -1;
-        
+        currentInteractiveHTML = ""; currentPrintHTML = ""; currentAnswersHTML = ""; currentGeneratedTasks = []; selectedBlockTitles = []; window.mainCanvases = {}; 
+        let taskCounter = 0, hasContent = false, stickerPack = document.getElementById('sticker-select').value, maxStickers = (stickerPack === 'ro') ? 10 : 5, lastStickerAddedAt = -1;
         if (stickerPack !== lastStickerPack) { globalStickerPool = []; lastStickerPack = stickerPack; lastStickerId = -1; }
         
         function getNextSticker(maxS) {
-            if (globalStickerPool.length === 0) {
-                let arr = []; for(let i=1; i<=maxS; i++) arr.push(i);
-                shuffleArray(arr);
-                if (arr[arr.length - 1] === lastStickerId && arr.length > 1) {
-                    [arr[arr.length - 1], arr[0]] = [arr[0], arr[arr.length - 1]];
-                }
-                globalStickerPool = arr;
-            }
-            lastStickerId = globalStickerPool.pop();
-            return lastStickerId;
+            if (globalStickerPool.length === 0) { let arr = []; for(let i=1; i<=maxS; i++) arr.push(i); shuffleArray(arr); if (arr[arr.length - 1] === lastStickerId && arr.length > 1) { [arr[arr.length - 1], arr[0]] = [arr[0], arr[arr.length - 1]]; } globalStickerPool = arr; }
+            lastStickerId = globalStickerPool.pop(); return lastStickerId;
         }
 
-        let nextStickerTarget = 2 + Math.floor(Math.random() * 2);
-        let includeExplanations = document.getElementById('toggle-explanations').checked;
+        let nextStickerTarget = 2 + Math.floor(Math.random() * 2), includeExplanations = document.getElementById('toggle-explanations').checked;
 
         for (let tid in window.database) {
-            let countInput = document.getElementById(`count-${tid}`);
-            if (!countInput) continue;
-            let requiredCount = parseInt(countInput.value) || 0;
-            if (requiredCount <= 0) continue;
-
-            let selectedProtos = window.database[tid].prototypes.filter((p, idx) => document.getElementById(`proto-${tid}-${idx}`).checked);
-            if (selectedProtos.length === 0) continue;
-
+            let countInput = document.getElementById(`count-${tid}`); if (!countInput) continue;
+            let requiredCount = parseInt(countInput.value) || 0; if (requiredCount <= 0) continue;
+            let selectedProtos = window.database[tid].prototypes.filter((p, idx) => document.getElementById(`proto-${tid}-${idx}`).checked); if (selectedProtos.length === 0) continue;
             selectedBlockTitles.push(window.database[tid].title);
-            let activePools = selectedProtos.map(p => ({ 
-                pid: window.database[tid].prototypes.indexOf(p), 
-                svg: p.svg_code, 
-                theory: p,
-                tasks: shuffleArray([...p.tasks]) 
-            }));
-            let finalTasks = []; let pIdx = 0;
-            
-            while (finalTasks.length < requiredCount) {
-                if (activePools[pIdx].tasks.length > 0) {
-                    finalTasks.push({ 
-                        ...activePools[pIdx].tasks.pop(), 
-                        svg: activePools[pIdx].svg,
-                        theory: activePools[pIdx].theory
-                    });
-                }
-                pIdx = (pIdx + 1) % activePools.length;
-            }
-            finalTasks = shuffleArray(finalTasks);
-            hasContent = true;
+            let activePools = selectedProtos.map(p => ({ pid: window.database[tid].prototypes.indexOf(p), svg: p.svg_code, theory: p, tasks: shuffleArray([...p.tasks]) }));
+            let finalTasks = [], pIdx = 0;
+            while (finalTasks.length < requiredCount) { if (activePools[pIdx].tasks.length > 0) { finalTasks.push({ ...activePools[pIdx].tasks.pop(), svg: activePools[pIdx].svg, theory: activePools[pIdx].theory }); } pIdx = (pIdx + 1) % activePools.length; }
+            finalTasks = shuffleArray(finalTasks); hasContent = true;
 
             let blockTitle = `<h3 style="background: #e3f2fd; padding: 10px 15px; border-left: 4px solid #003399; margin-top: 30px; border-radius: 0 6px 6px 0; color: #003399;">${window.database[tid].title}</h3>`;
-            currentInteractiveHTML += blockTitle + `<div style="font-size: 16px;">`;
-            currentPrintHTML += blockTitle + `<div style="font-size: 16px;">`;
-            currentAnswersHTML += `<h3>${window.database[tid].title}</h3><div>`;
+            currentInteractiveHTML += blockTitle + `<div style="font-size: 16px;">`; currentPrintHTML += blockTitle + `<div style="font-size: 16px;">`; currentAnswersHTML += `<h3>${window.database[tid].title}</h3><div>`;
 
             finalTasks.forEach(item => {
                 taskCounter++;
+                let mainSvg = item.svg || ""; if (mainSvg) { let tmp = document.createElement('div'); tmp.innerHTML = mainSvg; window.autoFixSVGArrows(tmp); mainSvg = tmp.innerHTML; }
+                let theorySvgCode = item.theory.svg_code || ""; if (theorySvgCode) { let tmp = document.createElement('div'); tmp.innerHTML = theorySvgCode; window.autoFixSVGArrows(tmp); theorySvgCode = tmp.innerHTML; }
                 
-                let mainSvg = item.svg || "";
-                if (mainSvg) {
-                    let tmp = document.createElement('div');
-                    tmp.innerHTML = mainSvg;
-                    window.autoFixSVGArrows(tmp);
-                    mainSvg = tmp.innerHTML;
-                }
-
-                let theorySvgCode = item.theory.svg_code || "";
-                if (theorySvgCode) {
-                    let tmp = document.createElement('div');
-                    tmp.innerHTML = theorySvgCode;
-                    window.autoFixSVGArrows(tmp);
-                    theorySvgCode = tmp.innerHTML;
-                }
-                
-                let theoryHtml = `
-                    <h3>Разбор аналогичного задания</h3>
-                    <div style='background:#f9f9f9;padding:15px;border-left:4px solid #ff8c00;margin-bottom:15px;border-radius:6px;'>
-                        <p style='margin-top:0;'><b>Задача:</b></p>
-                        <div style='min-height: 60px;'>${theorySvgCode ? '<div style="float:left; margin-right: 20px; margin-bottom: 10px;">' + theorySvgCode + '</div>' : ''}${item.theory.theory_task}</div><div style='clear:both;'></div>
-                        <p style='margin-top: 20px;'><b>Решение:</b></p>
-                        <div>${item.theory.theory_sol}</div>
-                    </div>
-                `;
-
-                currentGeneratedTasks.push({ 
-                    text: item.text, 
-                    svg: mainSvg, 
-                    answer: String(item.answer),
-                    theory: theoryHtml
-                });
+                let theoryHtml = `<h3>Разбор аналогичного задания</h3><div style='background:#f9f9f9;padding:15px;border-left:4px solid #ff8c00;margin-bottom:15px;border-radius:6px;'><p style='margin-top:0;'><b>Задача:</b></p><div style='min-height: 60px;'>${theorySvgCode ? '<div style="float:left; margin-right: 20px; margin-bottom: 10px;">' + theorySvgCode + '</div>' : ''}${item.theory.theory_task}</div><div style='clear:both;'></div><p style='margin-top: 20px;'><b>Решение:</b></p><div>${item.theory.theory_sol}</div></div>`;
+                currentGeneratedTasks.push({ text: item.text, svg: mainSvg, answer: String(item.answer), theory: theoryHtml });
                 
                 let stickerHTML = "";
                 if (stickerPack !== 'none' && taskCounter === nextStickerTarget) {
                     lastStickerAddedAt = taskCounter;
-                    let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15;
-                    let mw = 112, mh = 96; 
-                    if (stickerPack === 'ro') {
-                        mw = Math.round(140 * 1.3); mh = Math.round(120 * 1.3);
-                    }
+                    let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15, mw = 112, mh = 96; 
+                    if (stickerPack === 'ro') { mw = Math.round(140 * 1.3); mh = Math.round(120 * 1.3); }
                     let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:16px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1; width: 100%; word-wrap: break-word;">${sciQuotes[sIdx]}</div>` : "";
                     stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${mw+20}px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
                     nextStickerTarget += 3 + Math.floor(Math.random() * 2);
@@ -594,88 +372,22 @@
                         ${stickerHTML}
                     </div>
                 </div>`;
+                currentAnswersHTML += `<div style="margin-bottom: 10px; font-size: 18px;"><b>${taskCounter}.</b> Ответ: <strong style="color: #d32f2f;">${item.answer}</strong></div>`;
             });
             currentInteractiveHTML += `</div>`; currentPrintHTML += `</div>`;
         }
 
         if (stickerPack !== 'none' && hasContent && (taskCounter - lastStickerAddedAt > 1)) {
-            let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15;
-            let mw = 112, mh = 112; 
+            let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15, mw = 112, mh = 112; 
             if (stickerPack === 'ro') { mw = 182; mh = 156; }
             let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat'; font-size:20px; color:#003399; margin-top:10px;">${sciQuotes[sIdx]}</div>` : "";
-            // Оборачиваем финальный стикер в блок, запрещающий разрыв страницы
             let bottomSticker = `<div style="clear:both; padding-top:20px; display:flex; flex-direction:column; align-items:flex-end; page-break-inside: avoid;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);">${quoteHTML}</div>`;
-            currentInteractiveHTML += bottomSticker;
-            currentPrintHTML += bottomSticker;
+            currentInteractiveHTML += bottomSticker; currentPrintHTML += bottomSticker;
         }
-
         if (hasContent) { document.getElementById('output-section').style.display = 'block'; document.getElementById('btn-group').style.display = 'flex'; renderPreview(); }
     }
 
-    const CANVAS_LOGIC_SCRIPT = `
-        window.mainCanvases = {};
-        window.toggleCanvas = function(id) {
-            let w = document.getElementById('draw-wrapper-' + id);
-            if (w.style.display === 'none' || w.style.display === '') { w.style.display = 'block'; setTimeout(() => window.initMainCanvas(id), 50); } else { w.style.display = 'none'; }
-        };
-        window.initMainCanvas = function(id) {
-            if (window.mainCanvases[id]) return;
-            let canvas = document.getElementById('canvas-' + id); 
-            if(!canvas) return;
-            let ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth; 
-            canvas.height = canvas.parentElement.clientHeight || 250;
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            
-            let objects = []; let currentObj = null; let draggingObj = null; let action = null; 
-            let dragStartX = 0, dragStartY = 0; let isDrawing = false;
-
-            function drawObj(ctx, obj) {
-                ctx.save();
-                ctx.strokeStyle = obj.color; ctx.lineWidth = obj.size;
-                if (obj.tool === 'pen' || obj.tool === 'eraser') {
-                    ctx.globalCompositeOperation = obj.tool === 'eraser' ? 'destination-out' : 'source-over';
-                    ctx.beginPath();
-                    if(obj.points && obj.points.length > 0) { ctx.moveTo(obj.points[0].x, obj.points[0].y); for(let i=1; i<obj.points.length; i++) ctx.lineTo(obj.points[i].x, obj.points[i].y); }
-                    ctx.stroke();
-                } else {
-                    ctx.globalCompositeOperation = 'source-over'; ctx.beginPath();
-                    let sx = obj.sx, sy = obj.sy, ex = obj.ex, ey = obj.ey;
-                    if (obj.tool === 'line') { ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke(); }
-                    else if (obj.tool === 'vector') {
-                        ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
-                        let angle = Math.atan2(ey-sy, ex-sx);
-                        let headlen = 10;
-                        ctx.moveTo(ex, ey);
-                        ctx.lineTo(ex-headlen*Math.cos(angle-Math.PI/7), ey-headlen*Math.sin(angle-Math.PI/7));
-                        ctx.moveTo(ex, ey);
-                        ctx.lineTo(ex-headlen*Math.cos(angle+Math.PI/7), ey-headlen*Math.sin(angle+Math.PI/7));
-                        ctx.stroke();
-                    }
-                }
-                ctx.restore();
-            }
-
-            function renderAll() { ctx.clearRect(0, 0, canvas.width, canvas.height); objects.forEach(obj => drawObj(ctx, obj)); if (currentObj) drawObj(ctx, currentObj); }
-
-            canvas.onmousedown = (e) => {
-                isDrawing = true;
-                let tool = document.getElementById('tool-'+id).value;
-                currentObj = { tool: tool, color: document.getElementById('color-'+id).value, size: document.getElementById('size-'+id).value, points: [{x:e.offsetX, y:e.offsetY}], sx: e.offsetX, sy: e.offsetY };
-            };
-            canvas.onmousemove = (e) => {
-                if(!isDrawing) return;
-                if(currentObj.tool === 'pen' || currentObj.tool === 'eraser') currentObj.points.push({x:e.offsetX, y:e.offsetY});
-                else { currentObj.ex = e.offsetX; currentObj.ey = e.offsetY; }
-                renderAll();
-            };
-            window.addEventListener('mouseup', () => { if(isDrawing) { objects.push(currentObj); currentObj = null; isDrawing = false; renderAll(); } });
-            
-            window.mainCanvases[id] = { ctx, objects, renderAll };
-        };
-        window.clearCanvas = function(id) { if(window.mainCanvases[id]) { window.mainCanvases[id].objects = []; window.mainCanvases[id].renderAll(); } };
-        window.setTool = function(id, tool) { document.getElementById('tool-'+id).value = tool; };
-    `;
+    const CANVAS_LOGIC_SCRIPT = `window.mainCanvases={};window.openTheoryModalLocal=function(id){let el=document.getElementById(id);if(el){document.getElementById('modal-content-box').innerHTML=decodeURIComponent(el.textContent);document.getElementById('modal-overlay').style.display='flex';if(window.MathJax)MathJax.typesetPromise([document.getElementById('modal-overlay')]);}};window.toggleCanvas=function(id){let w=document.getElementById('draw-wrapper-'+id);if(w.style.display==='none'||w.style.display===''){w.style.display='block';setTimeout(()=>window.initMainCanvas(id),50);}else{w.style.display='none';}};window.initMainCanvas=function(id){if(window.mainCanvases[id])return;let canvas=document.getElementById('canvas-'+id);if(!canvas)return;let ctx=canvas.getContext('2d');canvas.width=canvas.parentElement.clientWidth||750;canvas.height=canvas.parentElement.clientHeight||250;ctx.lineCap='round';ctx.lineJoin='round';let objects=[],currentObj=null,draggingObj=null,action=null,dragStartX=0,dragStartY=0,isDrawing=false;function drawObj(ctx,obj){ctx.save();ctx.strokeStyle=obj.color;ctx.lineWidth=obj.size;if(obj.tool==='pen'||obj.tool==='eraser'){ctx.globalCompositeOperation=obj.tool==='eraser'?'destination-out':'source-over';ctx.beginPath();if(obj.points&&obj.points.length>0){ctx.moveTo(obj.points[0].x,obj.points[0].y);for(let i=1;i<obj.points.length;i++)ctx.lineTo(obj.points[i].x,obj.points[i].y);}ctx.stroke();}else{ctx.globalCompositeOperation='source-over';ctx.beginPath();let sx=obj.sx,sy=obj.sy,ex=obj.ex,ey=obj.ey;if(obj.tool==='line'){ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();}else if(obj.tool==='vector'){ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();let ang=Math.atan2(ey-sy,ex-sx),hl=10;ctx.moveTo(ex,ey);ctx.lineTo(ex-hl*Math.cos(ang-Math.PI/7),ey-hl*Math.sin(ang-Math.PI/7));ctx.moveTo(ex,ey);ctx.lineTo(ex-hl*Math.cos(ang+Math.PI/7),ey-hl*Math.sin(ang+Math.PI/7));ctx.stroke();}}ctx.restore();}function renderAll(){ctx.clearRect(0,0,canvas.width,canvas.height);objects.forEach(o=>drawObj(ctx,o));if(currentObj)drawObj(ctx,currentObj);}canvas.onmousedown=(e)=>{isDrawing=true;currentObj={tool:document.getElementById('tool-'+id).value,color:document.getElementById('color-'+id).value,size:document.getElementById('size-'+id).value,points:[{x:e.offsetX,y:e.offsetY}],sx:e.offsetX,sy:e.offsetY};};canvas.onmousemove=(e)=>{if(!isDrawing)return;if(currentObj.tool==='pen'||currentObj.tool==='eraser')currentObj.points.push({x:e.offsetX,y:e.offsetY});else{currentObj.ex=e.offsetX;currentObj.ey=e.offsetY;}renderAll();};window.addEventListener('mouseup',()=>{if(isDrawing){objects.push(currentObj);currentObj=null;isDrawing=false;renderAll();}});window.mainCanvases[id]={ctx,objects,renderAll};};window.clearCanvas=function(id){if(window.mainCanvases[id]){window.mainCanvases[id].objects=[];window.mainCanvases[id].renderAll();}};window.setTool=function(id,tool){document.getElementById('tool-'+id).value=tool;};`;
 
     eval(CANVAS_LOGIC_SCRIPT);
 
@@ -715,45 +427,56 @@
             <div class="slide task-slide" style="width:100vw; height:100vh; position:relative; background-image:url('${ASSETS_URL}p2.jpg'); background-size:cover; display:none; align-items:center; justify-content:center;">
                 
                 <div class="header-container" style="position: absolute; top: calc(15% - 85px); right: 5%; width: 50%; display: flex; justify-content: center; z-index: 100;">
-                    <div style="width: calc(351px * 0.8); height: calc(220px * 0.8); background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center;">
-                        <h3 style="font-family: 'Caveat'; font-size: calc(39px * 0.8); color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
+                    <div style="width: calc(351px * 0.8); height: calc(220px * 0.8); background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; padding-bottom: 10px; box-sizing: border-box;">
+                        <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.8); color: #333; margin: 0;">Задание ${i+1}</h3>
                     </div>
                 </div>
 
                 <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 38%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #ff8c00; border-radius: 15px; padding: 20px; box-shadow: 0 0 25px rgba(0,0,0,0.2); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
-                         <button onclick="window.setTool('pres-${i}', 'pen')">🖊️</button>
-                         <button onclick="window.setTool('pres-${i}', 'vector')">↗️</button>
-                         <button onclick="window.setTool('pres-${i}', 'eraser')">🧽</button>
-                         <button onclick="window.clearCanvas('pres-${i}')">🗑️</button>
+                         <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;">🖊️</button>
+                         <button onclick="window.setTool('pres-${i}', 'vector')" style="background:none; border:none; cursor:pointer; font-size:20px;">↗️</button>
+                         <button onclick="window.setTool('pres-${i}', 'eraser')" style="background:none; border:none; cursor:pointer; font-size:20px;">🧽</button>
+                         <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;">🗑️</button>
                          <input type="hidden" id="tool-pres-${i}" value="pen">
-                         <input type="color" id="color-pres-${i}" value="#003399">
-                         <input type="range" id="size-pres-${i}" min="1" max="15" value="3">
+                         <input type="color" id="color-pres-${i}" value="#003399" style="cursor:pointer; height:30px; width:35px; border:none; background:transparent;">
+                         <input type="range" id="size-pres-${i}" min="1" max="15" value="3" style="cursor:pointer; width:80px;">
                     </div>
                     <div style="background:#fff; border: 1px solid #ccc; height: calc(100% - 60px);"><canvas id="canvas-pres-${i}" style="width:100%; height:100%; cursor:crosshair;"></canvas></div>
                 </div>
 
                 <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; border: 2px solid #ff8c00; overflow-y: auto; text-align:center; box-shadow: 0 0 20px #ff8c00;" onclick="event.stopPropagation();">
-                    <div style="font-size: 1.5em;">${t.svg || ""} <div>${t.text}</div></div>
-                    <div style="margin-top:20px; display:flex; justify-content:center; gap:10px;">
+                    <div style="font-size: 1.5em;">${t.svg || ""} <div style="margin-top:20px;">${t.text}</div></div>
+                    <div style="margin-top:30px; display:flex; justify-content:center; gap:10px;">
                         <input type="text" style="padding:10px; font-size:1.2em; width:150px; text-align:center; border-radius:8px; border:2px solid #ccc;">
-                        <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px;" onclick="window.toggleCanvas('pres-${i}')">✏️</button>
+                        <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')">✏️</button>
                     </div>
                 </div>
-                <div style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
+                <div style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat', cursive; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
             </div>
         `).join('');
 
         let fullHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Презентация</title>
+        <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
         <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};${SCRIPT_END}
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
-        <style>body{margin:0; overflow:hidden;} .slide.active{display:flex !important;} svg{overflow:visible;}</style></head>
-        <body>${taskSlides}
+        <style>body{margin:0; overflow:hidden; font-family: 'Segoe UI', Tahoma, sans-serif;} .slide.active{display:flex !important;} svg{overflow:visible;}</style></head>
+        <body>
+        <div class="slide active" style="width:100vw; height:100vh; position:relative; background-image:url('${ASSETS_URL}p1.jpg'); background-size:cover; display:none; align-items:center; justify-content:center;">
+            <div style="background: rgba(255,255,255,0.95); padding: 40px 60px; border-radius: 20px; border: 3px solid #ff8c00; text-align: center; max-width: 900px;" onclick="event.stopPropagation();">
+                <h1 style="color:#003399; font-size: 3em; border-bottom: 3px solid #ff8c00; padding-bottom: 20px; margin-top:0;">Тренировочный вариант</h1>
+                <div style="font-family:'Caveat', cursive; font-size:35px; color:#003399; margin-top:30px;">${authorLine}</div>
+                <div style="margin-top:40px; font-size: 1.2em; color: #555; font-style: italic;">Шкатулка математических интерактивов</div>
+            </div>
+            <div style="position: fixed; bottom: 40px; right: 70px;"><button style="background: #333; color: white; border: none; padding: 15px 35px; border-radius: 50px; cursor: pointer; font-size: 1.3em;" onclick="event.stopPropagation(); nextSlide()">Начать →</button></div>
+        </div>
+        ${taskSlides}
         <script>
             ${CANVAS_LOGIC_SCRIPT}
             let cur=0; const s=document.querySelectorAll('.slide');
             function show(n){ s.forEach(x=>x.classList.remove('active')); s[n].classList.add('active'); setTimeout(()=>window.initMainCanvas('pres-'+n),100); }
-            window.onclick=()=> { if(cur<s.length-1) show(++cur); };
+            window.nextSlide = function() { if(cur<s.length-1) show(++cur); };
+            window.onclick = window.nextSlide;
             show(0);
         ${SCRIPT_END}</body></html>`;
         let blob = new Blob([fullHTML], { type: "text/html" });
