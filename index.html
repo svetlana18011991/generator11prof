@@ -76,16 +76,24 @@
         }
         @media print {
             @page { margin: 15mm; size: A4; } 
-            body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; }
+            body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
-            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #print-container { display: block !important; width: 100%; }
             #print-footer-fixed { 
                 display: block !important; position: fixed; bottom: 0; left: 0; right: 0; 
                 text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); 
                 z-index: 9999; padding-bottom: 5mm; background: transparent;
             }
-            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 15px; }
+            .task-print-block { 
+                display: block;
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
+                margin-bottom: 25px; 
+                position: relative;
+                clear: both;
+            }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
+            img { max-width: 100% !important; page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -590,7 +598,7 @@
                     let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:16px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1; width: 100%; word-wrap: break-word;">${sciQuotes[sIdx]}</div>` : "";
                     
                     let containerW = mw + 20; 
-                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${containerW}px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
+                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${containerW}px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center; page-break-inside: avoid;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
                     nextStickerTarget += 3 + Math.floor(Math.random() * 2);
                 }
 
@@ -649,7 +657,7 @@
                     <div style="display:flex; align-items:flex-start; justify-content: space-between;">
                         <div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;">
                             <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
-                            ${mainSvg ? `<div style="flex-shrink:0;min-width:150px;">${mainSvg}</div>` : ""}
+                            ${mainSvg ? `<div style="flex-shrink:0;min-width:150px; page-break-inside: avoid;">${mainSvg}</div>` : ""}
                             <div style="flex-grow:1; min-width:0;">
                                 <div>${item.text}</div>
                                 <div style="margin-top:15px; font-size:18px;">Ответ: _______________________</div>
@@ -677,7 +685,7 @@
                 mw *= 1.3; mh *= 1.3;
             }
             let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:20px; color:#003399; margin-top:10px; transform:rotate(${rot/3}deg); line-height:1.1; max-width:${mw+40}px; text-align:center;">${sciQuotes[sIdx]}</div>` : "";
-            let bottomSticker = `<div style="clear:both;margin-top:15px;padding-right:40px;display:flex;flex-direction:column;align-items:flex-end; page-break-inside: avoid; page-break-before: avoid; break-before: avoid;"><div style="display:flex;flex-direction:column;align-items:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quoteHTML}</div></div>`;
+            let bottomSticker = `<div style="clear:both;margin-top:15px;padding-right:40px;display:flex;flex-direction:column;align-items:flex-end; page-break-inside: avoid; page-break-before: avoid; break-before: avoid;"><div style="display:flex;flex-direction:column;align-items:center; page-break-inside: avoid;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quoteHTML}</div></div>`;
             currentInteractiveHTML += bottomSticker;
             currentPrintHTML += bottomSticker;
         }
@@ -954,8 +962,10 @@
                 padding: 0 !important; 
                 color: #000 !important; 
                 font-family: 'Times New Roman', serif;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
-            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #print-container { display: block !important; width: 100%; }
             #print-footer-fixed { 
                 display: block !important; position: fixed; bottom: 0; left: 0; right: 0; 
                 text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); 
@@ -964,8 +974,16 @@
             table.print-wrapper { width: 100%; border: none; border-collapse: collapse; page-break-inside: auto; }
             tr { page-break-inside: auto; page-break-after: auto; }
             td { page-break-inside: auto; page-break-after: auto; }
-            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 15px; }
+            .task-print-block { 
+                display: block;
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
+                margin-bottom: 30px; 
+                clear: both;
+                position: relative;
+            }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
+            img { max-width: 100% !important; page-break-inside: avoid; }
         }
         @media screen {
             body { background: #f4f7f6; font-family: 'Times New Roman', serif; padding: 40px; }
@@ -1028,8 +1046,8 @@
         
         let taskSlides = currentGeneratedTasks.map((t, i) => `
             <div class="slide task-slide" style="background-image: url('${ASSETS_URL}p2.jpg')">
-                <div class="header-plate" style="position: absolute; top: calc(15% - 88px); left: 70%; transform: translateX(-50%); width: calc(351px * 0.8); height: calc(220px * 0.8); background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 30;">
-                    <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.8); color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
+                <div class="header-plate" style="position: absolute; top: calc(15% - 145px); left: 70%; transform: translateX(-50%); width: calc(351px * 0.64); height: calc(220px * 0.64); background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 30;">
+                    <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.64); color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
                 </div>
                 
                 <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; overflow-y: auto; display: block; box-sizing: border-box;" onclick="event.stopPropagation();">
