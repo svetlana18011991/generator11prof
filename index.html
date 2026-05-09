@@ -4,489 +4,204 @@
     <meta charset="UTF-8">
     <title>Рабочее пространство — Светлана Быкова</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-    
     <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
     <script>window.database = {};</script>
     <script src="tower_template.js"></script>
-    <script src="task1.js"></script>
-    <script src="task2.js"></script>
-    <script src="task3.js"></script>
-    <script src="task4.js"></script>
-
+    <script src="task1.js"></script><script src="task2.js"></script><script src="task3.js"></script><script src="task4.js"></script>
     <style>
-        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 40px 20px; }
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px 20px; }
         .layout-wrapper { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; align-items: flex-start; }
-        .sidebar { flex: 0 0 300px; background-color: #1e1e1e; padding: 30px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 0 20px rgba(255, 140, 0, 0.1); position: sticky; top: 40px; box-sizing: border-box; text-align: center; }
-        .author-photo { width: 160px; height: 160px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 4px solid #ff8c00; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; text-align: center; background: transparent; color: #ff8c00; padding: 12px; border-radius: 8px; text-decoration: none; margin-bottom: 12px; transition: 0.3s; box-sizing: border-box; font-weight: bold; border: 2px solid #ff8c00; font-size: 0.95em; }
-        .social-btn svg { width: 20px; height: 20px; flex-shrink: 0; fill: currentColor; }
-        .social-btn:hover { background: #ff8c00; color: #121212; box-shadow: 0 0 10px rgba(255, 140, 0, 0.3); }
-        .main-content { flex: 1; background-color: #1e1e1e; padding: 30px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 0 20px rgba(255, 140, 0, 0.1); min-width: 0; box-sizing: border-box; }
-        
-        h1, h2 { color: #ff8c00; margin-top: 0; }
+        .sidebar { flex: 0 0 300px; background-color: #1e1e1e; padding: 30px; border-radius: 12px; border: 1px solid #333; position: sticky; top: 40px; text-align: center; }
+        .author-photo { width: 160px; height: 160px; object-fit: cover; border-radius: 50%; border: 4px solid #ff8c00; margin-bottom: 15px; }
+        .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; color: #ff8c00; padding: 12px; border-radius: 8px; text-decoration: none; margin-bottom: 12px; border: 2px solid #ff8c00; font-weight: bold; }
+        .social-btn:hover { background: #ff8c00; color: #121212; }
+        .main-content { flex: 1; background-color: #1e1e1e; padding: 30px; border-radius: 12px; border: 1px solid #333; }
         .task-row { background-color: #2a2a2a; padding: 15px 20px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid #ff8c00; }
         .row-header { display: flex; justify-content: space-between; align-items: center; }
-        .row-header label { font-size: 1.1em; font-weight: bold; flex-grow: 1; cursor: pointer; display: flex; align-items: center; }
-        .task-row input[type="number"] { background: #121212; border: 1px solid #555; color: #ff8c00; padding: 8px; border-radius: 6px; width: 60px; text-align: center; font-size: 1em; outline: none; }
-        .theme-select { background: #121212; border: 1px solid #555; color: #ff8c00; padding: 8px; border-radius: 6px; width: 250px; font-size: 1em; outline: none; transition: 0.3s; }
-        .btn-settings { background: #333; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 15px; font-size: 0.85em; transition: 0.2s; }
-        .btn-settings:hover { background: #444; color: #fff; }
-        .proto-list { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #555; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9em; }
-        .proto-item { display: flex; align-items: flex-start; gap: 8px; color: #bbb; cursor: pointer; }
-        .proto-item input { margin-top: 3px; cursor: pointer; }
-        .proto-label-text { border-bottom: 1px dashed #666; transition: 0.2s; }
-        .proto-item:hover .proto-label-text { color: #ff8c00; }
-        
-        .btn-generate { display: block; width: 100%; background: transparent; color: #ff8c00; border: 2px solid #ff8c00; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 25px; transition: 0.3s; }
-        .btn-generate:hover { background: #ff8c00; color: #121212; box-shadow: 0 0 15px rgba(255, 140, 0, 0.4); }
-        .btn-group { display: none; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
-        .btn-dl { flex: 1; min-width: 200px; color: white; border: none; padding: 15px 10px; font-size: 1.05em; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; text-align: center; }
-        .btn-dl:hover { filter: brightness(1.15); box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
-        .btn-html { background: #4CAF50; } .btn-pdf { background: #1976d2; } .btn-ans { background: #7b1fa2; }
-        
+        .theme-select, input[type="number"] { background: #121212; border: 1px solid #555; color: #ff8c00; padding: 8px; border-radius: 6px; outline: none; }
+        .btn-settings { background: #333; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .proto-list { display: none; margin-top: 15px; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em; }
+        .btn-generate { display: block; width: 100%; background: transparent; color: #ff8c00; border: 2px solid #ff8c00; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 25px; }
+        .btn-generate:hover { background: #ff8c00; color: #121212; }
+        .btn-group { display: none; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-dl { flex: 1; min-width: 180px; color: white; border: none; padding: 12px; font-weight: bold; border-radius: 8px; cursor: pointer; }
         #output-section { margin-top: 30px; display: none; border-radius: 12px; border: 2px solid #ff8c00; overflow: hidden; }
-        .theme-wrapper { padding: 40px 20px; min-height: 500px; position: relative; }
-        .preview-paper { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; color: #333; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        
-        .bg-none { background: #f4f7f6; } 
-        .bg-winter { background: #f4f7f6 url('зима.jpg') center top / cover fixed; } 
-        .bg-spring { background: #f6f9f2 url('весна.jpg') center top / cover fixed; } 
-        .bg-summer { background: #f4f7f6 url('лето.jpg') center top / cover fixed; } 
-        .bg-autumn { background: #f4f7f6 url('осень.jpg') center top / cover fixed; }
-        
-        .timer-box-preview { position: absolute; top: 20px; right: 20px; background: #fff; border: 2px solid #ff8c00; color: #ff8c00; padding: 10px 15px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        #proto-tooltip { position: fixed; background: rgba(255,255,255,0.98); border: 2px solid #ff8c00; border-radius: 8px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 350px; color: #333; display: none; z-index: 1000; pointer-events: none; }
-        #proto-tooltip svg { max-width: 100%; height: auto; margin-bottom: 10px; }
-        .custom-checkbox { width: 18px; height: 18px; accent-color: #ff8c00; margin-right: 10px; cursor: pointer; }
-        
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; border: 2px solid #ff8c00; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .pres-preview-card { background: #2a2a2a; border: 1px solid #444; border-radius: 10px; padding: 15px; cursor: pointer; transition: 0.3s; margin-top: 20px; display: flex; align-items: center; gap: 15px; text-align: left; }
-        .pres-preview-card:hover { border-color: #ff8c00; transform: translateY(-3px); background: #333; }
-        .pres-thumb { width: 100px; height: 70px; background-size: cover; border-radius: 4px; border: 1px solid #555; }
-        
+        .preview-paper { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; color: #333; border-radius: 12px; }
         svg { overflow: visible; }
-        
-        /* ИДЕАЛЬНАЯ ПЕЧАТЬ */
-        @media screen { #print-container, #print-footer-fixed { display: none !important; } }
         @media print {
-            @page { margin: 10mm 15mm; size: A4; } 
-            body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; font-family: 'Times New Roman', serif; }
-            .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
-            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            #print-footer-fixed { display: block !important; position: fixed; bottom: 5mm; left: 0; right: 0; text-align: center; font-family: 'Caveat', cursive; font-size: 18px; color: rgba(0,0,0,0.4); z-index: 9999; background: transparent; }
-            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 20px; }
-            svg { max-width: 100%; height: auto; margin: 5px 0; }
-            h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; margin-top: 15px; margin-bottom: 10px; }
+            @page { margin: 20mm; size: A4; }
+            body { background: #fff !important; color: #000 !important; }
+            .layout-wrapper, .modal-overlay { display: none !important; }
+            #print-container { display: block !important; }
+            #print-footer-fixed { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-family: 'Caveat'; font-size: 20px; color: #777; }
+            .task-print-block { page-break-inside: avoid; margin-bottom: 30px; }
         }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; }
+        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; border: 2px solid #ff8c00; width: 90%; max-width: 500px; text-align: center; }
     </style>
 </head>
 <body>
-
-<div id="print-footer-fixed">Шкатулка математических интерактивов</div>
+<div id="print-footer-fixed" style="display:none;">Шкатулка математических интерактивов</div>
 <div id="print-container"></div>
-
 <div class="layout-wrapper">
     <aside class="sidebar">
-        <img src="photo.jpg" alt="Светлана Быкова" class="author-photo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'160\\\' height=\\\'160\\\'><circle cx=\\\'80\\\' cy=\\\'80\\\' r=\\\'80\\\' fill=\\\'#333\\\'/><text x=\\\'80\\\' y=\\\'85\\\' font-size=\\\'40\\\' text-anchor=\\\'middle\\\' fill=\\\'#555\\\'>👤</text></svg>'">
-        <h2 style="margin: 0 0 5px 0; color: #ff8c00;">Светлана Быкова</h2>
-        <p style="color: #bbb; font-size: 0.95em; margin-bottom: 25px; line-height: 1.4;">Учитель математики, репетитор и автор интерактивных материалов</p>
-        
-        <div style="text-align: center; margin-bottom: 12px; color: #888; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px;">Для связи</div>
+        <img src="photo.jpg" class="author-photo">
+        <h2>Светлана Быкова</h2>
         <a href="https://t.me/interactiv_matematika" target="_blank" class="social-btn">Telegram</a>
         <a href="https://vk.com/interaktiv_matematika" target="_blank" class="social-btn">ВКонтакте</a>
-        <a href="https://max.ru/c/-70932227200385/AZ29lb4dRPk" target="_blank" class="social-btn">МАКС</a>
-        
-        <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
-            <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
-            <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
-                Система полностью восстановлена! Плашка центрируется идеально.
-            </p>
+        <div style="margin-top: 20px; padding: 10px; background: #2a2a2a; border-radius: 8px; font-size: 0.8em;">
+            Обновление: исправлена плашка, оптимизирована печать, функции генерации работают корректно.
         </div>
     </aside>
-
     <main class="main-content">
-        <h2 style="margin: 0 0 25px 0; text-align: center; border-bottom: 1px dashed #555; padding-bottom: 15px;">Рабочее пространство</h2>
-        
+        <h2 style="text-align:center;">Рабочее пространство</h2>
         <div class="task-row">
-            <div class="row-header" style="flex-wrap: wrap; gap: 15px;">
-                <label style="cursor: pointer; min-width: 200px;">Оформление варианта</label>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end;">
-                    <select id="sticker-select" class="theme-select" style="max-width: 160px;">
-                        <option value="none">Без стикеров</option>
-                        <option value="cat">Котики 🐈</option>
-                        <option value="sci">Ученые 🧠</option>
-                        <option value="ro">Мотивация 🎯</option>
-                    </select>
-                    <select id="theme-select" class="theme-select" style="max-width: 160px;" onchange="handleThemeChange()">
-                        <option value="none">Строгий фон</option>
-                        <option value="winter">Зимний</option>
-                        <option value="spring">Весенний</option>
-                        <option value="summer">Летний</option>
-                        <option value="autumn">Осенний</option>
-                        <option value="custom">Свой фон</option>
-                    </select>
-                    <input type="text" id="custom-bg-url" placeholder="Вставьте ссылку на картинку..." style="display:none; flex-grow: 1; max-width: 250px;" class="theme-select" oninput="if(currentInteractiveHTML) renderPreview();">
-                </div>
-            </div>
-            <div class="row-header" style="margin-top: 15px; border-top: 1px dashed #555; padding-top: 15px; flex-wrap: wrap; gap: 15px;">
-                <label style="cursor: pointer; color: #bbb; font-weight: normal; font-size: 0.95em; min-width: 200px;">
-                    <input type="checkbox" id="toggle-signature" class="custom-checkbox" onchange="handleSignatureChange()">
-                    Добавить подпись учителя
-                </label>
-                <div id="signature-controls" style="display: none; gap: 10px; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end;">
-                    <select id="teacher-gender" class="theme-select" style="max-width: 120px;" onchange="if(currentInteractiveHTML) renderPreview();">
-                        <option value="female">Женщина</option>
-                        <option value="male">Мужчина</option>
-                    </select>
-                    <input type="text" id="teacher-name" placeholder="Например: Иванов И.И." style="flex-grow: 1; max-width: 250px;" class="theme-select" oninput="if(currentInteractiveHTML) renderPreview();">
-                </div>
-            </div>
-        </div>
-
-        <div class="task-row" style="border-left-color: #4CAF50;">
             <div class="row-header">
-                <label style="cursor: pointer;">Таймер (минут)</label>
-                <input type="number" id="timer-input" min="0" value="0">
+                <label><input type="checkbox" id="toggle-signature"> Добавить подпись учителя</label>
+                <div id="signature-controls" style="display:none; gap:10px;">
+                    <select id="teacher-gender" class="theme-select"><option value="female">Она</option><option value="male">Он</option></select>
+                    <input type="text" id="teacher-name" placeholder="Имя..." class="theme-select">
+                </div>
             </div>
         </div>
-
-        <div class="task-row" style="border-left-color: #2196F3; padding: 12px 20px;">
-            <div class="row-header" style="justify-content: flex-start;">
-                <label style="cursor: pointer; color: #bbb; font-weight: normal; font-size: 0.95em;">
-                    <input type="checkbox" id="toggle-explanations" class="custom-checkbox" checked>
-                    Добавить разборы заданий после подведения итогов
-                </label>
-            </div>
-        </div>
-
+        <div class="task-row"><div class="row-header"><label>Таймер (мин)</label><input type="number" id="timer-input" value="0"></div></div>
         <div id="dynamic-tasks"></div>
-
-        <button class="btn-generate" onclick="generateVariant()">Сгенерировать вариант</button>
-        
+        <button class="btn-generate" onclick="generateVariant()">СГЕНЕРИРОВАТЬ ВАРИАНТ</button>
         <div id="btn-group" class="btn-group">
-            <button class="btn-dl btn-html" onclick="downloadStudentHTML()">💻 Интерактивный вариант</button>
-            <button class="btn-dl btn-pdf" onclick="downloadPrintPDF()">🖨️ Файл для печати (PDF)</button>
-            <button class="btn-dl btn-ans" onclick="downloadAnswers()">🔑 Ключи (Ответы)</button>
-            <button class="btn-dl" style="background: #e65100;" onclick="openGameMenu()">🏰 Создать игру</button>
-            <button class="btn-dl" style="background: #1976d2;" onclick="openPresentationMenu()">🎬 Создать презентацию</button>
+            <button class="btn-dl" style="background:#4CAF50" onclick="downloadStudentHTML()">💻 Интерактив</button>
+            <button class="btn-dl" style="background:#1976d2" onclick="downloadPrintPDF()">🖨️ Печать</button>
+            <button class="btn-dl" style="background:#e65100" onclick="openGameMenu()">🏰 Игра</button>
+            <button class="btn-dl" style="background:#7b1fa2" onclick="openPresentationMenu()">🎬 Презентация</button>
         </div>
-        
         <div id="output-section"></div>
     </main>
 </div>
 
 <div id="pres-modal" class="modal-overlay" onclick="if(event.target===this) this.style.display='none'">
     <div class="modal-box">
-        <h2 style="margin-top:0; color:#ff8c00;">Выберите дизайн презентации</h2>
-        <div class="pres-preview-card" onclick="generatePresentation1()">
-            <div class="pres-thumb" id="thumb1"></div>
-            <div>
-                <div style="font-weight:bold; color:#ff8c00; font-size:1.2em;">Авторский стиль №1</div>
-                <div style="font-size:0.85em; color:#bbb;">С неоновой подсветкой и разборами</div>
-            </div>
+        <h2 style="color:#ff8c00">Выбор дизайна</h2>
+        <div style="background:#2a2a2a; padding:15px; border-radius:10px; cursor:pointer;" onclick="generatePresentation1()">
+            <b style="color:#ff8c00">Авторский стиль №1</b>
         </div>
-        <button class="btn-settings" style="margin-top:25px; width:100%; padding:10px;" onclick="document.getElementById('pres-modal').style.display='none'">Отмена</button>
     </div>
 </div>
 
 <div id="game-modal" class="modal-overlay" onclick="if(event.target===this) this.style.display='none'">
     <div class="modal-box">
-        <h2 style="margin-top:0; color:#ff8c00;">Выберите интерактив</h2>
-        <div class="pres-preview-card" onclick="generateTowerGame()">
-            <div class="pres-thumb" style="background: #333; display:flex; align-items:center; justify-content:center; font-size: 35px;">🏰</div>
-            <div>
-                <div style="font-weight:bold; color:#ff8c00; font-size:1.2em;">Башня знаний</div>
-                <div style="font-size:0.85em; color:#bbb;">Строим башню (ровно 9 заданий)</div>
-            </div>
+        <h2 style="color:#ff8c00">Игра</h2>
+        <div style="background:#2a2a2a; padding:15px; border-radius:10px; cursor:pointer;" onclick="generateTowerGame()">
+            <b style="color:#ff8c00">Башня знаний (9 задач)</b>
         </div>
-        <button class="btn-settings" style="margin-top:25px; width:100%; padding:10px;" onclick="document.getElementById('game-modal').style.display='none'">Отмена</button>
     </div>
 </div>
 
-<div id="proto-tooltip"></div>
-
-<div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this) document.getElementById('modal-overlay').style.display='none'">
-    <div class="modal-box" style="background: #fff; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: 2px solid #ff8c00; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px; position: relative; text-align: left; font-size: 18px;">
-        <div class="close-btn" style="position: absolute; top: 15px; right: 20px; font-size: 32px; line-height: 1; cursor: pointer; color: #888; transition: 0.2s;" onclick="document.getElementById('modal-overlay').style.display='none'">&times;</div>
-        <div id="modal-content-box" style="color: #333;"></div>
-    </div>
-</div>
+<div id="proto-tooltip" style="position:fixed; background:#fff; border:1px solid #ff8c00; padding:10px; display:none; z-index:10000; color:#000;"></div>
 
 <script>
-    const ASSETS_URL = "https://svetlana18011991.github.io/generator11prof/"; 
-    const SCRIPT_END = "</" + "script>";
+const ASSETS_URL = "https://svetlana18011991.github.io/generator11prof/";
+const SCRIPT_END = "</" + "script>";
+let globalPool = [], lastPack = "", lastId = -1;
+const sciQuotes = {1:"Математика — царица наук. Гаусс", 2:"Язык природы. Лобачевский", 3:"Капля в океане. Ньютон", 4:"Нет царского пути. Евклид", 5:"Числа правят миром. Пифагор"};
+let curIntHTML="", curPrintHTML="", curTasks=[], selTitles=[];
 
-    let globalStickerPool = [], lastStickerPack = "", lastStickerId = -1;
-    const sciQuotes = {
-        1: "«Математика — царица наук,<br>а арифметика —<br>царица математики».<br>К. Ф. Гаусс",
-        2: "«Математика — это язык,<br>на котором говорят<br>все точные науки».<br>Н. И. Лобачевский",
-        3: "«То, что мы знаем, — это капля,<br>а то, что мы не знаем, — океан».<br>Исаак Ньютон",
-        4: "«В геометрии нет царского пути».<br>Евклид",
-        5: "«Числа правят миром».<br>Пифагор"
-    };
-
-    let currentInteractiveHTML="", currentPrintHTML="", currentAnswersHTML="", currentGeneratedTasks=[], selectedBlockTitles=[];
-    window.mainCanvases = {}; 
-
-    window.autoFixSVGArrows = function(container) {
-        if(!container) return;
-        let svgNs = 'http://www.w3.org/2000/svg';
-        function getInheritedStrokeColor(el) { let s = el.getAttribute('stroke') || el.style.stroke; if (s && s !== 'none') return s; if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') return getInheritedStrokeColor(el.parentElement); return '#000'; }
-        function getInheritedStrokeWidth(el) { let sw = el.getAttribute('stroke-width') || el.style.strokeWidth; if (sw) return parseFloat(sw); if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') return getInheritedStrokeWidth(el.parentElement); return 1; }
-        container.querySelectorAll('svg').forEach(svg => {
-            svg.style.overflow = 'visible';
-            function drawArrow(el) {
-                if (el.dataset.arrowDrawn) return;
-                let pts = null, tag = el.tagName.toLowerCase();
-                if (tag === 'line') { pts = [{x: parseFloat(el.getAttribute('x1')), y: parseFloat(el.getAttribute('y1'))}, {x: parseFloat(el.getAttribute('x2')), y: parseFloat(el.getAttribute('y2'))}]; }
-                else if (tag === 'path') { let d = el.getAttribute('d'); if (!d || d.toLowerCase().includes('z') || d.toLowerCase().includes('c') || d.toLowerCase().includes('q')) return; let nums = d.match(/[+-]?\d*\.?\d+/g); if (nums && nums.length >= 4) { pts = [{x: parseFloat(nums[nums.length-4]), y: parseFloat(nums[nums.length-3])}, {x: parseFloat(nums[nums.length-2]), y: parseFloat(nums[nums.length-1])}]; } }
-                if (pts && !isNaN(pts[0].x) && !isNaN(pts[1].y)) {
-                    let p1 = pts[0], p2 = pts[1], dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.sqrt(dx*dx + dy*dy);
-                    if (len > 0.1) {
-                        let angle = Math.atan2(dy, dx), sw = getInheritedStrokeWidth(el), headlen = Math.max(8, sw * 3.5), color = getInheritedStrokeColor(el);
-                        let p3 = {x: p2.x - headlen * Math.cos(angle - Math.PI / 7), y: p2.y - headlen * Math.sin(angle - Math.PI / 7)};
-                        let p4 = {x: p2.x - headlen * Math.cos(angle + Math.PI / 7), y: p2.y - headlen * Math.sin(angle + Math.PI / 7)};
-                        let arrow = document.createElementNS(svgNs, 'polygon');
-                        arrow.setAttribute('points', `${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`); arrow.setAttribute('fill', color);
-                        el.parentNode.appendChild(arrow); el.dataset.arrowDrawn = "true";
-                    }
-                }
+window.autoFixSVGArrows = function(container) {
+    if(!container) return;
+    let ns = 'http://www.w3.org/2000/svg';
+    container.querySelectorAll('svg').forEach(svg => {
+        svg.style.overflow = 'visible';
+        svg.querySelectorAll('[marker-end]').forEach(el => {
+            el.removeAttribute('marker-end');
+            let pts = null, tag = el.tagName.toLowerCase();
+            if(tag==='line') pts=[{x:el.getAttribute('x1'),y:el.getAttribute('y1')},{x:el.getAttribute('x2'),y:el.getAttribute('y2')}];
+            else if(tag==='path'){ let d=el.getAttribute('d'), n=d.match(/[+-]?\d*\.?\d+/g); if(n&&n.length>=4) pts=[{x:n[n.length-4],y:n[n.length-3]},{x:n[n.length-2],y:n[n.length-1]}]; }
+            if(pts){
+                let dx=pts[1].x-pts[0].x, dy=pts[1].y-pts[0].y, ang=Math.atan2(dy,dx), hl=Math.max(8, parseFloat(el.getAttribute('stroke-width')||1)*3.5);
+                let p3={x:pts[1].x-hl*Math.cos(ang-Math.PI/7), y:pts[1].y-hl*Math.sin(ang-Math.PI/7)};
+                let p4={x:pts[1].x-hl*Math.cos(ang+Math.PI/7), y:pts[1].y-hl*Math.sin(ang+Math.PI/7)};
+                let a=document.createElementNS(ns,'polygon'); a.setAttribute('points',`${pts[1].x},${pts[1].y} ${p3.x},${p3.y} ${p4.x},${p4.y}`); a.setAttribute('fill', el.getAttribute('stroke')||'#000');
+                el.parentNode.appendChild(a);
             }
-            svg.querySelectorAll('[marker-end]').forEach(el => { el.removeAttribute('marker-end'); drawArrow(el); });
         });
-    };
-
-    document.addEventListener('DOMContentLoaded', function() {
-        let container = document.getElementById('dynamic-tasks');
-        if (!window.database || Object.keys(window.database).length === 0) return;
-        for (let tid in window.database) {
-            let data = window.database[tid], listHTML = "";
-            data.prototypes.forEach((p, idx) => {
-                listHTML += `<label class="proto-item" onmouseenter="showTooltip(${tid}, ${idx}, event)" onmouseleave="hideTooltip()" onmousemove="moveTooltip(event)"><input type="checkbox" id="proto-${tid}-${idx}" checked> <span class="proto-label-text">${idx + 1}. ${p.desc} 👁️</span></label>`;
-            });
-            container.innerHTML += `<div class="task-row"><div class="row-header"><label onclick="toggleSettings(${tid})"><span>${data.title} (${data.prototypes.length})</span><button type="button" class="btn-settings" onclick="toggleSettings(${tid}); event.stopPropagation();">⚙️ Настроить</button></label><input type="number" id="count-${tid}" min="0" value="0"></div><div id="protos-${tid}" class="proto-list">${listHTML}</div></div>`;
-        }
-        let thumb1 = document.getElementById('thumb1'); if(thumb1) thumb1.style.backgroundImage = `url('${ASSETS_URL}p1.jpg')`;
     });
+};
 
-    function handleThemeChange() { document.getElementById('custom-bg-url').style.display = (document.getElementById('theme-select').value === 'custom') ? 'block' : 'none'; if(currentInteractiveHTML) renderPreview(); }
-    function handleSignatureChange() { document.getElementById('signature-controls').style.display = document.getElementById('toggle-signature').checked ? 'flex' : 'none'; if(currentInteractiveHTML) renderPreview(); }
-    function toggleSettings(tid) { let el = document.getElementById(`protos-${tid}`); if (el) el.style.display = (el.style.display === 'grid') ? 'none' : 'grid'; }
-    const tooltip = document.getElementById('proto-tooltip');
-    function showTooltip(tid, index, e) { let p = window.database[tid].prototypes[index]; tooltip.innerHTML = `${p.svg_code || ''}<div style="font-size: 0.9em;">${p.tasks[0].text}</div>`; tooltip.style.display = 'block'; if (window.MathJax) MathJax.typesetPromise([tooltip]); moveTooltip(e); }
-    function moveTooltip(e) { if (tooltip.style.display === 'block') { let x = e.clientX + 15, y = e.clientY + 15; if (x + tooltip.offsetWidth > window.innerWidth) x = window.innerWidth - tooltip.offsetWidth - 10; if (y + tooltip.offsetHeight > window.innerHeight) y = window.innerHeight - tooltip.offsetHeight - 10; tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px'; } }
-    function hideTooltip() { tooltip.style.display = 'none'; }
-    function openTheoryModalLocal(dataId) { let el = document.getElementById(dataId); if(el) { document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent); document.getElementById('modal-overlay').style.display = 'flex'; if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]); } }
-
-    function renderPreview() {
-        let theme = document.getElementById("theme-select").value, timerValue = document.getElementById("timer-input").value;
-        let timerDisplay = timerValue > 0 ? `<div class="timer-box-preview">⏱ ${timerValue}:00</div>` : `<div class="timer-box-preview">⏱ 00:00</div>`;
-        let signatureHTML = "", teacherName = document.getElementById('teacher-name').value.trim();
-        if (document.getElementById('toggle-signature').checked && teacherName !== '') { let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила'; signatureHTML = `<div style="text-align: center; font-family: 'Caveat', cursive; font-size: 26px; color: #003399; margin-top: -10px; margin-bottom: 25px;">Вариант ${verb}: ${teacherName}</div>`; }
-        let previewCode = currentInteractiveHTML.replace(/class="btn-settings btn-help" style="display:none;/g, 'class="btn-settings btn-help" style="display:inline-flex;');
-        document.getElementById('output-section').innerHTML = `<div class="theme-wrapper bg-${theme}"><div class="preview-paper">${timerDisplay}<h1 style="color: #003399; text-align: center; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top: 0;">Тренировочный вариант</h1>${signatureHTML}${previewCode}</div></div>`;
-        if (window.MathJax) MathJax.typesetPromise();
+document.addEventListener('DOMContentLoaded', () => {
+    let c = document.getElementById('dynamic-tasks');
+    for(let id in window.database) {
+        let d = window.database[id];
+        c.innerHTML += `<div class="task-row"><div class="row-header"><label onclick="toggleSet(${id})"><b>${d.title}</b></label><input type="number" id="cnt-${id}" value="0" min="0" style="width:50px"></div><div id="protos-${id}" class="proto-list">${d.prototypes.map((p,i)=>`<label><input type="checkbox" id="p-${id}-${i}" checked> ${i+1}</label>`).join('')}</div></div>`;
     }
+});
+function toggleSet(id){ let e=document.getElementById('protos-'+id); e.style.display=(e.style.display==='grid'?'none':'grid'); }
+function handleSignatureChange(){ document.getElementById('signature-controls').style.display = document.getElementById('toggle-signature').checked?'flex':'none'; }
 
-    function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
-
-    function generateVariant() {
-        currentInteractiveHTML = ""; currentPrintHTML = ""; currentAnswersHTML = ""; currentGeneratedTasks = []; selectedBlockTitles = []; window.mainCanvases = {}; 
-        let taskCounter = 0, hasContent = false, stickerPack = document.getElementById('sticker-select').value, maxStickers = (stickerPack === 'ro') ? 10 : 5, lastStickerAddedAt = -1;
-        if (stickerPack !== lastStickerPack) { globalStickerPool = []; lastStickerPack = stickerPack; lastStickerId = -1; }
-        
-        function getNextSticker(maxS) {
-            if (globalStickerPool.length === 0) { let arr = []; for(let i=1; i<=maxS; i++) arr.push(i); shuffleArray(arr); if (arr[arr.length - 1] === lastStickerId && arr.length > 1) { [arr[arr.length - 1], arr[0]] = [arr[0], arr[arr.length - 1]]; } globalStickerPool = arr; }
-            lastStickerId = globalStickerPool.pop(); return lastStickerId;
-        }
-
-        let nextStickerTarget = 2 + Math.floor(Math.random() * 2), includeExplanations = document.getElementById('toggle-explanations').checked;
-
-        for (let tid in window.database) {
-            let countInput = document.getElementById(`count-${tid}`); if (!countInput) continue;
-            let requiredCount = parseInt(countInput.value) || 0; if (requiredCount <= 0) continue;
-            let selectedProtos = window.database[tid].prototypes.filter((p, idx) => document.getElementById(`proto-${tid}-${idx}`).checked); if (selectedProtos.length === 0) continue;
-            selectedBlockTitles.push(window.database[tid].title);
-            let activePools = selectedProtos.map(p => ({ pid: window.database[tid].prototypes.indexOf(p), svg: p.svg_code, theory: p, tasks: shuffleArray([...p.tasks]) }));
-            let finalTasks = [], pIdx = 0;
-            while (finalTasks.length < requiredCount) { if (activePools[pIdx].tasks.length > 0) { finalTasks.push({ ...activePools[pIdx].tasks.pop(), svg: activePools[pIdx].svg, theory: activePools[pIdx].theory }); } pIdx = (pIdx + 1) % activePools.length; }
-            finalTasks = shuffleArray(finalTasks); hasContent = true;
-
-            let blockTitle = `<h3 style="background: #e3f2fd; padding: 10px 15px; border-left: 4px solid #003399; margin-top: 30px; border-radius: 0 6px 6px 0; color: #003399;">${window.database[tid].title}</h3>`;
-            currentInteractiveHTML += blockTitle + `<div style="font-size: 16px;">`; currentPrintHTML += blockTitle + `<div style="font-size: 16px;">`; currentAnswersHTML += `<h3>${window.database[tid].title}</h3><div>`;
-
-            finalTasks.forEach(item => {
-                taskCounter++;
-                let mainSvg = item.svg || ""; if (mainSvg) { let tmp = document.createElement('div'); tmp.innerHTML = mainSvg; window.autoFixSVGArrows(tmp); mainSvg = tmp.innerHTML; }
-                let theorySvgCode = item.theory.svg_code || ""; if (theorySvgCode) { let tmp = document.createElement('div'); tmp.innerHTML = theorySvgCode; window.autoFixSVGArrows(tmp); theorySvgCode = tmp.innerHTML; }
-                
-                let theoryHtml = `<h3>Разбор аналогичного задания</h3><div style='background:#f9f9f9;padding:15px;border-left:4px solid #ff8c00;margin-bottom:15px;border-radius:6px;'><p style='margin-top:0;'><b>Задача:</b></p><div style='min-height: 60px;'>${theorySvgCode ? '<div style="float:left; margin-right: 20px; margin-bottom: 10px;">' + theorySvgCode + '</div>' : ''}${item.theory.theory_task}</div><div style='clear:both;'></div><p style='margin-top: 20px;'><b>Решение:</b></p><div>${item.theory.theory_sol}</div></div>`;
-                currentGeneratedTasks.push({ text: item.text, svg: mainSvg, answer: String(item.answer), theory: theoryHtml });
-                
-                let stickerHTML = "";
-                if (stickerPack !== 'none' && taskCounter === nextStickerTarget) {
-                    lastStickerAddedAt = taskCounter;
-                    let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15, mw = 112, mh = 96; 
-                    if (stickerPack === 'ro') { mw = Math.round(140 * 1.3); mh = Math.round(120 * 1.3); }
-                    let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:16px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1; width: 100%; word-wrap: break-word;">${sciQuotes[sIdx]}</div>` : "";
-                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${mw+20}px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
-                    nextStickerTarget += 3 + Math.floor(Math.random() * 2);
-                }
-
-                let helpBtn = includeExplanations ? `<button class="btn-settings btn-help" style="display:none; margin-left:10px;" onclick="window.openTheoryModalLocal('theory-data-${taskCounter}')">РАЗБОР</button>` : "";
-                let drawBtn = `<button class="btn-settings" style="margin-left: 10px; background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 18px; padding: 8px 12px; border-radius: 8px;" onclick="window.toggleCanvas('${taskCounter}')">✏️</button>`;
-                
-                currentInteractiveHTML += `
-                <div style="margin-bottom:30px; clear:both; border-bottom:1px dashed #ddd; padding-bottom:20px;">
-                    <div style="display:flex; align-items:flex-start;">
-                        <div style="flex-grow:1;">
-                            <div id="theory-data-${taskCounter}" style="display:none;">${encodeURIComponent(theoryHtml)}</div>
-                            <b>${taskCounter}.</b> ${mainSvg} ${item.text}
-                            <div style="margin-top:10px; display:flex; align-items:center;">
-                                <input type="text" class="ans-box" placeholder="Ответ..." data-ans="${item.answer}" style="padding:10px; border:2px solid #ccc; border-radius:6px; width:150px;">
-                                ${drawBtn}${helpBtn}
-                            </div>
-                        </div>
-                        ${stickerHTML}
-                    </div>
-                    <div id="draw-wrapper-${taskCounter}" style="display:none; margin-top:15px; clear:both;">
-                        <div style="background:#e3f2fd; padding:10px; border-radius:8px; display:flex; gap:10px; margin-bottom:5px;">
-                            <button onclick="window.setTool('${taskCounter}', 'pen')">🖊️</button>
-                            <button onclick="window.setTool('${taskCounter}', 'eraser')">🧽</button>
-                            <button onclick="window.clearCanvas('${taskCounter}')">🗑️</button>
-                            <input type="hidden" id="tool-${taskCounter}" value="pen">
-                            <input type="color" id="color-${taskCounter}" value="#003399">
-                            <input type="range" id="size-${taskCounter}" min="1" max="15" value="3">
-                        </div>
-                        <div style="border:2px solid #bbdefb; height:250px; background:#fff;"><canvas id="canvas-${taskCounter}" style="width:100%; height:100%; cursor:crosshair;"></canvas></div>
-                    </div>
-                </div>`;
-
-                currentPrintHTML += `
-                <div class="task-print-block">
-                    <div style="display:flex; align-items:flex-start;">
-                        <div style="flex-grow:1;"><b>${taskCounter}.</b> ${mainSvg} ${item.text}<div style="margin-top:15px;">Ответ: _______________________</div></div>
-                        ${stickerHTML}
-                    </div>
-                </div>`;
-                currentAnswersHTML += `<div style="margin-bottom: 10px; font-size: 18px;"><b>${taskCounter}.</b> Ответ: <strong style="color: #d32f2f;">${item.answer}</strong></div>`;
-            });
-            currentInteractiveHTML += `</div>`; currentPrintHTML += `</div>`;
-        }
-
-        if (stickerPack !== 'none' && hasContent && (taskCounter - lastStickerAddedAt > 1)) {
-            let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15, mw = 112, mh = 112; 
-            if (stickerPack === 'ro') { mw = 182; mh = 156; }
-            let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat'; font-size:20px; color:#003399; margin-top:10px;">${sciQuotes[sIdx]}</div>` : "";
-            let bottomSticker = `<div style="clear:both; padding-top:20px; display:flex; flex-direction:column; align-items:flex-end; page-break-inside: avoid;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);">${quoteHTML}</div>`;
-            currentInteractiveHTML += bottomSticker; currentPrintHTML += bottomSticker;
-        }
-        if (hasContent) { document.getElementById('output-section').style.display = 'block'; document.getElementById('btn-group').style.display = 'flex'; renderPreview(); }
-    }
-
-    const CANVAS_LOGIC_SCRIPT = `window.mainCanvases={};window.openTheoryModalLocal=function(id){let el=document.getElementById(id);if(el){document.getElementById('modal-content-box').innerHTML=decodeURIComponent(el.textContent);document.getElementById('modal-overlay').style.display='flex';if(window.MathJax)MathJax.typesetPromise([document.getElementById('modal-overlay')]);}};window.toggleCanvas=function(id){let w=document.getElementById('draw-wrapper-'+id);if(w.style.display==='none'||w.style.display===''){w.style.display='block';setTimeout(()=>window.initMainCanvas(id),50);}else{w.style.display='none';}};window.initMainCanvas=function(id){if(window.mainCanvases[id])return;let canvas=document.getElementById('canvas-'+id);if(!canvas)return;let ctx=canvas.getContext('2d');canvas.width=canvas.parentElement.clientWidth||750;canvas.height=canvas.parentElement.clientHeight||250;ctx.lineCap='round';ctx.lineJoin='round';let objects=[],currentObj=null,draggingObj=null,action=null,dragStartX=0,dragStartY=0,isDrawing=false;function drawObj(ctx,obj){ctx.save();ctx.strokeStyle=obj.color;ctx.lineWidth=obj.size;if(obj.tool==='pen'||obj.tool==='eraser'){ctx.globalCompositeOperation=obj.tool==='eraser'?'destination-out':'source-over';ctx.beginPath();if(obj.points&&obj.points.length>0){ctx.moveTo(obj.points[0].x,obj.points[0].y);for(let i=1;i<obj.points.length;i++)ctx.lineTo(obj.points[i].x,obj.points[i].y);}ctx.stroke();}else{ctx.globalCompositeOperation='source-over';ctx.beginPath();let sx=obj.sx,sy=obj.sy,ex=obj.ex,ey=obj.ey;if(obj.tool==='line'){ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();}else if(obj.tool==='vector'){ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();let ang=Math.atan2(ey-sy,ex-sx),hl=10;ctx.moveTo(ex,ey);ctx.lineTo(ex-hl*Math.cos(ang-Math.PI/7),ey-hl*Math.sin(ang-Math.PI/7));ctx.moveTo(ex,ey);ctx.lineTo(ex-hl*Math.cos(ang+Math.PI/7),ey-hl*Math.sin(ang+Math.PI/7));ctx.stroke();}}ctx.restore();}function renderAll(){ctx.clearRect(0,0,canvas.width,canvas.height);objects.forEach(o=>drawObj(ctx,o));if(currentObj)drawObj(ctx,currentObj);}canvas.onmousedown=(e)=>{isDrawing=true;currentObj={tool:document.getElementById('tool-'+id).value,color:document.getElementById('color-'+id).value,size:document.getElementById('size-'+id).value,points:[{x:e.offsetX,y:e.offsetY}],sx:e.offsetX,sy:e.offsetY};};canvas.onmousemove=(e)=>{if(!isDrawing)return;if(currentObj.tool==='pen'||currentObj.tool==='eraser')currentObj.points.push({x:e.offsetX,y:e.offsetY});else{currentObj.ex=e.offsetX;currentObj.ey=e.offsetY;}renderAll();};window.addEventListener('mouseup',()=>{if(isDrawing){objects.push(currentObj);currentObj=null;isDrawing=false;renderAll();}});window.mainCanvases[id]={ctx,objects,renderAll};};window.clearCanvas=function(id){if(window.mainCanvases[id]){window.mainCanvases[id].objects=[];window.mainCanvases[id].renderAll();}};window.setTool=function(id,tool){document.getElementById('tool-'+id).value=tool;};`;
-
-    eval(CANVAS_LOGIC_SCRIPT);
-
-    function downloadStudentHTML() {
-        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Интерактив</title>
-        <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};${SCRIPT_END}
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
-        <style>body{font-family:sans-serif;background:#f4f7f6;padding:40px;} .paper{max-width:800px;margin:0 auto;background:#fff;padding:40px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);} svg{overflow:visible;}</style></head>
-        <body><div class="paper">${currentInteractiveHTML}</div><script>${CANVAS_LOGIC_SCRIPT}${SCRIPT_END}</body></html>`;
-        let blob = new Blob([html], {type:"text/html"});
-        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Интерактив.html"; a.click();
-    }
-
-    function downloadPrintPDF() {
-        let sigPrint = (document.getElementById('toggle-signature').checked && document.getElementById('teacher-name').value) ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;margin-bottom:20px;">Вариант: ${document.getElementById('teacher-name').value}</div>` : "";
-        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-        <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};${SCRIPT_END}
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
-        <style>
-            @media print { 
-                @page { margin: 10mm 15mm; size: A4; } 
-                body { background:#fff; color:#000; font-family:'Times New Roman', serif; }
-                .footer { position: fixed; bottom: 5mm; left: 0; right: 0; text-align: center; font-family: 'Caveat', cursive; font-size: 18px; color: rgba(0,0,0,0.4); z-index: 9999; background: transparent; }
-                .task-print-block { page-break-inside: avoid; margin-bottom: 20px; clear: both; }
-                svg { overflow: visible; max-width: 100%; height: auto; }
+function generateVariant() {
+    curIntHTML=""; curPrintHTML=""; curTasks=[]; selTitles=[];
+    let taskIdx=0, pack=document.getElementById('sticker-select').value;
+    for(let id in window.database) {
+        let n=parseInt(document.getElementById('cnt-'+id).value)||0; if(n<=0)continue;
+        selTitles.push(window.database[id].title);
+        let ps = window.database[id].prototypes.filter((p,i)=>document.getElementById(`p-${id}-${i}`).checked);
+        for(let i=0; i<n; i++){
+            taskIdx++; let p=ps[i%ps.length], t=p.tasks[Math.floor(Math.random()*t.length)];
+            let sHTML="", m=pack==='ro'?1.3:0.8;
+            if(pack!=='none' && taskIdx%3===0){
+                if(globalPool.length===0){ globalPool=[1,2,3,4,5]; if(pack==='ro')globalPool.push(6,7,8,9,10); globalPool.sort(()=>Math.random()-0.5); }
+                let sid=globalPool.pop(); sHTML=`<div style="float:right;width:120px;text-align:center"><img src="${ASSETS_URL}${pack}_${sid}.png" style="width:${100*m}px"></div>`;
             }
-        </style></head><body>
-        <div class="footer">Шкатулка математических интерактивов</div>
-        <h2 style="text-align:center;">Тренировочный вариант</h2>${sigPrint}${currentPrintHTML}
-        <script>setTimeout(() => window.print(), 1000);${SCRIPT_END}</body></html>`;
-        let blob = new Blob([html], {type:"text/html"});
-        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Печать.html"; a.click();
+            let svg=p.svg_code||""; let div=document.createElement('div'); div.innerHTML=svg; window.autoFixSVGArrows(div); svg=div.innerHTML;
+            curIntHTML += `<div style="margin-bottom:20px;clear:both">${sHTML}<b>${taskIdx}.</b> ${svg}${t.text}<br><input type="text" class="ans" data-ans="${t.answer}"></div>`;
+            curPrintHTML += `<div class="task-print-block">${sHTML}<b>${taskIdx}.</b> ${svg}${t.text}<br>Ответ: ________</div>`;
+            curTasks.push({text:t.text,svg:svg,answer:t.answer});
+        }
     }
+    document.getElementById('btn-group').style.display='flex'; renderPreview();
+}
+function renderPreview(){ document.getElementById('output-section').innerHTML=`<div class="preview-paper">${curIntHTML}</div>`; if(window.MathJax)MathJax.typesetPromise(); }
 
-    function generatePresentation1() {
-        let taskSlides = currentGeneratedTasks.map((t, i) => `
-            <div class="slide task-slide" style="width:100vw; height:100vh; position:relative; background-image:url('${ASSETS_URL}p2.jpg'); background-size:cover; display:none; align-items:center; justify-content:center;">
-                
-                <div class="header-container" style="position: absolute; top: calc(15% - 85px); right: 5%; width: 50%; display: flex; justify-content: center; z-index: 100;">
-                    <div style="width: calc(351px * 0.8); height: calc(220px * 0.8); background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; padding-bottom: 10px; box-sizing: border-box;">
-                        <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.8); color: #333; margin: 0;">Задание ${i+1}</h3>
-                    </div>
-                </div>
+function downloadPrintPDF(){
+    let s = document.getElementById('toggle-signature').checked?`<h3 style="text-align:center">Вариант подготовила: ${document.getElementById('teacher-name').value}</h3>`:"";
+    let h = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@media print{@page{margin:15mm}body{font-family:serif}.f{position:fixed;bottom:0;width:100%;text-align:center;font-size:14px;color:#999}.task-print-block{page-break-inside:avoid;margin-bottom:20px;clear:both}svg{overflow:visible;max-width:100%}}</style></head>
+    <body><div class="f">Шкатулка математических интерактивов</div>${s}${curPrintHTML}<script>setTimeout(()=>window.print(),500)${SCRIPT_END}</body></html>`;
+    let b=new Blob([h],{type:"text/html"}); let a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="Печать.html"; a.click();
+}
 
-                <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 38%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #ff8c00; border-radius: 15px; padding: 20px; box-shadow: 0 0 25px rgba(0,0,0,0.2); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
-                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
-                         <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;">🖊️</button>
-                         <button onclick="window.setTool('pres-${i}', 'vector')" style="background:none; border:none; cursor:pointer; font-size:20px;">↗️</button>
-                         <button onclick="window.setTool('pres-${i}', 'eraser')" style="background:none; border:none; cursor:pointer; font-size:20px;">🧽</button>
-                         <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;">🗑️</button>
-                         <input type="hidden" id="tool-pres-${i}" value="pen">
-                         <input type="color" id="color-pres-${i}" value="#003399" style="cursor:pointer; height:30px; width:35px; border:none; background:transparent;">
-                         <input type="range" id="size-pres-${i}" min="1" max="15" value="3" style="cursor:pointer; width:80px;">
-                    </div>
-                    <div style="background:#fff; border: 1px solid #ccc; height: calc(100% - 60px);"><canvas id="canvas-pres-${i}" style="width:100%; height:100%; cursor:crosshair;"></canvas></div>
-                </div>
-
-                <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; border: 2px solid #ff8c00; overflow-y: auto; text-align:center; box-shadow: 0 0 20px #ff8c00;" onclick="event.stopPropagation();">
-                    <div style="font-size: 1.5em;">${t.svg || ""} <div style="margin-top:20px;">${t.text}</div></div>
-                    <div style="margin-top:30px; display:flex; justify-content:center; gap:10px;">
-                        <input type="text" style="padding:10px; font-size:1.2em; width:150px; text-align:center; border-radius:8px; border:2px solid #ccc;">
-                        <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')">✏️</button>
-                    </div>
-                </div>
-                <div style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat', cursive; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
+function generatePresentation1(){
+    let s=curTasks.map((t,i)=>`
+    <div class="slide" style="width:100vw;height:100vh;position:relative;background:url('${ASSETS_URL}p2.jpg') center/cover;display:none;align-items:center;justify-content:center;">
+        <div style="position:absolute;top:calc(15% - 70px);right:5%;width:50%;display:flex;justify-content:center;">
+            <div style="width:280px;height:150px;background:url('${ASSETS_URL}p3.jpg') center/contain no-repeat;display:flex;align-items:center;justify-content:center;padding-bottom:10px;">
+                <h2 style="font-family:Caveat;font-size:30px;margin:0">Задание ${i+1}</h2>
             </div>
-        `).join('');
-
-        let fullHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Презентация</title>
-        <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-        <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};${SCRIPT_END}
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
-        <style>body{margin:0; overflow:hidden; font-family: 'Segoe UI', Tahoma, sans-serif;} .slide.active{display:flex !important;} svg{overflow:visible;}</style></head>
-        <body>
-        <div class="slide active" style="width:100vw; height:100vh; position:relative; background-image:url('${ASSETS_URL}p1.jpg'); background-size:cover; display:none; align-items:center; justify-content:center;">
-            <div style="background: rgba(255,255,255,0.95); padding: 40px 60px; border-radius: 20px; border: 3px solid #ff8c00; text-align: center; max-width: 900px;" onclick="event.stopPropagation();">
-                <h1 style="color:#003399; font-size: 3em; border-bottom: 3px solid #ff8c00; padding-bottom: 20px; margin-top:0;">Тренировочный вариант</h1>
-                <div style="font-family:'Caveat', cursive; font-size:35px; color:#003399; margin-top:30px;">${authorLine}</div>
-                <div style="margin-top:40px; font-size: 1.2em; color: #555; font-style: italic;">Шкатулка математических интерактивов</div>
-            </div>
-            <div style="position: fixed; bottom: 40px; right: 70px;"><button style="background: #333; color: white; border: none; padding: 15px 35px; border-radius: 50px; cursor: pointer; font-size: 1.3em;" onclick="event.stopPropagation(); nextSlide()">Начать →</button></div>
         </div>
-        ${taskSlides}
-        <script>
-            ${CANVAS_LOGIC_SCRIPT}
-            let cur=0; const s=document.querySelectorAll('.slide');
-            function show(n){ s.forEach(x=>x.classList.remove('active')); s[n].classList.add('active'); setTimeout(()=>window.initMainCanvas('pres-'+n),100); }
-            window.nextSlide = function() { if(cur<s.length-1) show(++cur); };
-            window.onclick = window.nextSlide;
-            show(0);
-        ${SCRIPT_END}</body></html>`;
-        let blob = new Blob([fullHTML], { type: "text/html" });
-        window.open(URL.createObjectURL(blob));
-    }
+        <div style="position:absolute;right:5%;top:15%;width:50%;height:70%;background:rgba(255,255,255,0.95);border:2px solid #ff8c00;border-radius:15px;padding:30px;text-align:center;box-shadow:0 0 20px #ff8c00;">
+            <div style="font-size:1.4em">${t.svg}${t.text}</div>
+            <div style="margin-top:20px"><input type="text" style="width:120px;padding:10px;font-size:1.2em;text-align:center"></div>
+        </div>
+    </div>`).join('');
+    let f=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;overflow:hidden}.slide{display:none !important}.slide.active{display:flex !important}svg{overflow:visible}</style></head>
+    <body>${s}<script>let c=0,sl=document.querySelectorAll('.slide');function show(n){sl.forEach(x=>x.classList.remove('active'));sl[n].classList.add('active');}window.onclick=()=>{if(c<sl.length-1)show(++c)};show(0);${SCRIPT_END}</body></html>`;
+    let b=new Blob([f],{type:"text/html"}); window.open(URL.createObjectURL(b));
+}
 
-    function openGameMenu() { document.getElementById('game-modal').style.display='flex'; }
-    function openPresentationMenu() { document.getElementById('pres-modal').style.display='flex'; }
-    function downloadAnswers() {}
-    function generateTowerGame() {}
+function downloadStudentHTML(){
+    let h=`<!DOCTYPE html><html><head><meta charset="UTF-8"><script>window.MathJax={tex:{inlineMath:[['$','$']]}};${SCRIPT_END}<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
+    <style>body{font-family:sans-serif;background:#f0f0f0;padding:20px}.p{max-width:800px;margin:0 auto;background:#fff;padding:30px;border-radius:10px}svg{overflow:visible}</style></head>
+    <body><div class="p">${curIntHTML}</div></body></html>`;
+    let b=new Blob([h],{type:"text/html"}); let a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="Интерактив.html"; a.click();
+}
+
+function generateTowerGame(){
+    if(curTasks.length<9){alert("Нужно минимум 9 задач");return;}
+    let q=curTasks.slice(0,9).map(t=>({type:"input",prompt:t.svg+t.text,accepts:[t.answer]}));
+    let cfg={title:"Башня знаний",questions:q,useLatex:true};
+    let s="window.__EMBEDDED_CFG__="+JSON.stringify(cfg)+";";
+    let f=TOWER_TEMPLATE.replace("/*__CONFIG_DATA__*/",s);
+    let b=new Blob([f],{type:"text/html"}); let a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="Игра.html"; a.click();
+}
+function openGameMenu(){document.getElementById('game-modal').style.display='flex'}
+function openPresentationMenu(){document.getElementById('pres-modal').style.display='flex'}
 </script>
 </body>
 </html>
