@@ -1,1 +1,855 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Рабочее пространство — Светлана Быкова</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+    
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <script>window.database = {};</script>
+    <script src="tower_template.js"></script>
+    <script src="task1.js"></script>
+    <script src="task2.js"></script>
+    <script src="task3.js"></script>
+    <script src="task4.js"></script>
 
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 40px 20px; }
+        .layout-wrapper { display: flex; gap: 30px; max-width: 1200px; margin: 0 auto; align-items: flex-start; }
+        .sidebar { flex: 0 0 300px; background-color: #1e1e1e; padding: 30px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 0 20px rgba(255, 140, 0, 0.1); position: sticky; top: 40px; box-sizing: border-box; text-align: center; }
+        .author-photo { width: 160px; height: 160px; object-fit: cover; object-position: center 15%; border-radius: 50%; border: 4px solid #ff8c00; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; text-align: center; background: transparent; color: #ff8c00; padding: 12px; border-radius: 8px; text-decoration: none; margin-bottom: 12px; transition: 0.3s; box-sizing: border-box; font-weight: bold; border: 2px solid #ff8c00; font-size: 0.95em; }
+        .social-btn svg { width: 20px; height: 20px; flex-shrink: 0; fill: currentColor; }
+        .social-btn:hover { background: #ff8c00; color: #121212; box-shadow: 0 0 10px rgba(255, 140, 0, 0.3); }
+        .main-content { flex: 1; background-color: #1e1e1e; padding: 30px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 0 20px rgba(255, 140, 0, 0.1); min-width: 0; box-sizing: border-box; }
+        
+        h1, h2 { color: #ff8c00; margin-top: 0; }
+        .task-row { background-color: #2a2a2a; padding: 15px 20px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid #ff8c00; }
+        .row-header { display: flex; justify-content: space-between; align-items: center; }
+        .row-header label { font-size: 1.1em; font-weight: bold; flex-grow: 1; cursor: pointer; display: flex; align-items: center; }
+        .task-row input[type="number"] { background: #121212; border: 1px solid #555; color: #ff8c00; padding: 8px; border-radius: 6px; width: 60px; text-align: center; font-size: 1em; outline: none; }
+        .theme-select { background: #121212; border: 1px solid #555; color: #ff8c00; padding: 8px; border-radius: 6px; width: 250px; font-size: 1em; outline: none; transition: 0.3s; }
+        .btn-settings { background: #333; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 15px; font-size: 0.85em; transition: 0.2s; }
+        .btn-settings:hover { background: #444; color: #fff; }
+        .proto-list { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #555; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9em; }
+        .proto-item { display: flex; align-items: flex-start; gap: 8px; color: #bbb; cursor: pointer; }
+        .proto-item input { margin-top: 3px; cursor: pointer; }
+        .proto-label-text { border-bottom: 1px dashed #666; transition: 0.2s; }
+        .proto-item:hover .proto-label-text { color: #ff8c00; }
+        
+        .btn-generate { display: block; width: 100%; background: transparent; color: #ff8c00; border: 2px solid #ff8c00; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 25px; transition: 0.3s; }
+        .btn-generate:hover { background: #ff8c00; color: #121212; box-shadow: 0 0 15px rgba(255, 140, 0, 0.4); }
+        .btn-group { display: none; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-dl { flex: 1; min-width: 200px; color: white; border: none; padding: 15px 10px; font-size: 1.05em; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; text-align: center; }
+        .btn-dl:hover { filter: brightness(1.15); box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
+        .btn-html { background: #4CAF50; } .btn-pdf { background: #1976d2; } .btn-ans { background: #7b1fa2; }
+        
+        #info-board { margin-top: 20px; display: none; color: #ef5350; background: rgba(244,67,54,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #f44336; line-height: 1.5; font-size: 1.1em; }
+        #output-section { margin-top: 30px; display: none; border-radius: 12px; border: 2px solid #ff8c00; overflow: hidden; }
+        .theme-wrapper { padding: 40px 20px; min-height: 500px; position: relative; }
+        .preview-paper { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; color: #333; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        
+        .bg-none { background: #f4f7f6; } 
+        .bg-winter { background: #f4f7f6 url('зима.jpg') center top / cover fixed; } 
+        .bg-spring { background: #f6f9f2 url('весна.jpg') center top / cover fixed; } 
+        .bg-summer { background: #f4f7f6 url('лето.jpg') center top / cover fixed; } 
+        .bg-autumn { background: #f4f7f6 url('осень.jpg') center top / cover fixed; }
+        
+        .timer-box-preview { position: absolute; top: 20px; right: 20px; background: #fff; border: 2px solid #ff8c00; color: #ff8c00; padding: 10px 15px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #proto-tooltip { position: fixed; background: rgba(255,255,255,0.98); border: 2px solid #ff8c00; border-radius: 8px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 350px; color: #333; display: none; z-index: 1000; pointer-events: none; }
+        #proto-tooltip svg { max-width: 100%; height: auto; margin-bottom: 10px; }
+        .custom-checkbox { width: 18px; height: 18px; accent-color: #ff8c00; margin-right: 10px; cursor: pointer; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; border: 2px solid #ff8c00; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .pres-preview-card { background: #2a2a2a; border: 1px solid #444; border-radius: 10px; padding: 15px; cursor: pointer; transition: 0.3s; margin-top: 20px; display: flex; align-items: center; gap: 15px; text-align: left; }
+        .pres-preview-card:hover { border-color: #ff8c00; transform: translateY(-3px); background: #333; }
+        .pres-thumb { width: 100px; height: 70px; background-size: cover; border-radius: 4px; border: 1px solid #555; }
+        
+        @media screen { 
+            #print-container, #print-footer { display: none !important; } 
+        }
+        @media print {
+            @page { margin: 20mm; size: A4; }
+            
+            body { 
+                background: #fff !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                color: #000 !important; 
+            }
+            
+            .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
+            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            #print-footer { 
+                display: block !important; 
+                position: fixed; 
+                bottom: 10mm; 
+                left: 0; 
+                right: 0; 
+                text-align: center; 
+                font-family: 'Caveat', cursive; 
+                font-size: 20px; 
+                color: rgba(0,0,0,0.5); 
+                z-index: 1000; 
+            }
+            
+            table.print-wrapper { width: 100%; border: none; border-collapse: collapse; }
+            tfoot.print-footer-space td { height: 15mm; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="print-footer">Шкатулка математических интерактивов</div>
+<div id="print-container"></div>
+
+<div class="layout-wrapper">
+    <aside class="sidebar">
+        <img src="photo.jpg" alt="Светлана Быкова" class="author-photo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'160\\\' height=\\\'160\\\'><circle cx=\\\'80\\\' cy=\\\'80\\\' r=\\\'80\\\' fill=\\\'#333\\\'/><text x=\\\'80\\\' y=\\\'85\\\' font-size=\\\'40\\\' text-anchor=\\\'middle\\\' fill=\\\'#555\\\'>👤</text></svg>'">
+        <h2 style="margin: 0 0 5px 0; color: #ff8c00;">Светлана Быкова</h2>
+        <p style="color: #bbb; font-size: 0.95em; margin-bottom: 25px; line-height: 1.4;">Учитель математики, репетитор и автор интерактивных материалов</p>
+        
+        <div style="text-align: center; margin-bottom: 12px; color: #888; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px;">Для связи</div>
+        
+        <a href="https://t.me/interactiv_matematika" target="_blank" class="social-btn">Telegram</a>
+        <a href="https://vk.com/interaktiv_matematika" target="_blank" class="social-btn">ВКонтакте</a>
+        <a href="https://max.ru/c/-70932227200385/AZ29lb4dRPk" target="_blank" class="social-btn">МАКС</a>
+        
+        <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
+            <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
+            <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
+                Интерфейс обновлен! Карандаш с перетаскиванием работает, стили презентации возвращены.
+            </p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <h2 style="margin: 0 0 25px 0; text-align: center; border-bottom: 1px dashed #555; padding-bottom: 15px;">Рабочее пространство</h2>
+        
+        <div class="task-row">
+            <div class="row-header" style="flex-wrap: wrap; gap: 15px;">
+                <label style="cursor: pointer; min-width: 200px;">Оформление варианта</label>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end;">
+                    <select id="sticker-select" class="theme-select" style="max-width: 160px;">
+                        <option value="none">Без стикеров</option>
+                        <option value="cat">Котики 🐈</option>
+                        <option value="sci">Ученые 🧠</option>
+                        <option value="ro">Мотивация 🎯</option>
+                    </select>
+                    <select id="theme-select" class="theme-select" style="max-width: 160px;" onchange="handleThemeChange()">
+                        <option value="none">Строгий фон</option>
+                        <option value="winter">Зимний</option>
+                        <option value="spring">Весенний</option>
+                        <option value="summer">Летний</option>
+                        <option value="autumn">Осенний</option>
+                        <option value="custom">Свой фон</option>
+                    </select>
+                    <input type="text" id="custom-bg-url" placeholder="Вставьте ссылку на картинку..." style="display:none; flex-grow: 1; max-width: 250px;" class="theme-select" oninput="if(currentInteractiveHTML) renderPreview();">
+                </div>
+            </div>
+            <div class="row-header" style="margin-top: 15px; border-top: 1px dashed #555; padding-top: 15px; flex-wrap: wrap; gap: 15px;">
+                <label style="cursor: pointer; color: #bbb; font-weight: normal; font-size: 0.95em; min-width: 200px;">
+                    <input type="checkbox" id="toggle-signature" class="custom-checkbox" onchange="handleSignatureChange()">
+                    Добавить подпись учителя
+                </label>
+                <div id="signature-controls" style="display: none; gap: 10px; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end;">
+                    <select id="teacher-gender" class="theme-select" style="max-width: 120px;" onchange="if(currentInteractiveHTML) renderPreview();">
+                        <option value="female">Женщина</option>
+                        <option value="male">Мужчина</option>
+                    </select>
+                    <input type="text" id="teacher-name" placeholder="Например: Иванов И.И." style="flex-grow: 1; max-width: 250px;" class="theme-select" oninput="if(currentInteractiveHTML) renderPreview();">
+                </div>
+            </div>
+        </div>
+
+        <div class="task-row" style="border-left-color: #4CAF50;">
+            <div class="row-header">
+                <label style="cursor: pointer;">
+                    Таймер (минут)
+                    <span style="font-size: 0.85em; color: #888; font-weight: normal; margin-left: 10px;">(0 — обычный секундомер)</span>
+                </label>
+                <input type="number" id="timer-input" min="0" value="0">
+            </div>
+        </div>
+
+        <div class="task-row" style="border-left-color: #2196F3; padding: 12px 20px;">
+            <div class="row-header" style="justify-content: flex-start;">
+                <label style="cursor: pointer; color: #bbb; font-weight: normal; font-size: 0.95em;">
+                    <input type="checkbox" id="toggle-explanations" class="custom-checkbox" checked>
+                    Добавить разборы заданий после подведения итогов
+                </label>
+            </div>
+        </div>
+
+        <div id="dynamic-tasks"></div>
+
+        <button class="btn-generate" onclick="generateVariant()">Сгенерировать вариант</button>
+        
+        <div id="info-board"></div>
+        
+        <div id="btn-group" class="btn-group">
+            <button class="btn-dl btn-html" onclick="downloadStudentHTML()">💻 Интерактивный вариант</button>
+            <button class="btn-dl btn-pdf" onclick="downloadPrintPDF()">🖨️ Файл для печати (PDF)</button>
+            <button class="btn-dl btn-ans" onclick="downloadAnswers()">🔑 Ключи (Ответы)</button>
+            <button class="btn-dl" style="background: #e65100;" onclick="openGameMenu()">🏰 Создать игру</button>
+            <button class="btn-dl" style="background: #1976d2;" onclick="openPresentationMenu()">🎬 Создать презентацию</button>
+        </div>
+        
+        <div id="output-section"></div>
+    </main>
+</div>
+
+<div id="pres-modal" class="modal-overlay" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box">
+        <h2 style="margin-top:0; color:#ff8c00;">Выберите дизайн презентации</h2>
+        <div class="pres-preview-card" onclick="generatePresentation1()">
+            <div class="pres-thumb" id="thumb1"></div>
+            <div>
+                <div style="font-weight:bold; color:#ff8c00; font-size:1.2em;">Авторский стиль №1</div>
+                <div style="font-size:0.85em; color:#bbb;">С неоновой подсветкой и разборами</div>
+            </div>
+        </div>
+        <button class="btn-settings" style="margin-top:25px; width:100%; padding:10px;" onclick="document.getElementById('pres-modal').style.display='none'">Отмена</button>
+    </div>
+</div>
+
+<div id="game-modal" class="modal-overlay" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box">
+        <h2 style="margin-top:0; color:#ff8c00;">Выберите интерактив</h2>
+        <div class="pres-preview-card" onclick="generateTowerGame()">
+            <div class="pres-thumb" style="background: #333; display:flex; align-items:center; justify-content:center; font-size: 35px;">🏰</div>
+            <div>
+                <div style="font-weight:bold; color:#ff8c00; font-size:1.2em;">Башня знаний</div>
+                <div style="font-size:0.85em; color:#bbb;">Строим башню (ровно 9 заданий)</div>
+            </div>
+        </div>
+        <button class="btn-settings" style="margin-top:25px; width:100%; padding:10px;" onclick="document.getElementById('game-modal').style.display='none'">Отмена</button>
+    </div>
+</div>
+
+<div id="proto-tooltip"></div>
+
+<div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this) document.getElementById('modal-overlay').style.display='none'">
+    <div class="modal-box" style="background: #fff; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: 2px solid #ff8c00; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px; position: relative; text-align: left; font-size: 18px;">
+        <div class="close-btn" style="position: absolute; top: 15px; right: 20px; font-size: 32px; line-height: 1; cursor: pointer; color: #888; transition: 0.2s;" onclick="document.getElementById('modal-overlay').style.display='none'">&times;</div>
+        <div id="modal-content-box" style="color: #333;"></div>
+    </div>
+</div>
+
+<script>
+    const ASSETS_URL = ""; 
+    const SCRIPT_END = "</" + "script>";
+
+    let globalStickerPool = [];
+    let lastStickerPack = "";
+
+    const sciQuotes = {
+        1: "«Математика — царица наук, а арифметика — царица математики».<br>К. Ф. Гаусс",
+        2: "«Математика — это язык, на котором говорят все точные науки».<br>Н. И. Лобачевский",
+        3: "«То, что мы знаем, — это капля, а то, что мы не знаем, — океан».<br>Исаак Ньютон",
+        4: "«В геометрии нет царского пути».<br>Евклид",
+        5: "«Числа правят миром».<br>Пифагор"
+    };
+
+    let currentInteractiveHTML = ""; 
+    let currentPrintHTML = ""; 
+    let currentAnswersHTML = "";
+    let currentGeneratedTasks = [];
+    let selectedBlockTitles = [];
+
+    window.mainCanvases = {}; 
+
+    document.addEventListener('DOMContentLoaded', function() {
+        let container = document.getElementById('dynamic-tasks');
+        if (!window.database || Object.keys(window.database).length === 0) {
+            document.getElementById('info-board').innerHTML = "<b>Критическая ошибка:</b> База данных пуста! Убедитесь, что файлы заданий (task1.js и т.д.) находятся в одной папке с index.html.";
+            document.getElementById('info-board').style.display = "block";
+            return;
+        }
+
+        for (let tid in window.database) {
+            let data = window.database[tid];
+            let listHTML = "";
+            data.prototypes.forEach((p, idx) => {
+                listHTML += `
+                <label class="proto-item" onmouseenter="showTooltip(${tid}, ${idx}, event)" onmouseleave="hideTooltip()" onmousemove="moveTooltip(event)">
+                    <input type="checkbox" id="proto-${tid}-${idx}" checked> 
+                    <span class="proto-label-text">${idx + 1}. ${p.desc} 👁️</span>
+                </label>`;
+            });
+
+            container.innerHTML += `
+            <div class="task-row">
+                <div class="row-header">
+                    <label onclick="toggleSettings(${tid})">
+                        <span>${data.title} (${data.prototypes.length})</span>
+                        <button type="button" class="btn-settings" onclick="toggleSettings(${tid}); event.stopPropagation();">⚙️ Настроить</button>
+                    </label>
+                    <input type="number" id="count-${tid}" min="0" value="0">
+                </div>
+                <div id="protos-${tid}" class="proto-list">${listHTML}</div>
+            </div>`;
+        }
+        
+        let thumb1 = document.getElementById('thumb1');
+        if(thumb1) thumb1.style.backgroundImage = `url('${ASSETS_URL}p1.jpg')`;
+    });
+
+    function handleThemeChange() {
+        let val = document.getElementById('theme-select').value;
+        document.getElementById('custom-bg-url').style.display = (val === 'custom') ? 'block' : 'none';
+        if(currentInteractiveHTML) renderPreview();
+    }
+
+    function handleSignatureChange() {
+        let isChecked = document.getElementById('toggle-signature').checked;
+        document.getElementById('signature-controls').style.display = isChecked ? 'flex' : 'none';
+        if(currentInteractiveHTML) renderPreview();
+    }
+
+    function toggleSettings(tid) {
+        let el = document.getElementById(`protos-${tid}`);
+        if (el) el.style.display = (el.style.display === 'grid') ? 'none' : 'grid';
+    }
+
+    const tooltip = document.getElementById('proto-tooltip');
+    function showTooltip(tid, index, e) {
+        let p = window.database[tid].prototypes[index];
+        tooltip.innerHTML = `${p.svg_code || ''}<div style="font-size: 0.9em;">${p.tasks[0].text}</div>`;
+        tooltip.style.display = 'block';
+        if (window.MathJax) MathJax.typesetPromise([tooltip]);
+        moveTooltip(e);
+    }
+
+    function moveTooltip(e) {
+        if (tooltip.style.display === 'block') {
+            let x = e.clientX + 15, y = e.clientY + 15;
+            if (x + tooltip.offsetWidth > window.innerWidth) x = window.innerWidth - tooltip.offsetWidth - 10;
+            if (y + tooltip.offsetHeight > window.innerHeight) y = window.innerHeight - tooltip.offsetHeight - 10;
+            tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+        }
+    }
+
+    function hideTooltip() { tooltip.style.display = 'none'; }
+
+    function openTheoryModalLocal(dataId) {
+        let el = document.getElementById(dataId);
+        if(el) {
+            document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
+            document.getElementById('modal-overlay').style.display = 'flex';
+            if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
+        }
+    }
+
+    function renderPreview() {
+        let theme = document.getElementById("theme-select").value;
+        let timerValue = document.getElementById("timer-input").value;
+        let timerDisplay = timerValue > 0 ? `<div class="timer-box-preview">⏱ ${timerValue}:00</div>` : `<div class="timer-box-preview">⏱ 00:00</div>`;
+        
+        let signatureHTML = "";
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        if (document.getElementById('toggle-signature').checked && teacherName !== '') {
+            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
+            signatureHTML = `<div style="text-align: center; font-family: 'Caveat', cursive; font-size: 26px; color: #003399; margin-top: -10px; margin-bottom: 25px;">Вариант ${verb}: ${teacherName}</div>`;
+        }
+        
+        let previewCode = currentInteractiveHTML.replace(/class="btn-settings btn-help" style="display:none;/g, 'class="btn-settings btn-help" style="display:inline-flex;');
+        
+        document.getElementById('output-section').innerHTML = `<div class="theme-wrapper bg-${theme}"><div class="preview-paper">${timerDisplay}<h1 style="color: #003399; text-align: center; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top: 0;">Тренировочный вариант</h1>${signatureHTML}${previewCode}</div></div>`;
+        
+        let sigPrint = (document.getElementById('toggle-signature').checked && teacherName !== '') ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${document.getElementById('teacher-gender').value === 'male' ? 'подготовил' : 'подготовила'}: ${teacherName}</div>` : "";
+        
+        document.getElementById('print-container').innerHTML = `
+            <table class="print-wrapper">
+                <tbody><tr><td>
+                    <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
+                    ${sigPrint}
+                    ${currentPrintHTML}
+                </td></tr></tbody>
+                <tfoot class="print-footer-space"><tr><td></td></tr></tfoot>
+            </table>
+        `;
+
+        if (window.MathJax) { MathJax.typesetPromise(); }
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function generateVariant() {
+        document.getElementById('info-board').style.display = 'none';
+        currentInteractiveHTML = ""; currentPrintHTML = ""; currentAnswersHTML = ""; currentGeneratedTasks = []; selectedBlockTitles = [];
+        window.mainCanvases = {}; 
+
+        let taskCounter = 0, hasContent = false;
+        let stickerPack = document.getElementById('sticker-select').value;
+        let maxStickers = (stickerPack === 'ro') ? 10 : 5;
+        
+        if (stickerPack !== lastStickerPack) { globalStickerPool = []; lastStickerPack = stickerPack; }
+        
+        function getNextSticker() {
+            if (globalStickerPool.length === 0) {
+                let arr = []; for(let i=1; i<=maxStickers; i++) arr.push(i);
+                globalStickerPool = shuffleArray(arr);
+            }
+            return globalStickerPool.pop();
+        }
+
+        let nextStickerTarget = 2 + Math.floor(Math.random() * 2);
+        let includeExplanations = document.getElementById('toggle-explanations').checked;
+
+        for (let tid in window.database) {
+            let countInput = document.getElementById(`count-${tid}`);
+            if (!countInput) continue;
+            let requiredCount = parseInt(countInput.value) || 0;
+            if (requiredCount <= 0) continue;
+
+            let selectedProtos = window.database[tid].prototypes.filter((p, idx) => document.getElementById(`proto-${tid}-${idx}`).checked);
+            if (selectedProtos.length === 0) continue;
+
+            selectedBlockTitles.push(window.database[tid].title);
+            let activePools = selectedProtos.map(p => ({ 
+                pid: window.database[tid].prototypes.indexOf(p), 
+                svg: p.svg_code, 
+                theory: p,
+                tasks: shuffleArray([...p.tasks]) 
+            }));
+            let finalTasks = []; let pIdx = 0;
+            
+            while (finalTasks.length < requiredCount) {
+                if (activePools[pIdx].tasks.length > 0) {
+                    finalTasks.push({ 
+                        ...activePools[pIdx].tasks.pop(), 
+                        svg: activePools[pIdx].svg,
+                        theory: activePools[pIdx].theory
+                    });
+                }
+                pIdx = (pIdx + 1) % activePools.length;
+            }
+            finalTasks = shuffleArray(finalTasks);
+            hasContent = true;
+
+            let blockTitle = `<h3 style="background: #e3f2fd; padding: 10px 15px; border-left: 4px solid #003399; margin-top: 30px; border-radius: 0 6px 6px 0; color: #003399;">${window.database[tid].title}</h3>`;
+            currentInteractiveHTML += blockTitle + `<ol style="font-size: 16px;">`;
+            currentPrintHTML += blockTitle + `<ol style="font-size: 16px;">`;
+            currentAnswersHTML += `<h3>${window.database[tid].title}</h3><ol>`;
+
+            finalTasks.forEach(item => {
+                taskCounter++;
+                
+                let theoryHtml = `
+                    <h3>Разбор аналогичного задания</h3>
+                    <div style='background:#f9f9f9;padding:15px;border-left:4px solid #ff8c00;margin-bottom:15px;border-radius:6px;'>
+                        <p style='margin-top:0;'><b>Задача:</b></p>
+                        <div style='min-height: 60px;'>${item.theory.svg_code ? '<div style="float:left; margin-right: 20px; margin-bottom: 10px;">' + item.theory.svg_code + '</div>' : ''}${item.theory.theory_task}</div><div style='clear:both;'></div>
+                        <p style='margin-top: 20px;'><b>Решение:</b></p>
+                        <div>${item.theory.theory_sol}</div>
+                    </div>
+                    <h4 style='color: #ff8c00;'>Задачи для отработки:</h4>
+                    <ul style='padding-left:20px;'>
+                `;
+                item.theory.tasks.forEach(t => {
+                    let tSvg = t.svg_code ? `<br><div style="margin:10px 0; max-width:300px;">${t.svg_code}</div>` : '';
+                    theoryHtml += `<li style='margin-bottom:15px;'>${t.text}${tSvg}<br><span style='color:#003399;cursor:pointer;border-bottom:1px dashed #003399;' onclick='this.innerText="Ответ: ${t.answer}"; this.style.border="none"; this.style.fontWeight="bold";'>Показать ответ</span></li>`;
+                });
+                theoryHtml += `</ul>`;
+
+                currentGeneratedTasks.push({ 
+                    text: item.text, 
+                    svg: item.svg || "", 
+                    answer: String(item.answer),
+                    theory: theoryHtml
+                });
+                
+                let stickerHTML = "";
+                if (stickerPack !== 'none' && taskCounter === nextStickerTarget) {
+                    let sIdx = getNextSticker(), rot = Math.floor(Math.random() * 31) - 15;
+                    let mw = 140, mh = 120;
+                    if (stickerPack === 'sci' && [1,3,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
+                    let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat';font-size:18px;color:#003399;margin-top:5px;transform:rotate(${rot/3}deg);">${sciQuotes[sIdx]}</div>` : "";
+                    stickerHTML = `<div style="float:right;margin-left:15px;display:flex;flex-direction:column;align-items:center;text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
+                    nextStickerTarget += 3 + Math.floor(Math.random() * 2);
+                }
+
+                let helpBtn = "";
+                if (includeExplanations) {
+                    let safeTheory = encodeURIComponent(theoryHtml).replace(/'/g, "%27");
+                    helpBtn = `
+                        <div id="theory-data-${taskCounter}" style="display:none;">${safeTheory}</div>
+                        <button class="btn-settings btn-help" style="display:none; margin-left: 10px; background: #e3f2fd; color: #003399; border: 1px solid #003399; font-weight: bold; padding: 10px 15px;" onclick="openTheoryModalLocal('theory-data-${taskCounter}')">РАЗБОР</button>
+                    `;
+                }
+
+                let drawBtn = `<button class="btn-settings" style="margin-left: 10px; background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 18px; padding: 8px 12px;" onclick="toggleCanvas(${taskCounter})" title="Открыть черновик">✏️</button>`;
+                let interactiveInput = `<div style="margin-top: 15px; display:flex; align-items:center; clear: both;"><input type="text" class="ans-box" placeholder="Ответ..." data-ans="${item.answer}" style="padding: 10px 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 16px; font-weight: bold; width: 150px; outline: none; transition: 0.3s;">${drawBtn}${helpBtn}</div>`;
+
+                let scratchpadHTML = `<div id="draw-wrapper-${taskCounter}" style="display:none; margin-top: 20px; width: 100%; transition: all 0.3s ease; clear: both;">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb;">
+                        <button onclick="setTool(${taskCounter}, 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
+                        <button onclick="setTool(${taskCounter}, 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                        <select id="tool-select-${taskCounter}" onchange="setTool(${taskCounter}, this.value)" style="background: #fff; border: 1px solid #90caf9; border-radius: 4px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: #003399; font-weight: 500;">
+                            <option value="" disabled selected hidden>🔺 Фигуры</option>
+                            <option value="line">📏 Прямая</option>
+                            <option value="circle">⭕ Окружность</option>
+                            <option value="triangle">🔺 Треугольник</option>
+                            <option value="cylinder">🛢️ Цилиндр</option>
+                            <option value="cone">🍦 Конус</option>
+                            <option value="sphere">🔮 Сфера</option>
+                        </select>
+                        <input type="color" id="color-${taskCounter}" value="#003399" style="cursor:pointer; height: 30px; width: 35px; border: none; background: transparent; padding: 0;" title="Цвет">
+                        <input type="range" id="size-${taskCounter}" min="1" max="15" value="3" style="cursor:pointer; width: 80px;" title="Толщина линии">
+                        <button onclick="setTool(${taskCounter}, 'eraser')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Ластик">🧽</button>
+                        <div style="flex-grow:1;"></div>
+                        <button onclick="clearCanvas(${taskCounter})" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
+                        <input type="hidden" id="tool-${taskCounter}" value="pen">
+                    </div>
+                    <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden;"><canvas id="canvas-${taskCounter}" style="display:block; width:100%; height:250px; touch-action: none; cursor: crosshair;"></canvas></div>
+                </div>`;
+
+                let taskHTMLInteractive = `<li style="margin-bottom:30px;clear:both;overflow:hidden;border-bottom:1px dashed #ddd;padding-bottom:20px;">
+                    <div style="display:flex;align-items:flex-start;gap:20px;">
+                        ${item.svg ? `<div style="flex-shrink:0;min-width:150px;">${item.svg}</div>` : ""}
+                        <div style="flex-grow:1;">${stickerHTML}${item.text}${interactiveInput}</div>
+                    </div>
+                    ${scratchpadHTML}
+                </li>`;
+
+                let taskHTMLPrint = `<li style="margin-bottom:40px;page-break-inside:avoid;break-inside:avoid;overflow:hidden;">
+                    <div style="display:flex;align-items:flex-start;gap:20px;">
+                        ${item.svg ? `<div style="flex-shrink:0;min-width:150px;">${item.svg}</div>` : ""}
+                        <div style="flex-grow:1;">${stickerHTML}${item.text}<div style="margin-top:30px;font-size:18px;">Ответ: _______________________</div></div>
+                    </div>
+                </li>`;
+
+                currentInteractiveHTML += taskHTMLInteractive;
+                currentPrintHTML += taskHTMLPrint;
+                currentAnswersHTML += `<li style="margin-bottom: 10px; font-size: 18px;">Ответ: <strong style="color: #d32f2f;">${item.answer}</strong></li>`;
+            });
+            currentInteractiveHTML += `</ol>`; currentPrintHTML += `</ol>`; currentAnswersHTML += `</ol>`;
+        }
+
+        if (stickerPack !== 'none' && hasContent) {
+            let sIdx = getNextSticker(), rot = Math.floor(Math.random() * 31) - 15;
+            let mw = 140, mh = 140;
+            if (stickerPack === 'sci' && [1,3,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
+            let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat',cursive;font-size:20px;color:#003399;margin-top:10px;transform:rotate(${rot/3}deg);line-height:1.1;max-width:${mw+40}px;text-align:center;">${sciQuotes[sIdx]}</div>` : "";
+            let bottomSticker = `<div style="clear:both;margin-top:30px;padding-right:40px;display:flex;flex-direction:column;align-items:flex-end;"><div style="display:flex;flex-direction:column;align-items:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quoteHTML}</div></div>`;
+            currentInteractiveHTML += bottomSticker;
+            currentPrintHTML += bottomSticker;
+        }
+
+        if (hasContent) { 
+            document.getElementById('output-section').style.display = 'block'; 
+            document.getElementById('btn-group').style.display = 'flex'; 
+            renderPreview(); 
+        }
+    }
+
+    function downloadStudentHTML() {
+        if (!currentInteractiveHTML) { alert("Сначала сгенерируйте вариант!"); return; }
+        let theme = document.getElementById("theme-select").value;
+        let customBg = document.getElementById("custom-bg-url").value;
+        let timerValue = document.getElementById("timer-input").value;
+        let customBgRule = '';
+        if (theme === 'custom' && customBg) { customBgRule = `.bg-custom { background: #f4f7f6 url('${customBg}') center top / cover no-repeat fixed !important; }`; theme = 'custom'; }
+
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        let sig = "";
+        if (document.getElementById('toggle-signature').checked && teacherName !== '') {
+            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
+            sig = `<div style="text-align:center;font-family:'Caveat';font-size:26px;color:#003399;margin-top:-10px;margin-bottom:25px;">Вариант ${verb}: ${teacherName}</div>`;
+        }
+        
+        let html = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Интерактив</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};${SCRIPT_END}
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
+    <style>
+        body{font-family:sans-serif;margin:0;padding:0;background:#f4f7f6;color:#333;}
+        .theme-wrapper{min-height:100vh;padding:40px 20px;}
+        .bg-winter{background:url('${ASSETS_URL}зима.jpg') center/cover fixed;}
+        .bg-spring{background:url('${ASSETS_URL}весна.jpg') center/cover fixed;}
+        .bg-summer{background:url('${ASSETS_URL}лето.jpg') center/cover fixed;}
+        .bg-autumn{background:url('${ASSETS_URL}осень.jpg') center/cover fixed;}
+        ${customBgRule}
+        .paper{max-width:800px;margin:0 auto;background:rgba(255,255,255,0.95);padding:40px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
+        .timer-box { position: sticky; top: 20px; float: right; background: #fff; border: 2px solid #ff8c00; color: #ff8c00; padding: 10px 20px; border-radius: 8px; font-size: 1.2em; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 100; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #fff; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: 2px solid #ff8c00; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px; position: relative; text-align: left; font-size: 18px;}
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 32px; line-height: 1; cursor: pointer; color: #888; transition: 0.2s; }
+        .close-btn:hover { color: #ff8c00; }
+        .btn-settings { background: #333; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85em; transition: 0.2s; }
+        .btn-settings:hover { background: #444; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="theme-wrapper bg-${theme}">
+        <div class="paper">
+            <div class="timer-box" id="timer-display">⏱ 00:00</div>
+            <h1 style="text-align: center; color: #003399; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top:0;">Тренировочный вариант</h1>
+            ${sig}
+            ${currentInteractiveHTML}
+            <button id="btn-check" onclick="checkAll()" style="display:block; width:100%; padding:15px; font-size:18px; font-weight:bold; background:#ff8c00; color:#fff; border:none; border-radius:8px; cursor:pointer; margin-top:30px; transition:0.3s;">ПОДВЕСТИ ИТОГИ</button>
+            <div id="res-box" style="display:none; text-align:center; margin-top:30px; padding:20px; background:rgba(255,255,255,0.9); border:2px dashed #003399; border-radius:8px; font-size:1.2em; font-weight:bold;"></div>
+        </div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this) document.getElementById('modal-overlay').style.display='none'">
+        <div class="modal-box">
+            <div class="close-btn" onclick="document.getElementById('modal-overlay').style.display='none'">&times;</div>
+            <div id="modal-content-box"></div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval; let timeLimit = ${timerValue} * 60; let timeSpent = 0; let isCountdown = timeLimit > 0;
+        function updateTimerUI(sec) {
+            let m = Math.floor(sec / 60).toString().padStart(2, '0');
+            let s = (sec % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = (isCountdown ? '⏳ Осталось: ' : '⏱ Прошло: ') + m + ':' + s;
+        }
+        function startTimer() {
+            updateTimerUI(isCountdown ? timeLimit : timeSpent);
+            timerInterval = setInterval(() => {
+                if (isCountdown) {
+                    timeLimit--; updateTimerUI(timeLimit);
+                    if (timeLimit <= 0) { clearInterval(timerInterval); alert('Время вышло! Итоги подводятся автоматически.'); checkAll(); }
+                } else { timeSpent++; updateTimerUI(timeSpent); }
+            }, 1000);
+        }
+        
+        function checkAll() {
+            if (timerInterval) clearInterval(timerInterval);
+            let c = 0, ic = 0, e = 0;
+            document.querySelectorAll('.ans-box').forEach(input => {
+                let u = input.value.trim().replace(',', '.');
+                let r = input.getAttribute('data-ans');
+                if(u === '') { e++; input.style.background = '#f5f5f5'; input.style.borderColor = '#9e9e9e'; }
+                else if(u === r) { c++; input.style.background = '#e8f5e9'; input.style.borderColor = '#4CAF50'; input.style.color = '#1b5e20'; }
+                else { ic++; input.style.background = '#ffebee'; input.style.borderColor = '#f44336'; input.style.color = '#b71c1c'; }
+                input.readOnly = true;
+            });
+            document.getElementById('res-box').innerHTML = '<p style="color:#2e7d32; margin: 5px 0;"><b>Верно:</b> ' + c + '</p><p style="color:#c62828; margin: 5px 0;"><b>Неверно:</b> ' + ic + '</p><p style="color:#555; margin: 5px 0;"><b>Не решено:</b> ' + e + '</p>';
+            document.getElementById('res-box').style.display = 'block';
+            document.getElementById('btn-check').style.display = 'none';
+            document.querySelectorAll('.btn-help').forEach(btn => btn.style.display = 'inline-flex');
+        }
+
+        function openTheoryModalLocal(dataId) {
+            let el = document.getElementById(dataId);
+            if(el) {
+                document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
+                document.getElementById('modal-overlay').style.display = 'flex';
+                if(window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
+            }
+        }
+    ${SCRIPT_END}
+</body>
+</html>`;
+
+        let blob = new Blob([html], {type:"text/html;charset=utf-8"});
+        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Интерактивный_вариант.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    }
+
+    function downloadPrintPDF() {
+        if (!currentPrintHTML) { alert("Сначала сгенерируйте вариант!"); return; }
+        
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        let sigPrint = "";
+        if (document.getElementById('toggle-signature').checked && teacherName !== '') {
+            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
+            sigPrint = `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${verb}: ${teacherName}</div>`;
+        }
+
+        let printHtml = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Печать варианта</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};${SCRIPT_END}
+    <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js\">${SCRIPT_END}
+    <style>
+        @media print {
+            @page { margin: 20mm; size: A4; }
+            body { 
+                background: #fff !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                color: #000 !important; 
+                font-family: 'Times New Roman', serif;
+            }
+            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-footer-fixed { position: fixed; bottom: 10mm; left: 0; right: 0; text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); z-index: 1000; }
+            table.print-wrapper { width: 100%; border: none; border-collapse: collapse; }
+            tfoot.print-footer-space td { height: 15mm; border: none; }
+            li { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
+            h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
+        }
+        @media screen {
+            body { background: #f4f7f6; font-family: 'Times New Roman', serif; padding: 40px; }
+            table.print-wrapper { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+            .print-footer-fixed { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-footer-fixed">Шкатулка математических интерактивов</div>
+    <table class="print-wrapper">
+        <tbody><tr><td>
+            <h2 style=\"text-align:center; text-transform: uppercase;\">Тренировочный вариант</h2>
+            ${sigPrint}
+            ${currentPrintHTML}
+        </td></tr></tbody>
+        <tfoot class=\"print-footer-space\"><tr><td></td></tr></tfoot>
+    </table>
+    <script>setTimeout(function(){ window.print(); }, 1500);${SCRIPT_END}
+</body>
+</html>`;
+        
+        let b = new Blob([printHtml], { type: "text/html;charset=utf-8" });
+        let a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "Вариант_Печать.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    }
+
+    function downloadAnswers() {
+        if (!currentAnswersHTML) return;
+        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ответы</title></head><body style="padding:40px;font-family:sans-serif;"><h2>Ключи</h2>${currentAnswersHTML}</body></html>`;
+        let blob = new Blob([html], {type:"text/html;charset=utf-8"});
+        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Ответы.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    }
+
+    function openGameMenu() { if (currentGeneratedTasks.length === 0) { alert("Сгенерируйте вариант!"); return; } document.getElementById('game-modal').style.display='flex'; }
+    function openPresentationMenu() { if (currentGeneratedTasks.length === 0) { alert("Сгенерируйте вариант!"); return; } document.getElementById('pres-modal').style.display='flex'; }
+
+    function generatePresentation1() {
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        let authorLine = "";
+        if (document.getElementById('toggle-signature').checked && teacherName) {
+            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
+            authorLine = `Вариант ${verb}: ${teacherName}`;
+        }
+
+        let topicsList = selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
+        
+        let taskSlides = currentGeneratedTasks.map((t, i) => `
+            <div class="slide task-slide" style="background-image: url('${ASSETS_URL}p2.jpg')">
+                <div class="header-plate" style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 351px; height: 220px; background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 10;">
+                    <h3 style="font-family: 'Caveat', cursive; font-size: 39px; color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
+                </div>
+                
+                <div class="task-right-side" style="position: absolute; right: 5%; top: 22%; width: 50%; max-height: 70%; overflow-y: auto; background: rgba(255,255,255,0.95); padding: 40px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; text-align: center; font-size: 1.5em; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div class="task-svg" style="margin-bottom: 25px; transform: scale(1.2); transform-origin: center;">${t.svg}</div>
+                    <div class="task-text" style="margin-bottom: 30px;">${t.text}</div>
+                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap;">
+                        <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
+                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
+                        <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px;" onclick="window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
+                    </div>
+                </div>
+                <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
+            </div>
+        `).join('');
+
+        let hiddenTheories = currentGeneratedTasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory)}</div>`).join('');
+
+        let fullHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=\"UTF-8\">
+    <title>Презентация урока</title>
+    <link href=\"https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap\" rel=\"stylesheet\">
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']] } };${SCRIPT_END}
+    <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js\">${SCRIPT_END}
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        .slide { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 50px; box-sizing: border-box; }
+        .slide.active { display: flex; }
+        .title-box { background: rgba(255,255,255,0.95); padding: 40px 60px; border-radius: 20px; border: 3px solid #ff8c00; text-align: center; max-width: 900px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .nav-btns { position: fixed; bottom: 40px; right: 70px; display: flex; gap: 20px; z-index: 100; }
+        .nav-btn { background: #333; color: white; border: none; padding: 15px 35px; border-radius: 50px; cursor: pointer; font-size: 1.3em; opacity: 0.85; transition: 0.3s; }
+        .nav-btn:hover { opacity: 1; background: #ff8c00; transform: translateY(-2px); }
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.2em; background: #fff; border-radius: 10px; overflow: hidden; }
+        .results-table th, .results-table td { padding: 15px; border-bottom: 1px solid #ddd; text-align: center; }
+        .row-correct { background-color: #e8f5e9; color: #2e7d32; }
+        .row-incorrect { background-color: #ffebee; color: #c62828; }
+    </style>
+</head>
+<body>
+    <div class="slide active" style="background-image: url('${ASSETS_URL}p1.jpg')">
+        <div class="title-box">
+            <h1 style="color:#003399; margin:0; font-size: 3em; border-bottom: 3px solid #ff8c00; padding-bottom: 20px;">Тренировочный вариант</h1>
+            <ul style="text-align:left; font-size:1.3em;">${topicsList}</ul>
+            <div style="font-family:'Caveat'; font-size:35px; color:#003399; margin-top:30px;">${authorLine}</div>
+        </div>
+        <div class="nav-btns"><button class=\"nav-btn\" onclick=\"nextSlide()\">Начать →</button></div>
+    </div>
+    ${taskSlides}
+    <div class="slide" id="results-slide" style="background-image: url('${ASSETS_URL}p2.jpg')">
+        <div class="title-box" style="padding: 40px; max-width: 1100px; width: 95%;">
+            <h2 style="font-size:3.5em; color:#4CAF50; margin:0;">Спасибо за работу!</h2>
+            <table class="results-table"><tbody id="results-tbody"></tbody></table>
+            <button class="nav-btn" style="margin-top:30px; position: static;" onclick="location.reload()">Начать сначала</button>
+        </div>
+    </div>
+    <div id="hidden-theories-container">${hiddenTheories}</div>
+    <script>
+        let currentSlide = 0; const slides = document.querySelectorAll('.slide');
+        function showSlide(idx) { slides.forEach(s => s.classList.remove('active')); slides[idx].classList.add('active'); }
+        function nextSlide() { if(currentSlide < slides.length - 1) showSlide(++currentSlide); }
+        function submitTask(idx, correctAns) { nextSlide(); }
+    ${SCRIPT_END}
+</body>
+</html>`;
+
+        let blob = new Blob([fullHTML], { type: "text/html;charset=utf-8" });
+        let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Презентация_Урока.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+        document.getElementById('pres-modal').style.display = 'none';
+    }
+
+    function generateTowerGame() {
+        if (currentGeneratedTasks.length !== 9) { alert("Для игры 'Башня знаний' нужно ровно 9 заданий."); return; }
+        let gameQuestions = currentGeneratedTasks.map(t => ({
+            type: "input",
+            prompt: t.svg ? `<div style=\"background: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;\">${t.svg}</div>` + t.text : t.text,
+            accepts: [t.answer]
+        }));
+        let cfg = { title: "Башня знаний", questions: gameQuestions };
+        let configScript = "window.__EMBEDDED_CFG__ = " + JSON.stringify(cfg) + ";";
+        let finalHtml = TOWER_TEMPLATE.replace("/*__CONFIG_DATA__*/", configScript);
+        let blob = new Blob([finalHtml], { type: "text/html;charset=utf-8" });
+        let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Игра_Башня.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    }
+    
+    window.toggleCanvas = function(id) {
+        let w = document.getElementById('draw-wrapper-' + id);
+        if (w.style.display === 'none' || w.style.display === '') { w.style.display = 'block'; setTimeout(() => initMainCanvas(id), 50); } else { w.style.display = 'none'; }
+    }
+
+    function initMainCanvas(id) {
+        if (window.mainCanvases[id]) return;
+        let canvas = document.getElementById('canvas-' + id); 
+        let ctx = canvas.getContext('2d');
+        canvas.width = canvas.parentElement.clientWidth || canvas.offsetWidth || 750; 
+        canvas.height = 250; 
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        let objects = []; let isDrawing = false;
+        canvas.addEventListener('mousedown', () => isDrawing = true);
+        window.addEventListener('mouseup', () => isDrawing = false);
+        window.mainCanvases[id] = { canvas, ctx, objects };
+    }
+</script>
+</body>
+</html>
