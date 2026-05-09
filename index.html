@@ -128,7 +128,7 @@
         <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
             <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
             <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
-                Интерфейс обновлен! Стрелочки теперь рисуются строго только у векторов (где они были изначально).
+                Интерфейс обновлен! Уменьшены стикеры ученых, исправлены наложения и расположение плашки в презентации.
             </p>
         </div>
     </aside>
@@ -345,9 +345,6 @@
                 el.removeAttribute('marker-end');
                 drawArrow(el);
             });
-            
-            // УДАЛЕНА "самодеятельность" по догадыванию толстых линий.
-            // Теперь стрелки будут только там, где их ставил редактор при создании задачи.
         });
     };
 
@@ -486,6 +483,7 @@
         let taskCounter = 0, hasContent = false;
         let stickerPack = document.getElementById('sticker-select').value;
         let maxStickers = (stickerPack === 'ro') ? 10 : 5;
+        let lastStickerAddedAt = -1;
         
         if (stickerPack !== lastStickerPack) { globalStickerPool = []; lastStickerPack = stickerPack; }
         
@@ -589,16 +587,18 @@
                 
                 let stickerHTML = "";
                 if (stickerPack !== 'none' && taskCounter === nextStickerTarget) {
+                    lastStickerAddedAt = taskCounter;
                     let sIdx = getNextSticker(), rot = Math.floor(Math.random() * 31) - 15;
-                    let mw = 140, mh = 120;
+                    let mw = 112, mh = 96; // 0.8 scale applied here
                     if (stickerPack === 'sci') {
                         if ([1,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
                         else if (sIdx === 3) { mw *= 1.35; mh *= 1.35; }
                         else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
                     }
-                    let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:18px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1;">${sciQuotes[sIdx]}</div>` : "";
+                    let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:16px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1; width: 100%; word-wrap: break-word;">${sciQuotes[sIdx]}</div>` : "";
                     
-                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${mw}px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
+                    let containerW = mw + 20; // Extra width to prevent text overlapping
+                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${containerW}px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
                     nextStickerTarget += 3 + Math.floor(Math.random() * 2);
                 }
 
@@ -673,15 +673,15 @@
             currentInteractiveHTML += `</div>`; currentPrintHTML += `</div>`; currentAnswersHTML += `</div>`;
         }
 
-        if (stickerPack !== 'none' && hasContent) {
+        if (stickerPack !== 'none' && hasContent && (taskCounter - lastStickerAddedAt > 1)) {
             let sIdx = getNextSticker(), rot = Math.floor(Math.random() * 31) - 15;
-            let mw = 140, mh = 140;
+            let mw = 112, mh = 112; // 0.8 scale applied here
             if (stickerPack === 'sci') {
                 if ([1,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
                 else if (sIdx === 3) { mw *= 1.35; mh *= 1.35; }
                 else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
             }
-            let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:22px; color:#003399; margin-top:10px; transform:rotate(${rot/3}deg); line-height:1.1; max-width:${mw+40}px; text-align:center;">${sciQuotes[sIdx]}</div>` : "";
+            let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:20px; color:#003399; margin-top:10px; transform:rotate(${rot/3}deg); line-height:1.1; max-width:${mw+40}px; text-align:center;">${sciQuotes[sIdx]}</div>` : "";
             let bottomSticker = `<div style="clear:both;margin-top:30px;padding-right:40px;display:flex;flex-direction:column;align-items:flex-end;"><div style="display:flex;flex-direction:column;align-items:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quoteHTML}</div></div>`;
             currentInteractiveHTML += bottomSticker;
             currentPrintHTML += bottomSticker;
@@ -1012,7 +1012,7 @@
         
         let taskSlides = currentGeneratedTasks.map((t, i) => `
             <div class="slide task-slide" style="background-image: url('${ASSETS_URL}p2.jpg')">
-                <div class="header-plate" style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 351px; height: 220px; background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 10;">
+                <div class="header-plate" style="position: absolute; top: calc(15px - 1cm); left: calc(50% - 3cm); transform: translateX(-50%); width: 351px; height: 220px; background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 10;">
                     <h3 style="font-family: 'Caveat', cursive; font-size: 39px; color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
                 </div>
                 
