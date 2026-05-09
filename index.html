@@ -98,7 +98,7 @@
                 z-index: 1000; 
             }
             
-            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
+            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 40px; }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
         }
     </style>
@@ -262,6 +262,7 @@
     let currentGeneratedTasks = [];
     let selectedBlockTitles = [];
 
+    // Глобальное хранилище холстов для предпросмотра
     window.mainCanvases = {}; 
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -478,7 +479,7 @@
                         else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
                     }
                     let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:18px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1;">${sciQuotes[sIdx]}</div>` : "";
-                    stickerHTML = `<div style="float:right;margin-left:15px;display:flex;flex-direction:column;align-items:center;text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
+                    stickerHTML = `<div style="float:right; margin-left:15px; margin-bottom:15px; display:flex; flex-direction:column; align-items:center; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
                     nextStickerTarget += 3 + Math.floor(Math.random() * 2);
                 }
 
@@ -517,13 +518,14 @@
                     <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 250px;"><canvas id="canvas-${taskCounter}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
                 </div>`;
 
-                let taskHTMLInteractive = `<div style="margin-bottom:30px;clear:both;overflow:hidden;border-bottom:1px dashed #ddd;padding-bottom:20px;">
-                    <div style="display:flex;align-items:flex-start;gap:15px;">
+                let taskHTMLInteractive = `<div style="margin-bottom:30px; clear:both; overflow:hidden; border-bottom:1px dashed #ddd; padding-bottom:20px;">
+                    <div style="display:flex; align-items:flex-start; gap:15px;">
                         <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
-                        ${item.svg ? `<div style="flex-shrink:0;min-width:150px;">${item.svg}</div>` : ""}
-                        <div style="flex-grow:1; min-width:0;">
+                        <div style="flex-grow:1;">
                             ${stickerHTML}
-                            ${item.text}
+                            ${item.svg ? `<div style="margin-bottom: 15px; overflow: visible;">${item.svg}</div>` : ""}
+                            <div>${item.text}</div>
+                            <div style="clear:both;"></div>
                             ${interactiveInput}
                         </div>
                     </div>
@@ -531,13 +533,14 @@
                 </div>`;
 
                 let taskHTMLPrint = `<div class="task-print-block">
-                    <div style="display:flex;align-items:flex-start;gap:15px;">
+                    <div style="display:flex; align-items:flex-start; gap:15px;">
                         <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
-                        ${item.svg ? `<div style="flex-shrink:0;min-width:150px;">${item.svg}</div>` : ""}
-                        <div style="flex-grow:1; min-width:0;">
+                        <div style="flex-grow:1;">
                             ${stickerHTML}
-                            ${item.text}
-                            <div style="margin-top:30px;font-size:18px;">Ответ: _______________________</div>
+                            ${item.svg ? `<div style="margin-bottom: 15px; overflow: visible;">${item.svg}</div>` : ""}
+                            <div>${item.text}</div>
+                            <div style="clear:both;"></div>
+                            <div style="margin-top:30px; font-size:18px;">Ответ: _______________________</div>
                         </div>
                     </div>
                 </div>`;
@@ -826,7 +829,7 @@
             }
             #print-container { display: block !important; width: 100%; padding: 20mm !important; box-sizing: border-box !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-footer-fixed { position: fixed; bottom: 8mm; left: 0; right: 0; text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); z-index: 1000; }
-            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; overflow: hidden; }
+            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 40px; }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
         }
         @media screen {
@@ -839,7 +842,7 @@
 <body>
     <div class="print-footer-fixed">Шкатулка математических интерактивов</div>
     <div id="print-container">
-        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px;">Тренировочный вариант</h2>
+        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
         ${sigPrint}
         ${currentPrintHTML}
     </div>
@@ -877,11 +880,11 @@
                     <h3 style="font-family: 'Caveat', cursive; font-size: 39px; color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
                 </div>
                 
-                <div class="task-right-side" style="position: absolute; right: 5%; top: 20%; width: 50%; height: 70%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; display: flex; flex-direction: column;">
+                <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; overflow-y: auto; display: block;">
                     
-                    <div style="flex-grow: 1; overflow-y: auto; text-align: center; font-size: 1.5em; padding-right: 10px;">
-                        <div class="task-svg" style="margin-bottom: 25px; transform: scale(1.2); transform-origin: center;">${t.svg}</div>
-                        <div class="task-text" style="margin-bottom: 30px;">${t.text}</div>
+                    <div style="text-align: center; font-size: 1.5em; padding-bottom: 20px;">
+                        ${t.svg ? `<div style="margin-bottom: 25px; overflow: visible;">${t.svg}</div>` : ""}
+                        <div style="margin-bottom: 30px;">${t.text}</div>
                         <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap;">
                             <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
                             <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
@@ -889,7 +892,7 @@
                         </div>
                     </div>
 
-                    <div id="draw-wrapper-pres-${i}" style="display:none; margin-top: 15px; flex-shrink: 0; width: 100%; transition: all 0.3s ease; text-align: left;">
+                    <div id="draw-wrapper-pres-${i}" style="display:none; margin-top: 15px; width: 100%; transition: all 0.3s ease; text-align: left;">
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
                             <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                             <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
@@ -909,7 +912,7 @@
                             <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
                             <input type="hidden" id="tool-pres-${i}" value="pen">
                         </div>
-                        <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 200px;"><canvas id="canvas-pres-${i}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
+                        <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 250px;"><canvas id="canvas-pres-${i}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
                     </div>
 
                 </div>
@@ -1053,15 +1056,6 @@
                 </tr>\`;
             });
             tbody.innerHTML = html;
-        }
-
-        function openTheoryModalLocal(dataId) {
-            let el = document.getElementById(dataId);
-            if(el) {
-                document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
-                document.getElementById('modal-overlay').style.display = 'flex';
-                if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
-            }
         }
 
         ${CANVAS_LOGIC_SCRIPT}
