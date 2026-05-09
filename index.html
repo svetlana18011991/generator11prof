@@ -72,18 +72,13 @@
         
         /* ИДЕАЛЬНАЯ ПЕЧАТЬ С ПОЛЯМИ И ЖЕСТКОЙ ПОДПИСЬЮ */
         @media screen { 
-            #print-container, #print-footer-fixed { display: none !important; } 
+            #print-container { display: none !important; } 
         }
         @media print {
             @page { margin: 15mm; size: A4; } 
             body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
             #print-container { display: block !important; width: 100%; }
-            #print-footer-fixed { 
-                display: block !important; position: fixed; bottom: 0; left: 0; right: 0; 
-                text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); 
-                z-index: 9999; padding-bottom: 5mm; background: transparent;
-            }
             .task-print-block { 
                 display: block;
                 page-break-inside: avoid !important; 
@@ -99,7 +94,6 @@
 </head>
 <body>
 
-<div id="print-footer-fixed">Шкатулка математических интерактивов</div>
 <div id="print-container"></div>
 
 <div class="layout-wrapper">
@@ -451,8 +445,9 @@
                     </td></tr>
                 </tbody>
                 <tfoot>
-                    <tr><td style="height: 25mm; border: none; vertical-align: bottom; text-align: center;">
-                        </td></tr>
+                    <tr><td style="height: 20mm; border: none; vertical-align: bottom; text-align: center; padding-bottom: 5mm;">
+                        <div style="font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5);">Шкатулка математических интерактивов</div>
+                    </td></tr>
                 </tfoot>
             </table>
         `;
@@ -966,11 +961,6 @@
                 print-color-adjust: exact;
             }
             #print-container { display: block !important; width: 100%; }
-            #print-footer-fixed { 
-                display: block !important; position: fixed; bottom: 0; left: 0; right: 0; 
-                text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); 
-                z-index: 9999; padding-bottom: 5mm; background: transparent;
-            }
             table.print-wrapper { width: 100%; border: none; border-collapse: collapse; page-break-inside: auto; }
             tr { page-break-inside: auto; page-break-after: auto; }
             td { page-break-inside: auto; page-break-after: auto; }
@@ -988,13 +978,11 @@
         @media screen {
             body { background: #f4f7f6; font-family: 'Times New Roman', serif; padding: 40px; }
             table.print-wrapper { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-            #print-footer-fixed { display: none; }
         }
         svg { overflow: visible; }
     </style>
 </head>
 <body>
-    <div id="print-footer-fixed">Шкатулка математических интерактивов</div>
     <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
         <thead><tr><td style="height: 10mm; border: none;"></td></tr></thead>
         <tbody>
@@ -1008,8 +996,9 @@
         </tbody>
         <tfoot>
             <tr>
-                <td style="height: 25mm; border: none; vertical-align: bottom; text-align: center;">
-                    </td>
+                <td style="height: 20mm; border: none; vertical-align: bottom; text-align: center; padding-bottom: 5mm;">
+                    <div style="font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5);">Шкатулка математических интерактивов</div>
+                </td>
             </tr>
         </tfoot>
     </table>
@@ -1046,7 +1035,7 @@
         
         let taskSlides = currentGeneratedTasks.map((t, i) => `
             <div class="slide task-slide" style="background-image: url('${ASSETS_URL}p2.jpg')">
-                <div class="header-plate" style="position: absolute; top: calc(15% - 145px); left: 70%; transform: translateX(-50%); width: calc(351px * 0.64); height: calc(220px * 0.64); background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 30;">
+                <div class="header-plate" style="position: absolute; top: calc(15% - 126px); left: 70%; transform: translateX(-50%); width: calc(351px * 0.64); height: calc(220px * 0.64); background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 30;">
                     <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.64); color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
                 </div>
                 
