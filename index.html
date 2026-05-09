@@ -68,26 +68,24 @@
         .pres-preview-card:hover { border-color: #ff8c00; transform: translateY(-3px); background: #333; }
         .pres-thumb { width: 100px; height: 70px; background-size: cover; border-radius: 4px; border: 1px solid #555; }
         
-        /* ИДЕАЛЬНАЯ ПЕЧАТЬ С ПОЛЯМИ И БЕЗ СИСТЕМНЫХ ПОДПИСЕЙ */
+        /* ИДЕАЛЬНАЯ ПЕЧАТЬ БЕЗ КОЛОНТИТУЛОВ, НО С ПОЛЯМИ! */
         @media screen { 
             #print-container, #print-footer { display: none !important; } 
         }
         @media print {
-            /* Убиваем системные колонтитулы (ссылки, даты) обнулением системного margin */
-            @page { margin: 0; size: A4; }
+            @page { margin: 0; size: A4; } /* 0 убирает даты и ссылки браузера */
             
             body { 
                 background: #fff !important; 
                 margin: 0 !important; 
-                /* Задаем реальные поля для контента внутри страницы */
-                padding: 20mm !important; 
+                padding: 0 !important; /* Убираем паддинг у body, всё делают таблицы */
                 color: #000 !important; 
             }
             
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
-            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding-bottom: 10mm; }
+            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             
-            /* Наш собственный колонтитул */
+            /* Наш собственный красивый колонтитул */
             #print-footer { 
                 display: block !important; 
                 position: fixed; 
@@ -127,7 +125,7 @@
         <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
             <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
             <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
-                Черновики снова полностью рабочие, PDF формируется с красивыми полями!
+                Интерфейс обновлен! Проект работает через GitHub Pages, стикеры подгружаются корректно.
             </p>
         </div>
     </aside>
@@ -246,16 +244,16 @@
 </div>
 
 <script>
-    const ASSETS_URL = ""; 
+    const ASSETS_URL = "https://svetlana18011991.github.io/generator11prof/"; 
     const SCRIPT_END = "</" + "script>";
 
     let globalStickerPool = [];
     let lastStickerPack = "";
 
     const sciQuotes = {
-        1: "«Математика — царица наук, а арифметика — царица математики».<br>К. Ф. Гаусс",
-        2: "«Математика — это язык, на котором говорят все точные науки».<br>Н. И. Лобачевский",
-        3: "«То, что мы знаем, — это капля, а то, что мы не знаем, — океан».<br>Исаак Ньютон",
+        1: "«Математика — царица наук,<br>а арифметика — царица математики».<br>К. Ф. Гаусс",
+        2: "«Математика — это язык,<br>на котором говорят все точные науки».<br>Н. И. Лобачевский",
+        3: "«То, что мы знаем, — это капля,<br>а то, что мы не знаем, — океан».<br>Исаак Ньютон",
         4: "«В геометрии нет царского пути».<br>Евклид",
         5: "«Числа правят миром».<br>Пифагор"
     };
@@ -266,6 +264,7 @@
     let currentGeneratedTasks = [];
     let selectedBlockTitles = [];
 
+    // Глобальное хранилище холстов для предпросмотра
     window.mainCanvases = {}; 
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -369,12 +368,14 @@
         let sigPrint = (document.getElementById('toggle-signature').checked && teacherName !== '') ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${document.getElementById('teacher-gender').value === 'male' ? 'подготовил' : 'подготовила'}: ${teacherName}</div>` : "";
         
         document.getElementById('print-container').innerHTML = `
-            <table class="print-wrapper">
-                <tbody><tr><td>
+            <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse;">
+                <thead><tr><td style="height: 20mm; border: none;"></td></tr></thead>
+                <tbody><tr><td style="padding: 0 20mm;">
                     <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
                     ${sigPrint}
                     ${currentPrintHTML}
                 </td></tr></tbody>
+                <tfoot><tr><td style="height: 20mm; border: none;"></td></tr></tfoot>
             </table>
         `;
 
@@ -387,6 +388,11 @@
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    }
+
+    // Хелпер для защиты точек от переноса на новую строку
+    function fixOrphans(str) {
+        return str ? str.replace(/(\$[^$]+\$)\s*([.,;!?])/g, '<span style="white-space: nowrap;">$1$2</span>') : "";
     }
 
     function generateVariant() {
@@ -443,12 +449,17 @@
             hasContent = true;
 
             let blockTitle = `<h3 style="background: #e3f2fd; padding: 10px 15px; border-left: 4px solid #003399; margin-top: 30px; border-radius: 0 6px 6px 0; color: #003399;">${window.database[tid].title}</h3>`;
-            currentInteractiveHTML += blockTitle + `<ol style="font-size: 16px;">`;
-            currentPrintHTML += blockTitle + `<ol style="font-size: 16px;">`;
-            currentAnswersHTML += `<h3>${window.database[tid].title}</h3><ol>`;
+            currentInteractiveHTML += blockTitle + `<div style="font-size: 16px;">`;
+            currentPrintHTML += blockTitle + `<div style="font-size: 16px;">`;
+            currentAnswersHTML += `<h3>${window.database[tid].title}</h3><div>`;
 
             finalTasks.forEach(item => {
                 taskCounter++;
+                
+                // Исправляем отрывание точек во всех текстах задач
+                item.text = fixOrphans(item.text);
+                item.theory.theory_task = fixOrphans(item.theory.theory_task);
+                item.theory.theory_sol = fixOrphans(item.theory.theory_sol);
                 
                 let theoryHtml = `
                     <h3>Разбор аналогичного задания</h3>
@@ -462,6 +473,7 @@
                     <ul style='padding-left:20px;'>
                 `;
                 item.theory.tasks.forEach(t => {
+                    t.text = fixOrphans(t.text);
                     let tSvg = t.svg_code ? `<br><div style="margin:10px 0; max-width:300px;">${t.svg_code}</div>` : '';
                     theoryHtml += `<li style='margin-bottom:15px;'>${t.text}${tSvg}<br><span style='color:#003399;cursor:pointer;border-bottom:1px dashed #003399;' onclick='this.innerText="Ответ: ${t.answer}"; this.style.border="none"; this.style.fontWeight="bold";'>Показать ответ</span></li>`;
                 });
@@ -478,8 +490,12 @@
                 if (stickerPack !== 'none' && taskCounter === nextStickerTarget) {
                     let sIdx = getNextSticker(), rot = Math.floor(Math.random() * 31) - 15;
                     let mw = 140, mh = 120;
-                    if (stickerPack === 'sci' && [1,3,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
-                    let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat';font-size:18px;color:#003399;margin-top:5px;transform:rotate(${rot/3}deg);">${sciQuotes[sIdx]}</div>` : "";
+                    if (stickerPack === 'sci') {
+                        if ([1,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
+                        else if (sIdx === 3) { mw *= 1.35; mh *= 1.35; }
+                        else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
+                    }
+                    let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:18px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1;">${sciQuotes[sIdx]}</div>` : "";
                     stickerHTML = `<div style="float:right;margin-left:15px;display:flex;flex-direction:column;align-items:center;text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
                     nextStickerTarget += 3 + Math.floor(Math.random() * 2);
                 }
@@ -519,33 +535,37 @@
                     <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 250px;"><canvas id="canvas-${taskCounter}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
                 </div>`;
 
-                let taskHTMLInteractive = `<li style="margin-bottom:30px;clear:both;overflow:hidden;border-bottom:1px dashed #ddd;padding-bottom:20px;">
+                let taskHTMLInteractive = `<div style="margin-bottom:30px;clear:both;overflow:hidden;border-bottom:1px dashed #ddd;padding-bottom:20px;">
                     <div style="display:flex;align-items:flex-start;gap:20px;">
                         ${item.svg ? `<div style="flex-shrink:0;min-width:150px;">${item.svg}</div>` : ""}
-                        <div style="flex-grow:1;">${stickerHTML}${item.text}${interactiveInput}</div>
+                        <div style="flex-grow:1;">${stickerHTML}<b>${taskCounter}. </b>${item.text}${interactiveInput}</div>
                     </div>
                     ${scratchpadHTML}
-                </li>`;
+                </div>`;
 
-                let taskHTMLPrint = `<li style="margin-bottom:40px;page-break-inside:avoid;break-inside:avoid;overflow:hidden;">
+                let taskHTMLPrint = `<div style="margin-bottom:40px;page-break-inside:avoid;break-inside:avoid;overflow:hidden;">
                     <div style="display:flex;align-items:flex-start;gap:20px;">
                         ${item.svg ? `<div style="flex-shrink:0;min-width:150px;">${item.svg}</div>` : ""}
-                        <div style="flex-grow:1;">${stickerHTML}${item.text}<div style="margin-top:30px;font-size:18px;">Ответ: _______________________</div></div>
+                        <div style="flex-grow:1;">${stickerHTML}<b>${taskCounter}. </b>${item.text}<div style="margin-top:30px;font-size:18px;">Ответ: _______________________</div></div>
                     </div>
-                </li>`;
+                </div>`;
 
                 currentInteractiveHTML += taskHTMLInteractive;
                 currentPrintHTML += taskHTMLPrint;
-                currentAnswersHTML += `<li style="margin-bottom: 10px; font-size: 18px;">Ответ: <strong style="color: #d32f2f;">${item.answer}</strong></li>`;
+                currentAnswersHTML += `<div style="margin-bottom: 10px; font-size: 18px;"><b>${taskCounter}.</b> Ответ: <strong style="color: #d32f2f;">${item.answer}</strong></div>`;
             });
-            currentInteractiveHTML += `</ol>`; currentPrintHTML += `</ol>`; currentAnswersHTML += `</ol>`;
+            currentInteractiveHTML += `</div>`; currentPrintHTML += `</div>`; currentAnswersHTML += `</div>`;
         }
 
         if (stickerPack !== 'none' && hasContent) {
             let sIdx = getNextSticker(), rot = Math.floor(Math.random() * 31) - 15;
             let mw = 140, mh = 140;
-            if (stickerPack === 'sci' && [1,3,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
-            let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat',cursive;font-size:20px;color:#003399;margin-top:10px;transform:rotate(${rot/3}deg);line-height:1.1;max-width:${mw+40}px;text-align:center;">${sciQuotes[sIdx]}</div>` : "";
+            if (stickerPack === 'sci') {
+                if ([1,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
+                else if (sIdx === 3) { mw *= 1.35; mh *= 1.35; }
+                else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
+            }
+            let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:22px; color:#003399; margin-top:10px; transform:rotate(${rot/3}deg); line-height:1.1; max-width:${mw+40}px; text-align:center;">${sciQuotes[sIdx]}</div>` : "";
             let bottomSticker = `<div style="clear:both;margin-top:30px;padding-right:40px;display:flex;flex-direction:column;align-items:flex-end;"><div style="display:flex;flex-direction:column;align-items:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quoteHTML}</div></div>`;
             currentInteractiveHTML += bottomSticker;
             currentPrintHTML += bottomSticker;
@@ -808,14 +828,15 @@
             body { 
                 background: #fff !important; 
                 margin: 0 !important; 
-                padding: 20mm !important; 
+                padding: 0 !important; 
                 color: #000 !important; 
                 font-family: 'Times New Roman', serif;
             }
-            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding-bottom: 10mm; }
+            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-footer-fixed { position: fixed; bottom: 8mm; left: 0; right: 0; text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); z-index: 1000; }
             table.print-wrapper { width: 100%; border: none; border-collapse: collapse; }
-            li { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
+            tfoot.print-footer-space td { height: 15mm; border: none; }
+            div { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
         }
         @media screen {
@@ -827,11 +848,15 @@
 </head>
 <body>
     <div class="print-footer-fixed">Шкатулка математических интерактивов</div>
-    <div id="print-container">
-        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px;">Тренировочный вариант</h2>
-        ${sigPrint}
-        ${currentPrintHTML}
-    </div>
+    <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse;">
+        <thead><tr><td style="height: 20mm; border: none;"></td></tr></thead>
+        <tbody><tr><td style="padding: 0 20mm;">
+            <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif;">Тренировочный вариант</h2>
+            ${sigPrint}
+            ${currentPrintHTML}
+        </td></tr></tbody>
+        <tfoot><tr><td style="height: 20mm; border: none;"></td></tr></tfoot>
+    </table>
     <script>setTimeout(function(){ window.print(); }, 1500);${SCRIPT_END}
 </body>
 </html>`;
@@ -917,6 +942,7 @@
         .slide { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 50px; box-sizing: border-box; }
         .slide.active { display: flex; }
         .title-box { background: rgba(255,255,255,0.95); padding: 40px 60px; border-radius: 20px; border: 3px solid #ff8c00; text-align: center; max-width: 900px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .topics-list { text-align: left; margin: 20px 0; font-size: 1.3em; color: #333; line-height: 1.4; list-style-type: disc; padding-left: 20px;}
         .nav-btns { position: fixed; bottom: 40px; right: 70px; display: flex; gap: 20px; z-index: 100; }
         .nav-btn { background: #333; color: white; border: none; padding: 15px 35px; border-radius: 50px; cursor: pointer; font-size: 1.3em; opacity: 0.85; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .nav-btn:hover { opacity: 1; background: #ff8c00; transform: translateY(-2px); }
@@ -940,10 +966,14 @@
     <div class="slide active" style="background-image: url('${ASSETS_URL}p1.jpg')">
         <div class="title-box">
             <h1 style="color:#003399; margin:0; font-size: 3em; border-bottom: 3px solid #ff8c00; padding-bottom: 20px;">Тренировочный вариант</h1>
-            <ul style="text-align:left; font-size:1.3em;">${topicsList}</ul>
+            <ul class="topics-list">${topicsList}</ul>
             <div style="font-family:'Caveat'; font-size:35px; color:#003399; margin-top:30px;">${authorLine}</div>
+            <div style="margin-top:40px; font-size: 1.2em; color: #555; font-style: italic;">
+                <img src="${ASSETS_URL}logo.png" class="logo-small" onerror="this.style.display='none'"> 
+                Шкатулка математических интерактивов
+            </div>
         </div>
-        <div class="nav-btns"><button class="nav-btn" onclick="nextSlide()">Начать →</button></div>
+        <div class="nav-btns" id="start-nav"><button class="nav-btn" onclick="nextSlide()">Начать →</button></div>
     </div>
 
     ${taskSlides}
@@ -951,6 +981,7 @@
     <div class="slide" id="results-slide" style="background-image: url('${ASSETS_URL}p2.jpg')">
         <div class="title-box" style="padding: 40px; max-width: 1100px; width: 95%; max-height: 90vh; overflow-y: auto;">
             <h2 style="font-size:3.5em; color:#4CAF50; margin:0;">Спасибо за работу!</h2>
+            
             <table class="results-table">
                 <thead>
                     <tr>
@@ -961,14 +992,18 @@
                         <th>Разбор</th>
                     </tr>
                 </thead>
-                <tbody id="results-tbody"></tbody>
+                <tbody id="results-tbody">
+                </tbody>
             </table>
-            <button class="nav-btn" style="margin-top:30px; position: static;" onclick="location.reload()">Начать сначала</button>
+
+            <button class="nav-btn" style="margin-top:30px; font-size: 1.3em; padding: 15px 40px; position: static;" onclick="location.reload()">Начать сначала</button>
         </div>
         <div class="pres-footer">Шкатулка математических интерактивов</div>
     </div>
 
-    <div id="hidden-theories-container">${hiddenTheories}</div>
+    <div id="hidden-theories-container">
+        ${hiddenTheories}
+    </div>
 
     <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this) document.getElementById('modal-overlay').style.display='none'">
         <div class="modal-box">
@@ -978,22 +1013,37 @@
     </div>
 
     <script>
-        let currentSlide = 0; const slides = document.querySelectorAll('.slide');
-        let userResults = []; let slideStartTime = Date.now();
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        let userResults = [];
+        let slideStartTime = Date.now();
         
-        function showSlide(idx) { 
-            slides.forEach(s => s.classList.remove('active')); 
-            slides[idx].classList.add('active'); 
+        function showSlide(idx) {
+            slides.forEach(s => s.classList.remove('active'));
+            slides[idx].classList.add('active');
             slideStartTime = Date.now();
-            if (idx === slides.length - 1) { renderResults(); }
+            
+            if (idx === slides.length - 1) {
+                renderResults();
+            }
         }
-        function nextSlide() { if(currentSlide < slides.length - 1) showSlide(++currentSlide); }
-        
-        function submitTask(idx, correctAns) { 
+
+        function nextSlide() { 
+            if(currentSlide < slides.length - 1) showSlide(++currentSlide); 
+        }
+
+        function submitTask(idx, correctAns) {
             let userAns = document.getElementById('ans-'+idx).value.trim().replace(',', '.');
             let timeSpent = Math.round((Date.now() - slideStartTime) / 1000);
-            userResults.push({ taskNum: idx + 1, userAns: userAns, correctAns: correctAns, time: timeSpent });
-            nextSlide(); 
+            
+            userResults.push({
+                taskNum: idx + 1,
+                userAns: userAns,
+                correctAns: correctAns,
+                time: timeSpent
+            });
+            
+            nextSlide();
         }
 
         function renderResults() {
@@ -1003,6 +1053,7 @@
                 let isCorrect = (res.userAns === res.correctAns);
                 let rowClass = isCorrect ? 'row-correct' : 'row-incorrect';
                 let displayAns = res.userAns === "" ? "—" : res.userAns;
+
                 html += \`<tr class="\${rowClass}">
                     <td>\${res.taskNum}</td>
                     <td>\${displayAns}</td>
