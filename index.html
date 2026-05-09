@@ -46,6 +46,7 @@
         .btn-dl:hover { filter: brightness(1.15); box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
         .btn-html { background: #4CAF50; } .btn-pdf { background: #1976d2; } .btn-ans { background: #7b1fa2; }
         
+        #info-board { margin-top: 20px; display: none; color: #ef5350; background: rgba(244,67,54,0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #f44336; line-height: 1.5; font-size: 1.1em; }
         #output-section { margin-top: 30px; display: none; border-radius: 12px; border: 2px solid #ff8c00; overflow: hidden; }
         .theme-wrapper { padding: 40px 20px; min-height: 500px; position: relative; }
         .preview-paper { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.95); padding: 40px; border-radius: 12px; color: #333; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -56,26 +57,46 @@
         .bg-summer { background: #f4f7f6 url('лето.jpg') center top / cover fixed; } 
         .bg-autumn { background: #f4f7f6 url('осень.jpg') center top / cover fixed; }
         
+        .timer-box-preview { position: absolute; top: 20px; right: 20px; background: #fff; border: 2px solid #ff8c00; color: #ff8c00; padding: 10px 15px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #proto-tooltip { position: fixed; background: rgba(255,255,255,0.98); border: 2px solid #ff8c00; border-radius: 8px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 350px; color: #333; display: none; z-index: 1000; pointer-events: none; }
+        #proto-tooltip svg { max-width: 100%; height: auto; margin-bottom: 10px; }
+        .custom-checkbox { width: 18px; height: 18px; accent-color: #ff8c00; margin-right: 10px; cursor: pointer; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1e1e1e; padding: 30px; border-radius: 12px; border: 2px solid #ff8c00; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .pres-preview-card { background: #2a2a2a; border: 1px solid #444; border-radius: 10px; padding: 15px; cursor: pointer; transition: 0.3s; margin-top: 20px; display: flex; align-items: center; gap: 15px; text-align: left; }
+        .pres-preview-card:hover { border-color: #ff8c00; transform: translateY(-3px); background: #333; }
+        .pres-thumb { width: 100px; height: 70px; background-size: cover; border-radius: 4px; border: 1px solid #555; }
+        
         svg { overflow: visible; }
         
         /* ИДЕАЛЬНАЯ ПЕЧАТЬ */
-        @media screen { #print-container, #print-footer { display: none !important; } }
+        @media screen { 
+            #print-container { display: none !important; } 
+        }
         @media print {
-            @page { margin: 15mm; size: A4; } 
-            body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; }
-            .layout-wrapper, .modal-overlay { display: none !important; }
-            #print-container { display: block !important; width: 100%; }
-            #print-footer { 
-                display: block !important; position: fixed; bottom: 0; left: 0; right: 0; 
-                text-align: center; font-family: 'Caveat', cursive; font-size: 18px; color: #777; 
+            @page { margin: 0; size: A4; } 
+            
+            body { 
+                background: #fff !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                color: #000 !important; 
             }
-            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 30px; }
+            
+            .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
+            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            table.print-wrapper { width: 100%; border: none; border-collapse: collapse; page-break-inside: auto; }
+            tr { page-break-inside: auto; page-break-after: auto; }
+            td { page-break-inside: auto; page-break-after: auto; }
+            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 40px; }
+            h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
         }
     </style>
 </head>
 <body>
 
-<div id="print-footer">Шкатулка математических интерактивов</div>
 <div id="print-container"></div>
 
 <div class="layout-wrapper">
@@ -93,7 +114,7 @@
         <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
             <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
             <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
-                Обновление: исправлена плашка в презентации, улучшена очередь стикеров и стабильность подписи при печати.
+                Интерфейс восстановлен и обновлен! Плашка в презентации уменьшена, очередь стикеров стала умной, а печать подписи работает без сбоев.
             </p>
         </div>
     </aside>
@@ -139,8 +160,20 @@
 
         <div class="task-row" style="border-left-color: #4CAF50;">
             <div class="row-header">
-                <label style="cursor: pointer;">Таймер (минут)</label>
+                <label style="cursor: pointer;">
+                    Таймер (минут)
+                    <span style="font-size: 0.85em; color: #888; font-weight: normal; margin-left: 10px;">(0 — обычный секундомер)</span>
+                </label>
                 <input type="number" id="timer-input" min="0" value="0">
+            </div>
+        </div>
+
+        <div class="task-row" style="border-left-color: #2196F3; padding: 12px 20px;">
+            <div class="row-header" style="justify-content: flex-start;">
+                <label style="cursor: pointer; color: #bbb; font-weight: normal; font-size: 0.95em;">
+                    <input type="checkbox" id="toggle-explanations" class="custom-checkbox" checked>
+                    Добавить разборы заданий после подведения итогов
+                </label>
             </div>
         </div>
 
@@ -148,37 +181,56 @@
 
         <button class="btn-generate" onclick="generateVariant()">Сгенерировать вариант</button>
         
-        <div id="btn-group" class="btn-group" style="display:none; margin-top:20px; gap:10px;">
-            <button class="btn-dl btn-html" onclick="downloadStudentHTML()">💻 Интерактив</button>
-            <button class="btn-dl btn-pdf" onclick="downloadPrintPDF()">🖨️ Печать (PDF)</button>
-            <button class="btn-dl btn-ans" onclick="downloadAnswers()">🔑 Ответы</button>
-            <button class="btn-dl" style="background: #e65100;" onclick="openGameMenu()">🏰 Игра</button>
-            <button class="btn-dl" style="background: #1976d2;" onclick="openPresentationMenu()">🎬 Презентация</button>
+        <div id="info-board"></div>
+        
+        <div id="btn-group" class="btn-group">
+            <button class="btn-dl btn-html" onclick="downloadStudentHTML()">💻 Интерактивный вариант</button>
+            <button class="btn-dl btn-pdf" onclick="downloadPrintPDF()">🖨️ Файл для печати (PDF)</button>
+            <button class="btn-dl btn-ans" onclick="downloadAnswers()">🔑 Ключи (Ответы)</button>
+            <button class="btn-dl" style="background: #e65100;" onclick="openGameMenu()">🏰 Создать игру</button>
+            <button class="btn-dl" style="background: #1976d2;" onclick="openPresentationMenu()">🎬 Создать презентацию</button>
         </div>
         
         <div id="output-section"></div>
     </main>
 </div>
 
-<div id="pres-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; align-items:center; justify-content:center;" onclick="if(event.target===this) this.style.display='none'">
-    <div style="background:#1e1e1e; padding:30px; border-radius:12px; border:2px solid #ff8c00; max-width:500px; width:90%; text-align:center;">
-        <h2 style="color:#ff8c00;">Дизайн презентации</h2>
-        <div style="background:#2a2a2a; padding:15px; border-radius:10px; cursor:pointer;" onclick="generatePresentation1()">
-            <div style="font-weight:bold; color:#ff8c00;">Авторский стиль №1</div>
+<div id="pres-modal" class="modal-overlay" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box">
+        <h2 style="margin-top:0; color:#ff8c00;">Выберите дизайн презентации</h2>
+        <div class="pres-preview-card" onclick="generatePresentation1()">
+            <div class="pres-thumb" id="thumb1"></div>
+            <div>
+                <div style="font-weight:bold; color:#ff8c00; font-size:1.2em;">Авторский стиль №1</div>
+                <div style="font-size:0.85em; color:#bbb;">С неоновой подсветкой и разборами</div>
+            </div>
         </div>
+        <button class="btn-settings" style="margin-top:25px; width:100%; padding:10px;" onclick="document.getElementById('pres-modal').style.display='none'">Отмена</button>
     </div>
 </div>
 
-<div id="game-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; align-items:center; justify-content:center;" onclick="if(event.target===this) this.style.display='none'">
-    <div style="background:#1e1e1e; padding:30px; border-radius:12px; border:2px solid #ff8c00; max-width:500px; width:90%; text-align:center;">
-        <h2 style="color:#ff8c00;">Выберите интерактив</h2>
-        <div style="background:#2a2a2a; padding:15px; border-radius:10px; cursor:pointer;" onclick="generateTowerGame()">
-            <div style="font-weight:bold; color:#ff8c00;">🏰 Башня знаний (9 задач)</div>
+<div id="game-modal" class="modal-overlay" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-box">
+        <h2 style="margin-top:0; color:#ff8c00;">Выберите интерактив</h2>
+        <div class="pres-preview-card" onclick="generateTowerGame()">
+            <div class="pres-thumb" style="background: #333; display:flex; align-items:center; justify-content:center; font-size: 35px;">🏰</div>
+            <div>
+                <div style="font-weight:bold; color:#ff8c00; font-size:1.2em;">Башня знаний</div>
+                <div style="font-size:0.85em; color:#bbb;">Строим башню (ровно 9 заданий)</div>
+            </div>
         </div>
+        <button class="btn-settings" style="margin-top:25px; width:100%; padding:10px;" onclick="document.getElementById('game-modal').style.display='none'">Отмена</button>
     </div>
 </div>
 
-<div id="proto-tooltip" style="position:fixed; background:#fff; border:2px solid #ff8c00; padding:10px; display:none; z-index:10000; color:#333; max-width:300px;"></div>
+<div id="proto-tooltip"></div>
+
+<div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this) document.getElementById('modal-overlay').style.display='none'">
+    <div class="modal-box" style="background: #fff; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: 2px solid #ff8c00; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px; position: relative; text-align: left; font-size: 18px;">
+        <div class="close-btn" style="position: absolute; top: 15px; right: 20px; font-size: 32px; line-height: 1; cursor: pointer; color: #888; transition: 0.2s;" onclick="document.getElementById('modal-overlay').style.display='none'">&times;</div>
+        <div id="modal-content-box" style="color: #333;"></div>
+    </div>
+</div>
 
 <script>
     const ASSETS_URL = "https://svetlana18011991.github.io/generator11prof/"; 
@@ -189,9 +241,9 @@
     let lastStickerId = -1;
 
     const sciQuotes = {
-        1: "«Математика — царица наук...»<br>К. Ф. Гаусс",
-        2: "«Математика — это язык...»<br>Н. И. Лобачевский",
-        3: "«То, что мы знаем, — это капля...»<br>Исаак Ньютон",
+        1: "«Математика — царица наук,<br>а арифметика —<br>царица математики».<br>К. Ф. Гаусс",
+        2: "«Математика — это язык,<br>на котором говорят<br>все точные науки».<br>Н. И. Лобачевский",
+        3: "«То, что мы знаем, — это капля,<br>а то, что мы не знаем, — океан».<br>Исаак Ньютон",
         4: "«В геометрии нет царского пути».<br>Евклид",
         5: "«Числа правят миром».<br>Пифагор"
     };
@@ -202,43 +254,211 @@
     let currentGeneratedTasks = [];
     let selectedBlockTitles = [];
 
-    // ГЛОБАЛЬНЫЙ ФИКС СТРЕЛОЧЕК
+    window.mainCanvases = {}; 
+
+    // --- ИСПРАВЛЕННЫЙ АЛГОРИТМ: ТОЛЬКО ДЛЯ ВЕКТОРОВ С УКАЗАННЫМИ МАРКЕРАМИ ---
     window.autoFixSVGArrows = function(container) {
         if(!container) return;
         let svgNs = 'http://www.w3.org/2000/svg';
+        
+        function getInheritedStrokeColor(el) {
+            let s = el.getAttribute('stroke') || el.style.stroke;
+            if (s && s !== 'none') return s;
+            if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') {
+                return getInheritedStrokeColor(el.parentElement);
+            }
+            return '#000';
+        }
+        
+        function getInheritedStrokeWidth(el) {
+            let sw = el.getAttribute('stroke-width') || el.style.strokeWidth;
+            if (sw) return parseFloat(sw);
+            if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') {
+                return getInheritedStrokeWidth(el.parentElement);
+            }
+            return 1;
+        }
+
         container.querySelectorAll('svg').forEach(svg => {
             svg.style.overflow = 'visible';
-            svg.querySelectorAll('[marker-end]').forEach(el => {
-                let attr = el.getAttribute('marker-end');
-                if (!attr) return;
-                el.removeAttribute('marker-end');
+            
+            function drawArrow(el) {
+                if (el.dataset.arrowDrawn) return;
                 let pts = null;
-                if (el.tagName.toLowerCase() === 'line') {
-                    pts = [{x:parseFloat(el.getAttribute('x1')), y:parseFloat(el.getAttribute('y1'))}, {x:parseFloat(el.getAttribute('x2')), y:parseFloat(el.getAttribute('y2'))}];
-                } else if (el.tagName.toLowerCase() === 'path') {
+                let tag = el.tagName.toLowerCase();
+                
+                if (tag === 'line') {
+                    pts = [
+                        {x: parseFloat(el.getAttribute('x1')), y: parseFloat(el.getAttribute('y1'))},
+                        {x: parseFloat(el.getAttribute('x2')), y: parseFloat(el.getAttribute('y2'))}
+                    ];
+                } else if (tag === 'path') {
                     let d = el.getAttribute('d');
+                    if (!d || d.toLowerCase().includes('z') || d.toLowerCase().includes('c') || d.toLowerCase().includes('q')) return;
                     let nums = d.match(/[+-]?\d*\.?\d+/g);
                     if (nums && nums.length >= 4) {
-                        pts = [{x:parseFloat(nums[nums.length-4]), y:parseFloat(nums[nums.length-3])}, {x:parseFloat(nums[nums.length-2]), y:parseFloat(nums[nums.length-1])}];
+                        pts = [
+                            {x: parseFloat(nums[nums.length-4]), y: parseFloat(nums[nums.length-3])},
+                            {x: parseFloat(nums[nums.length-2]), y: parseFloat(nums[nums.length-1])}
+                        ];
                     }
                 }
-                if (pts) {
+                
+                if (pts && !isNaN(pts[0].x) && !isNaN(pts[1].y)) {
                     let p1 = pts[0], p2 = pts[1];
                     let dx = p2.x - p1.x, dy = p2.y - p1.y;
-                    let angle = Math.atan2(dy, dx);
-                    let sw = parseFloat(el.getAttribute('stroke-width') || 1);
-                    let headlen = Math.max(8, sw * 3.5);
-                    let color = el.getAttribute('stroke') || '#000';
-                    let p3 = {x: p2.x - headlen * Math.cos(angle - Math.PI/7), y: p2.y - headlen * Math.sin(angle - Math.PI/7)};
-                    let p4 = {x: p2.x - headlen * Math.cos(angle + Math.PI/7), y: p2.y - headlen * Math.sin(angle + Math.PI/7)};
-                    let arrow = document.createElementNS(svgNs, 'polygon');
-                    arrow.setAttribute('points', `${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`);
-                    arrow.setAttribute('fill', color);
-                    el.parentNode.appendChild(arrow);
+                    let len = Math.sqrt(dx*dx + dy*dy);
+                    if (len > 0.1) {
+                        let angle = Math.atan2(dy, dx);
+                        let sw = getInheritedStrokeWidth(el);
+                        let headlen = Math.max(8, sw * 3.5); 
+                        let color = getInheritedStrokeColor(el);
+                        
+                        let p3 = {x: p2.x - headlen * Math.cos(angle - Math.PI / 7), y: p2.y - headlen * Math.sin(angle - Math.PI / 7)};
+                        let p4 = {x: p2.x - headlen * Math.cos(angle + Math.PI / 7), y: p2.y - headlen * Math.sin(angle + Math.PI / 7)};
+                        
+                        let arrow = document.createElementNS(svgNs, 'polygon');
+                        arrow.setAttribute('points', `${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`);
+                        arrow.setAttribute('fill', color);
+                        el.parentNode.appendChild(arrow);
+                        el.dataset.arrowDrawn = "true";
+                    }
                 }
+            }
+
+            // Ищем СТРОГО элементы, у которых прописан маркер стрелки, 
+            // и заменяем битый маркер на жестко нарисованный треугольник.
+            svg.querySelectorAll('[marker-end]').forEach(el => {
+                el.removeAttribute('marker-end');
+                drawArrow(el);
             });
         });
     };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        let container = document.getElementById('dynamic-tasks');
+        if (!window.database || Object.keys(window.database).length === 0) {
+            document.getElementById('info-board').innerHTML = "<b>Критическая ошибка:</b> База данных пуста! Убедитесь, что файлы заданий (task1.js и т.д.) находятся в одной папке с index.html.";
+            document.getElementById('info-board').style.display = "block";
+            return;
+        }
+
+        for (let tid in window.database) {
+            let data = window.database[tid];
+            let listHTML = "";
+            data.prototypes.forEach((p, idx) => {
+                listHTML += `
+                <label class="proto-item" onmouseenter="showTooltip(${tid}, ${idx}, event)" onmouseleave="hideTooltip()" onmousemove="moveTooltip(event)">
+                    <input type="checkbox" id="proto-${tid}-${idx}" checked> 
+                    <span class="proto-label-text">${idx + 1}. ${p.desc} 👁️</span>
+                </label>`;
+            });
+
+            container.innerHTML += `
+            <div class="task-row">
+                <div class="row-header">
+                    <label onclick="toggleSettings(${tid})">
+                        <span>${data.title} (${data.prototypes.length})</span>
+                        <button type="button" class="btn-settings" onclick="toggleSettings(${tid}); event.stopPropagation();">⚙️ Настроить</button>
+                    </label>
+                    <input type="number" id="count-${tid}" min="0" value="0">
+                </div>
+                <div id="protos-${tid}" class="proto-list">${listHTML}</div>
+            </div>`;
+        }
+        
+        let thumb1 = document.getElementById('thumb1');
+        if(thumb1) thumb1.style.backgroundImage = `url('${ASSETS_URL}p1.jpg')`;
+    });
+
+    function handleThemeChange() {
+        let val = document.getElementById('theme-select').value;
+        document.getElementById('custom-bg-url').style.display = (val === 'custom') ? 'block' : 'none';
+        if(currentInteractiveHTML) renderPreview();
+    }
+
+    function handleSignatureChange() {
+        let isChecked = document.getElementById('toggle-signature').checked;
+        document.getElementById('signature-controls').style.display = isChecked ? 'flex' : 'none';
+        if(currentInteractiveHTML) renderPreview();
+    }
+
+    function toggleSettings(tid) {
+        let el = document.getElementById(`protos-${tid}`);
+        if (el) el.style.display = (el.style.display === 'grid') ? 'none' : 'grid';
+    }
+
+    const tooltip = document.getElementById('proto-tooltip');
+    function showTooltip(tid, index, e) {
+        let p = window.database[tid].prototypes[index];
+        tooltip.innerHTML = `${p.svg_code || ''}<div style="font-size: 0.9em;">${p.tasks[0].text}</div>`;
+        tooltip.style.display = 'block';
+        if (window.MathJax) MathJax.typesetPromise([tooltip]);
+        moveTooltip(e);
+    }
+
+    function moveTooltip(e) {
+        if (tooltip.style.display === 'block') {
+            let x = e.clientX + 15, y = e.clientY + 15;
+            if (x + tooltip.offsetWidth > window.innerWidth) x = window.innerWidth - tooltip.offsetWidth - 10;
+            if (y + tooltip.offsetHeight > window.innerHeight) y = window.innerHeight - tooltip.offsetHeight - 10;
+            tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+        }
+    }
+
+    function hideTooltip() { tooltip.style.display = 'none'; }
+
+    function openTheoryModalLocal(dataId) {
+        let el = document.getElementById(dataId);
+        if(el) {
+            document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
+            document.getElementById('modal-overlay').style.display = 'flex';
+            if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
+        }
+    }
+
+    function renderPreview() {
+        let theme = document.getElementById("theme-select").value;
+        let timerValue = document.getElementById("timer-input").value;
+        let timerDisplay = timerValue > 0 ? `<div class="timer-box-preview">⏱ ${timerValue}:00</div>` : `<div class="timer-box-preview">⏱ 00:00</div>`;
+        
+        let signatureHTML = "";
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        if (document.getElementById('toggle-signature').checked && teacherName !== '') {
+            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
+            signatureHTML = `<div style="text-align: center; font-family: 'Caveat', cursive; font-size: 26px; color: #003399; margin-top: -10px; margin-bottom: 25px;">Вариант ${verb}: ${teacherName}</div>`;
+        }
+        
+        let previewCode = currentInteractiveHTML.replace(/class="btn-settings btn-help" style="display:none;/g, 'class="btn-settings btn-help" style="display:inline-flex;');
+        
+        document.getElementById('output-section').innerHTML = `<div class="theme-wrapper bg-${theme}"><div class="preview-paper">${timerDisplay}<h1 style="color: #003399; text-align: center; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top: 0;">Тренировочный вариант</h1>${signatureHTML}${previewCode}</div></div>`;
+        
+        let sigPrint = (document.getElementById('toggle-signature').checked && teacherName !== '') ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${document.getElementById('teacher-gender').value === 'male' ? 'подготовил' : 'подготовила'}: ${teacherName}</div>` : "";
+        
+        document.getElementById('print-container').innerHTML = `
+            <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
+                <thead><tr><td style="height: 15mm; border: none;"></td></tr></thead>
+                <tbody>
+                    <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
+                        ${sigPrint}
+                    </td></tr>
+                    <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                        ${currentPrintHTML}
+                    </td></tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td style="height: 20mm; border: none; vertical-align: bottom; text-align: center;">
+                            <div style="font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5);">Шкатулка математических интерактивов</div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+
+        if (window.MathJax) { MathJax.typesetPromise(); }
+    }
 
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -248,127 +468,794 @@
         return array;
     }
 
-    function getNextSticker(maxS) {
-        if (globalStickerPool.length === 0) {
-            let arr = []; for(let i=1; i<=maxS; i++) arr.push(i);
-            shuffleArray(arr);
-            // Если первый в новой пачке совпадает с последним из старой - меняем его местами со вторым
-            if (arr[arr.length - 1] === lastStickerId && arr.length > 1) {
-                [arr[arr.length - 1], arr[0]] = [arr[0], arr[arr.length - 1]];
-            }
-            globalStickerPool = arr;
-        }
-        lastStickerId = globalStickerPool.pop();
-        return lastStickerId;
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        let container = document.getElementById('dynamic-tasks');
-        for (let tid in window.database) {
-            let data = window.database[tid];
-            container.innerHTML += `
-            <div class="task-row">
-                <div class="row-header">
-                    <label><span>${data.title}</span></label>
-                    <input type="number" id="count-${tid}" min="0" value="0">
-                </div>
-                <div id="protos-${tid}" style="display:none;">
-                    ${data.prototypes.map((p, idx) => `<input type="checkbox" id="proto-${tid}-${idx}" checked>`).join('')}
-                </div>
-            </div>`;
-        }
-    });
-
     function generateVariant() {
-        currentInteractiveHTML = ""; currentPrintHTML = ""; currentAnswersHTML = ""; currentGeneratedTasks = [];
-        let taskCounter = 0;
-        let pack = document.getElementById('sticker-select').value;
-        let maxS = (pack === 'ro') ? 10 : 5;
-        globalStickerPool = [];
-        lastStickerId = -1;
+        document.getElementById('info-board').style.display = 'none';
+        currentInteractiveHTML = ""; currentPrintHTML = ""; currentAnswersHTML = ""; currentGeneratedTasks = []; selectedBlockTitles = [];
+        window.mainCanvases = {}; 
+
+        let taskCounter = 0, hasContent = false;
+        let stickerPack = document.getElementById('sticker-select').value;
+        let maxStickers = (stickerPack === 'ro') ? 10 : 5;
+        let lastStickerAddedAt = -1;
+        
+        if (stickerPack !== lastStickerPack) { globalStickerPool = []; lastStickerPack = stickerPack; lastStickerId = -1; }
+        
+        function getNextSticker(maxS) {
+            if (globalStickerPool.length === 0) {
+                let arr = []; for(let i=1; i<=maxS; i++) arr.push(i);
+                shuffleArray(arr);
+                if (arr[arr.length - 1] === lastStickerId && arr.length > 1) {
+                    [arr[arr.length - 1], arr[0]] = [arr[0], arr[arr.length - 1]];
+                }
+                globalStickerPool = arr;
+            }
+            lastStickerId = globalStickerPool.pop();
+            return lastStickerId;
+        }
+
+        let nextStickerTarget = 2 + Math.floor(Math.random() * 2);
+        let includeExplanations = document.getElementById('toggle-explanations').checked;
 
         for (let tid in window.database) {
-            let req = parseInt(document.getElementById(`count-${tid}`).value) || 0;
-            if (req <= 0) continue;
+            let countInput = document.getElementById(`count-${tid}`);
+            if (!countInput) continue;
+            let requiredCount = parseInt(countInput.value) || 0;
+            if (requiredCount <= 0) continue;
+
+            let selectedProtos = window.database[tid].prototypes.filter((p, idx) => document.getElementById(`proto-${tid}-${idx}`).checked);
+            if (selectedProtos.length === 0) continue;
+
+            selectedBlockTitles.push(window.database[tid].title);
+            let activePools = selectedProtos.map(p => ({ 
+                pid: window.database[tid].prototypes.indexOf(p), 
+                svg: p.svg_code, 
+                theory: p,
+                tasks: shuffleArray([...p.tasks]) 
+            }));
+            let finalTasks = []; let pIdx = 0;
             
-            let protos = window.database[tid].prototypes;
-            let pool = [];
-            while(pool.length < req) pool.push(...shuffleArray([...protos]));
-            pool = pool.slice(0, req);
+            while (finalTasks.length < requiredCount) {
+                if (activePools[pIdx].tasks.length > 0) {
+                    finalTasks.push({ 
+                        ...activePools[pIdx].tasks.pop(), 
+                        svg: activePools[pIdx].svg,
+                        theory: activePools[pIdx].theory
+                    });
+                }
+                pIdx = (pIdx + 1) % activePools.length;
+            }
+            finalTasks = shuffleArray(finalTasks);
+            hasContent = true;
 
-            currentInteractiveHTML += `<h3>${window.database[tid].title}</h3>`;
-            currentPrintHTML += `<h3>${window.database[tid].title}</h3>`;
+            let blockTitle = `<h3 style="background: #e3f2fd; padding: 10px 15px; border-left: 4px solid #003399; margin-top: 30px; border-radius: 0 6px 6px 0; color: #003399;">${window.database[tid].title}</h3>`;
+            currentInteractiveHTML += blockTitle + `<div style="font-size: 16px;">`;
+            currentPrintHTML += blockTitle + `<div style="font-size: 16px;">`;
+            currentAnswersHTML += `<h3>${window.database[tid].title}</h3><div>`;
 
-            pool.forEach((p, pIdx) => {
+            finalTasks.forEach(item => {
                 taskCounter++;
-                let task = p.tasks[Math.floor(Math.random() * p.tasks.length)];
                 
-                let sHTML = "";
-                // Стикеры через каждые 3 задачи, но не на последней
-                if (pack !== 'none' && taskCounter % 3 === 0) {
-                    let sIdx = getNextSticker(maxS);
-                    let mw = 90, mh = 80; // 0.8 scale
-                    if (pack === 'sci') { mw = 100; mh = 100; }
-                    let quote = (pack === 'sci') ? `<div style="font-size:12px; font-family:Caveat;">${sciQuotes[sIdx]}</div>` : "";
-                    sHTML = `<div style="float:right; width:110px; text-align:center; margin-left:10px;"><img src="${ASSETS_URL}${pack}_${sIdx}.png" style="max-width:${mw}px;">${quote}</div>`;
+                let mainSvg = item.svg || "";
+                if (mainSvg) {
+                    let tmp = document.createElement('div');
+                    tmp.innerHTML = mainSvg;
+                    window.autoFixSVGArrows(tmp);
+                    mainSvg = tmp.innerHTML;
                 }
 
-                let taskBody = `<div class="task-print-block">${sHTML}<b>${taskCounter}.</b> ${p.svg_code || ""}${task.text}<br>Ответ: _________</div>`;
-                currentPrintHTML += taskBody;
-                currentInteractiveHTML += `<div style="margin-bottom:20px;">${sHTML}<b>${taskCounter}.</b> ${p.svg_code || ""}${task.text}<br><input type="text" class="ans-box" data-ans="${task.answer}"></div>`;
-                currentGeneratedTasks.push({text: task.text, svg: p.svg_code, answer: task.answer, theory: p.theory_sol});
+                let theorySvgCode = item.theory.svg_code || "";
+                if (theorySvgCode) {
+                    let tmp = document.createElement('div');
+                    tmp.innerHTML = theorySvgCode;
+                    window.autoFixSVGArrows(tmp);
+                    theorySvgCode = tmp.innerHTML;
+                }
+                
+                let theoryHtml = `
+                    <h3>Разбор аналогичного задания</h3>
+                    <div style='background:#f9f9f9;padding:15px;border-left:4px solid #ff8c00;margin-bottom:15px;border-radius:6px;'>
+                        <p style='margin-top:0;'><b>Задача:</b></p>
+                        <div style='min-height: 60px;'>${theorySvgCode ? '<div style="float:left; margin-right: 20px; margin-bottom: 10px;">' + theorySvgCode + '</div>' : ''}${item.theory.theory_task}</div><div style='clear:both;'></div>
+                        <p style='margin-top: 20px;'><b>Решение:</b></p>
+                        <div>${item.theory.theory_sol}</div>
+                    </div>
+                    <h4 style='color: #ff8c00;'>Задачи для отработки:</h4>
+                    <ul style='padding-left:20px;'>
+                `;
+
+                item.theory.tasks.forEach(t => {
+                    let tSvgCode = t.svg_code || "";
+                    if (tSvgCode) {
+                        let tmp = document.createElement('div');
+                        tmp.innerHTML = tSvgCode;
+                        window.autoFixSVGArrows(tmp);
+                        tSvgCode = tmp.innerHTML;
+                    }
+                    let tSvg = tSvgCode ? `<br><div style="margin:10px 0; max-width:300px;">${tSvgCode}</div>` : '';
+                    theoryHtml += `<li style='margin-bottom:15px;'>${t.text}${tSvg}<br><span style='color:#003399;cursor:pointer;border-bottom:1px dashed #003399;' onclick='this.innerText="Ответ: ${t.answer}"; this.style.border="none"; this.style.fontWeight="bold";'>Показать ответ</span></li>`;
+                });
+                theoryHtml += `</ul>`;
+
+                currentGeneratedTasks.push({ 
+                    text: item.text, 
+                    svg: mainSvg, 
+                    answer: String(item.answer),
+                    theory: theoryHtml
+                });
+                
+                let stickerHTML = "";
+                if (stickerPack !== 'none' && taskCounter === nextStickerTarget) {
+                    lastStickerAddedAt = taskCounter;
+                    let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15;
+                    let mw = 112, mh = 96; 
+                    if (stickerPack === 'sci') {
+                        if ([1,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
+                        else if (sIdx === 3) { mw *= 1.35; mh *= 1.35; }
+                        else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
+                    }
+                    let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:16px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1; width: 100%; word-wrap: break-word;">${sciQuotes[sIdx]}</div>` : "";
+                    
+                    let containerW = mw + 20; 
+                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${containerW}px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
+                    nextStickerTarget += 3 + Math.floor(Math.random() * 2);
+                }
+
+                let helpBtn = "";
+                if (includeExplanations) {
+                    let safeTheory = encodeURIComponent(theoryHtml).replace(/'/g, "%27");
+                    helpBtn = `
+                        <div id="theory-data-${taskCounter}" style="display:none;">${safeTheory}</div>
+                        <button class="btn-settings btn-help" style="display:none; margin-left: 10px; background: #e3f2fd; color: #003399; border: 1px solid #003399; font-weight: bold; padding: 10px 15px;" onclick="window.openTheoryModalLocal('theory-data-${taskCounter}')">РАЗБОР</button>
+                    `;
+                }
+
+                let drawBtn = `<button class="btn-settings" style="margin-left: 10px; background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 18px; padding: 8px 12px;" onclick="window.toggleCanvas('${taskCounter}')" title="Открыть черновик">✏️</button>`;
+                let interactiveInput = `<div style="margin-top: 15px; display:flex; align-items:center; clear: both;"><input type="text" class="ans-box" placeholder="Ответ..." data-ans="${item.answer}" style="padding: 10px 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 16px; font-weight: bold; width: 150px; outline: none; transition: 0.3s;">${drawBtn}${helpBtn}</div>`;
+
+                let scratchpadHTML = `<div id="draw-wrapper-${taskCounter}" style="display:none; margin-top: 20px; width: 100%; transition: all 0.3s ease; clear: both;">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
+                        <button onclick="window.setTool('${taskCounter}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
+                        <button onclick="window.setTool('${taskCounter}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                        <select id="tool-select-${taskCounter}" onchange="window.setTool('${taskCounter}', this.value)" style="background: #fff; border: 1px solid #90caf9; border-radius: 4px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: #003399; font-weight: 500;">
+                            <option value="" disabled selected hidden>🔺 Фигуры</option>
+                            <option value="line">📏 Прямая</option>
+                            <option value="circle">⭕ Окружность</option>
+                            <option value="triangle">🔺 Треугольник</option>
+                            <option value="cylinder">🛢️ Цилиндр</option>
+                            <option value="cone">🍦 Конус</option>
+                            <option value="sphere">🔮 Сфера</option>
+                        </select>
+                        <input type="color" id="color-${taskCounter}" value="#003399" style="cursor:pointer; height: 30px; width: 35px; border: none; background: transparent; padding: 0;" title="Цвет">
+                        <input type="range" id="size-${taskCounter}" min="1" max="15" value="3" style="cursor:pointer; width: 80px;" title="Толщина линии">
+                        <button onclick="window.setTool('${taskCounter}', 'eraser')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Ластик">🧽</button>
+                        <div style="flex-grow:1;"></div>
+                        <button onclick="window.clearCanvas('${taskCounter}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
+                        <input type="hidden" id="tool-${taskCounter}" value="pen">
+                    </div>
+                    <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 250px;"><canvas id="canvas-${taskCounter}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
+                </div>`;
+
+                let taskHTMLInteractive = `<div style="margin-bottom:30px; clear:both; overflow:hidden; border-bottom:1px dashed #ddd; padding-bottom:20px;">
+                    <div style="display:flex; align-items:flex-start; justify-content: space-between;">
+                        <div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;">
+                            <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
+                            ${mainSvg ? `<div style="flex-shrink:0;min-width:150px;">${mainSvg}</div>` : ""}
+                            <div style="flex-grow:1; min-width:0;">
+                                <div>${item.text}</div>
+                                ${interactiveInput}
+                            </div>
+                        </div>
+                        ${stickerHTML}
+                    </div>
+                    ${scratchpadHTML}
+                </div>`;
+
+                let taskHTMLPrint = `<div class="task-print-block">
+                    <div style="display:flex; align-items:flex-start; justify-content: space-between;">
+                        <div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;">
+                            <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
+                            ${mainSvg ? `<div style="flex-shrink:0;min-width:150px;">${mainSvg}</div>` : ""}
+                            <div style="flex-grow:1; min-width:0;">
+                                <div>${item.text}</div>
+                                <div style="margin-top:30px; font-size:18px;">Ответ: _______________________</div>
+                            </div>
+                        </div>
+                        ${stickerHTML}
+                    </div>
+                </div>`;
+
+                currentInteractiveHTML += taskHTMLInteractive;
+                currentPrintHTML += taskHTMLPrint;
+                currentAnswersHTML += `<div style="margin-bottom: 10px; font-size: 18px;"><b>${taskCounter}.</b> Ответ: <strong style="color: #d32f2f;">${item.answer}</strong></div>`;
             });
+            currentInteractiveHTML += `</div>`; currentPrintHTML += `</div>`; currentAnswersHTML += `</div>`;
         }
-        document.getElementById('btn-group').style.display = 'flex';
-        renderPreview();
+
+        if (stickerPack !== 'none' && hasContent && (taskCounter - lastStickerAddedAt > 1)) {
+            let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15;
+            let mw = 112, mh = 112; 
+            if (stickerPack === 'sci') {
+                if ([1,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
+                else if (sIdx === 3) { mw *= 1.35; mh *= 1.35; }
+                else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
+            }
+            let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:20px; color:#003399; margin-top:10px; transform:rotate(${rot/3}deg); line-height:1.1; max-width:${mw+40}px; text-align:center;">${sciQuotes[sIdx]}</div>` : "";
+            let bottomSticker = `<div style="clear:both;margin-top:30px;padding-right:40px;display:flex;flex-direction:column;align-items:flex-end; page-break-inside: avoid;"><div style="display:flex;flex-direction:column;align-items:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quoteHTML}</div></div>`;
+            currentInteractiveHTML += bottomSticker;
+            currentPrintHTML += bottomSticker;
+        }
+
+        if (hasContent) { 
+            document.getElementById('output-section').style.display = 'block'; 
+            document.getElementById('btn-group').style.display = 'flex'; 
+            renderPreview(); 
+        }
     }
 
-    function renderPreview() {
-        document.getElementById('output-section').innerHTML = `<div class="preview-paper">${currentInteractiveHTML}</div>`;
-        window.autoFixSVGArrows(document.getElementById('output-section'));
-        if (window.MathJax) MathJax.typesetPromise();
+    const CANVAS_LOGIC_SCRIPT = `
+        window.mainCanvases = {};
+        
+        window.openTheoryModalLocal = function(dataId) {
+            let el = document.getElementById(dataId);
+            if(el) {
+                document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
+                document.getElementById('modal-overlay').style.display = 'flex';
+                if(window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
+            }
+        };
+        window.toggleCanvas = function(id) {
+            let w = document.getElementById('draw-wrapper-' + id);
+            if (w.style.display === 'none' || w.style.display === '') { w.style.display = 'block'; setTimeout(() => window.initMainCanvas(id), 50); } else { w.style.display = 'none'; }
+        };
+        window.initMainCanvas = function(id) {
+            if (window.mainCanvases[id]) return;
+            let canvas = document.getElementById('canvas-' + id); 
+            if(!canvas) return;
+            let ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth || 750; 
+            canvas.height = 250; 
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            
+            let objects = []; let currentObj = null; let draggingObj = null; let action = null; 
+            let dragStartX = 0, dragStartY = 0; let dragStartDist = 1, initialScale = 1; let dragStartAngle = 0, initialAngle = 0; let isDrawing = false;
+
+            function getRawBounds(obj) {
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                if (obj.tool === 'pen' || obj.tool === 'eraser') {
+                    if(!obj.points || obj.points.length === 0) return {minX:0, minY:0, maxX:0, maxY:0};
+                    obj.points.forEach(p => { minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); });
+                } else {
+                    let sx = obj.sx, sy = obj.sy, ex = obj.ex, ey = obj.ey; let dx = ex - sx, dy = ey - sy; let rx = Math.abs(dx), ry = Math.abs(dy); let r = Math.sqrt(dx*dx + dy*dy);
+                    if (obj.tool === 'line') { minX = Math.min(sx, ex); maxX = Math.max(sx, ex); minY = Math.min(sy, ey); maxY = Math.max(sy, ey); }
+                    else if (obj.tool === 'circle' || obj.tool === 'sphere') { minX = sx - r; maxX = sx + r; minY = sy - r; maxY = sy + r; }
+                    else if (obj.tool === 'triangle') { minX = Math.min(sx, ex, sx + dx/2); maxX = Math.max(sx, ex, sx + dx/2); minY = Math.min(sy, ey); maxY = Math.max(sy, ey); }
+                    else if (obj.tool === 'cylinder' || obj.tool === 'cone') { minX = sx - rx; maxX = sx + rx; let h = ry * 0.2; minY = Math.min(sy - h, ey - h); maxY = Math.max(sy + h, ey + h); }
+                }
+                let pad = parseFloat(obj.size) || 3; return { minX: minX - pad, minY: minY - pad, maxX: maxX + pad, maxY: maxY + pad };
+            }
+            
+            function drawObj(ctx, obj, isSelected) {
+                ctx.save(); let cx = obj.cx || 0; let cy = obj.cy || 0; let s = obj.scale || 1;
+                ctx.translate((obj.x || 0) + cx, (obj.y || 0) + cy); ctx.rotate(obj.angle || 0); ctx.scale(s, s); ctx.translate(-cx, -cy);
+                ctx.strokeStyle = obj.color; ctx.lineWidth = obj.size;
+                if (obj.tool === 'pen' || obj.tool === 'eraser') {
+                    ctx.globalCompositeOperation = obj.tool === 'eraser' ? 'destination-out' : 'source-over';
+                    if(obj.tool === 'eraser') ctx.lineWidth = obj.size * 3;
+                    ctx.beginPath();
+                    if(obj.points && obj.points.length > 0) { ctx.moveTo(obj.points[0].x, obj.points[0].y); for(let i=1; i<obj.points.length; i++) ctx.lineTo(obj.points[i].x, obj.points[i].y); }
+                    ctx.stroke();
+                } else {
+                    ctx.globalCompositeOperation = 'source-over'; ctx.beginPath();
+                    let sx = obj.sx, sy = obj.sy, ex = obj.ex, ey = obj.ey; let dx = ex - sx, dy = ey - sy; let rx = Math.abs(dx), ry = Math.abs(dy); let r = Math.sqrt(dx*dx + dy*dy);
+                    if (obj.tool === 'line') { ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke(); }
+                    else if (obj.tool === 'circle') { ctx.arc(sx, sy, r, 0, 2 * Math.PI); ctx.stroke(); }
+                    else if (obj.tool === 'triangle') { ctx.moveTo(sx + dx/2, sy); ctx.lineTo(sx, ey); ctx.lineTo(ex, ey); ctx.closePath(); ctx.stroke(); }
+                    else if (obj.tool === 'cylinder') { let w = rx, h = ry * 0.2; if(w>0 && h>0){ctx.ellipse(sx, sy, w, h, 0, 0, 2*Math.PI); ctx.moveTo(sx - w, sy); ctx.lineTo(sx - w, ey); ctx.moveTo(sx + w, sy); ctx.lineTo(sx + w, ey); ctx.stroke(); ctx.beginPath(); ctx.ellipse(sx, ey, w, h, 0, 0, Math.PI); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.ellipse(sx, ey, w, h, 0, Math.PI, 2*Math.PI); ctx.stroke(); ctx.setLineDash([]);} }
+                    else if (obj.tool === 'cone') { let w = rx, h = ry * 0.2; if(w>0 && h>0){ctx.moveTo(sx, sy); ctx.lineTo(sx - w, ey); ctx.moveTo(sx, sy); ctx.lineTo(sx + w, ey); ctx.stroke(); ctx.beginPath(); ctx.ellipse(sx, ey, w, h, 0, 0, Math.PI); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.ellipse(sx, ey, w, h, 0, Math.PI, 2*Math.PI); ctx.stroke(); ctx.setLineDash([]);} }
+                    else if (obj.tool === 'sphere') { ctx.arc(sx, sy, r, 0, 2 * Math.PI); ctx.stroke(); if(r>0){ctx.beginPath(); ctx.ellipse(sx, sy, r, r*0.3, 0, 0, Math.PI); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.ellipse(sx, sy, r, r*0.3, 0, Math.PI, 2*Math.PI); ctx.stroke(); ctx.setLineDash([]);} }
+                }
+                if (isSelected) {
+                    let b = getRawBounds(obj); ctx.strokeStyle = 'rgba(255, 140, 0, 0.7)'; ctx.lineWidth = 1.5 / s; ctx.setLineDash([5 / s, 5 / s]); ctx.strokeRect(b.minX - 5, b.minY - 5, b.maxX - b.minX + 10, b.maxY - b.minY + 10); ctx.setLineDash([]);
+                    let rotHX = (b.minX + b.maxX)/2; let rotHY = b.minY - 25; ctx.beginPath(); ctx.moveTo(rotHX, b.minY - 5); ctx.lineTo(rotHX, rotHY); ctx.stroke(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(rotHX, rotHY, 5 / s, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                    let scaleHX = b.maxX + 5; let scaleHY = b.maxY + 5; let hSize = 10 / s; ctx.fillStyle = '#ff8c00'; ctx.fillRect(scaleHX - hSize/2, scaleHY - hSize/2, hSize, hSize);
+                }
+                ctx.restore();
+            }
+
+            function getLocalPos(p, obj) { let cx = obj.cx || 0, cy = obj.cy || 0; let tx = (obj.x || 0) + cx, ty = (obj.y || 0) + cy; let nx = p.x - tx, ny = p.y - ty; let angle = -(obj.angle || 0); let rx = nx * Math.cos(angle) - ny * Math.sin(angle); let ry = nx * Math.sin(angle) + ny * Math.cos(angle); let scale = obj.scale || 1; return {x: (rx / scale) + cx, y: (ry / scale) + cy}; }
+            function renderAll() { ctx.clearRect(0, 0, canvas.width, canvas.height); objects.forEach(obj => drawObj(ctx, obj, draggingObj === obj)); if (currentObj) drawObj(ctx, currentObj, false); }
+            function getPos(e) { const rect = canvas.getBoundingClientRect(); let x = e.clientX, y = e.clientY; if (e.touches && e.touches.length > 0) { x = e.touches[0].clientX; y = e.touches[0].clientY; } return { x: x - rect.left, y: y - rect.top }; }
+
+            function startDraw(e) {
+                isDrawing = true; let p = getPos(e); 
+                let tool = document.getElementById('tool-' + id).value; let color = document.getElementById('color-' + id).value; let size = document.getElementById('size-' + id).value;
+                if (tool === 'pointer') {
+                    let hitHandle = false;
+                    if (draggingObj) {
+                        let b = getRawBounds(draggingObj); let lp = getLocalPos(p, draggingObj); let hr = 10 / (draggingObj.scale || 1); 
+                        if (Math.abs(lp.x - (b.maxX + 5)) < hr && Math.abs(lp.y - (b.maxY + 5)) < hr) { action = 'scale'; let tx = (draggingObj.x||0) + (draggingObj.cx||0); let ty = (draggingObj.y||0) + (draggingObj.cy||0); dragStartDist = Math.hypot(p.x - tx, p.y - ty); initialScale = draggingObj.scale || 1; hitHandle = true; }
+                        if (!hitHandle && Math.abs(lp.x - ((b.minX + b.maxX)/2)) < hr && Math.abs(lp.y - (b.minY - 25)) < hr) { action = 'rotate'; initialAngle = draggingObj.angle || 0; let tx = (draggingObj.x||0) + (draggingObj.cx||0); let ty = (draggingObj.y||0) + (draggingObj.cy||0); dragStartAngle = Math.atan2(p.y - ty, p.x - tx); hitHandle = true; }
+                        if (!hitHandle && lp.x >= b.minX - 5 && lp.x <= b.maxX + 5 && lp.y >= b.minY - 5 && lp.y <= b.maxY + 5) { action = 'move'; dragStartX = p.x; dragStartY = p.y; hitHandle = true; }
+                    }
+                    if (!hitHandle) { draggingObj = null; action = null; for (let i = objects.length - 1; i >= 0; i--) { if (objects[i].tool === 'eraser') continue; let lp = getLocalPos(p, objects[i]); let b = getRawBounds(objects[i]); if (lp.x >= b.minX && lp.x <= b.maxX && lp.y >= b.minY && lp.y <= b.maxY) { draggingObj = objects[i]; action = 'move'; dragStartX = p.x; dragStartY = p.y; break; } } }
+                    renderAll();
+                } else { currentObj = { tool: tool, color: color, size: size, x: 0, y: 0, scale: 1, angle: 0 }; if (tool === 'pen' || tool === 'eraser') { currentObj.points = [p]; } else { currentObj.sx = p.x; currentObj.sy = p.y; currentObj.ex = p.x; currentObj.ey = p.y; } }
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function draw(e) {
+                if (!isDrawing) return; if (e.cancelable) e.preventDefault(); let p = getPos(e);
+                if (document.getElementById('tool-' + id).value === 'pointer' && draggingObj && action) {
+                    if (action === 'move') { draggingObj.x = (draggingObj.x || 0) + (p.x - dragStartX); draggingObj.y = (draggingObj.y || 0) + (p.y - dragStartY); dragStartX = p.x; dragStartY = p.y; }
+                    else if (action === 'scale') { let tx = (draggingObj.x||0) + (draggingObj.cx||0); let ty = (draggingObj.y||0) + (draggingObj.cy||0); let currentDist = Math.hypot(p.x - tx, p.y - ty); draggingObj.scale = Math.max(0.1, initialScale * (currentDist / dragStartDist)); }
+                    else if (action === 'rotate') { let tx = (draggingObj.x||0) + (draggingObj.cx||0); let ty = (draggingObj.y||0) + (draggingObj.cy||0); let currentAngle = Math.atan2(p.y - ty, p.x - tx); draggingObj.angle = initialAngle + (currentAngle - dragStartAngle); }
+                    renderAll();
+                } else if (currentObj) { if (currentObj.tool === 'pen' || currentObj.tool === 'eraser') { currentObj.points.push(p); } else { currentObj.ex = p.x; currentObj.ey = p.y; } renderAll(); }
+            }
+
+            function stopDraw() { if(!isDrawing) return; isDrawing = false; if (currentObj) { let b = getRawBounds(currentObj); currentObj.cx = (b.minX + b.maxX) / 2; currentObj.cy = (b.minY + b.maxY) / 2; objects.push(currentObj); currentObj = null; } renderAll(); }
+
+            canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw); window.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('touchstart', startDraw, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); window.addEventListener('touchend', stopDraw);
+            
+            window.mainCanvases[id] = { canvas, ctx, objects, renderAll };
+        };
+        window.clearCanvas = function(id) { if (window.mainCanvases[id]) { window.mainCanvases[id].objects.length = 0; window.mainCanvases[id].renderAll(); } };
+        window.setTool = function(id, tool) {
+            let t = document.getElementById('tool-' + id); if(t) t.value = tool; 
+            let sel = document.getElementById('tool-select-' + id); if(sel && (tool === 'pen' || tool === 'eraser' || tool === 'pointer')) sel.value = "";
+            let canvas = document.getElementById('canvas-' + id);
+            if(canvas) {
+                if (tool === 'eraser') { canvas.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22><text y=%2220%22 font-size=%2220%22>🧽</text></svg>') 0 20, auto"; } 
+                else if (tool === 'pointer') { canvas.style.cursor = 'move'; } else { canvas.style.cursor = 'crosshair'; }
+            }
+        };
+    `;
+
+    // Активируем код для превью внутри редактора
+    eval(CANVAS_LOGIC_SCRIPT);
+
+    function downloadStudentHTML() {
+        if (!currentInteractiveHTML) { alert("Сначала сгенерируйте вариант!"); return; }
+        let theme = document.getElementById("theme-select").value;
+        let customBg = document.getElementById("custom-bg-url").value;
+        let timerValue = document.getElementById("timer-input").value;
+        let customBgRule = '';
+        if (theme === 'custom' && customBg) { customBgRule = `.bg-custom { background: #f4f7f6 url('${customBg}') center top / cover no-repeat fixed !important; }`; theme = 'custom'; }
+
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        let sig = "";
+        if (document.getElementById('toggle-signature').checked && teacherName !== '') {
+            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
+            sig = `<div style="text-align:center;font-family:'Caveat';font-size:26px;color:#003399;margin-top:-10px;margin-bottom:25px;">Вариант ${verb}: ${teacherName}</div>`;
+        }
+        
+        let html = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Интерактив</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};${SCRIPT_END}
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
+    <style>
+        body{font-family:sans-serif;margin:0;padding:0;background:#f4f7f6;color:#333;}
+        .theme-wrapper{min-height:100vh;padding:40px 20px;}
+        .bg-winter{background:url('${ASSETS_URL}зима.jpg') center/cover fixed;}
+        .bg-spring{background:url('${ASSETS_URL}весна.jpg') center/cover fixed;}
+        .bg-summer{background:url('${ASSETS_URL}лето.jpg') center/cover fixed;}
+        .bg-autumn{background:url('${ASSETS_URL}осень.jpg') center/cover fixed;}
+        ${customBgRule}
+        .paper{max-width:800px;margin:0 auto;background:rgba(255,255,255,0.95);padding:40px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
+        .timer-box { position: sticky; top: 20px; float: right; background: #fff; border: 2px solid #ff8c00; color: #ff8c00; padding: 10px 20px; border-radius: 8px; font-size: 1.2em; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 100; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #fff; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: 2px solid #ff8c00; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px; position: relative; text-align: left; font-size: 18px;}
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 32px; line-height: 1; cursor: pointer; color: #888; transition: 0.2s; }
+        .close-btn:hover { color: #ff8c00; }
+        .btn-settings { background: #333; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85em; transition: 0.2s; }
+        .btn-settings:hover { background: #444; color: #fff; }
+        svg { overflow: visible; }
+    </style>
+</head>
+<body>
+    <div class="theme-wrapper bg-${theme}">
+        <div class="paper">
+            <div class="timer-box" id="timer-display">⏱ 00:00</div>
+            <h1 style="text-align: center; color: #003399; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top:0;">Тренировочный вариант</h1>
+            ${sig}
+            ${currentInteractiveHTML}
+            <button id="btn-check" onclick="checkAll()" style="display:block; width:100%; padding:15px; font-size:18px; font-weight:bold; background:#ff8c00; color:#fff; border:none; border-radius:8px; cursor:pointer; margin-top:30px; transition:0.3s;">ПОДВЕСТИ ИТОГИ</button>
+            <div id="res-box" style="display:none; text-align:center; margin-top:30px; padding:20px; background:rgba(255,255,255,0.9); border:2px dashed #003399; border-radius:8px; font-size:1.2em; font-weight:bold;"></div>
+        </div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this) document.getElementById('modal-overlay').style.display='none'">
+        <div class="modal-box">
+            <div class="close-btn" onclick="document.getElementById('modal-overlay').style.display='none'">&times;</div>
+            <div id="modal-content-box"></div>
+        </div>
+    </div>
+
+    <script>
+        ${CANVAS_LOGIC_SCRIPT}
+        let timerInterval; let timeLimit = ${timerValue} * 60; let timeSpent = 0; let isCountdown = timeLimit > 0;
+        function updateTimerUI(sec) {
+            let m = Math.floor(sec / 60).toString().padStart(2, '0');
+            let s = (sec % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = (isCountdown ? '⏳ Осталось: ' : '⏱ Прошло: ') + m + ':' + s;
+        }
+        window.onload = function() {
+            updateTimerUI(isCountdown ? timeLimit : timeSpent);
+            timerInterval = setInterval(() => {
+                if (isCountdown) {
+                    timeLimit--; updateTimerUI(timeLimit);
+                    if (timeLimit <= 0) { clearInterval(timerInterval); alert('Время вышло! Итоги подводятся автоматически.'); checkAll(); }
+                } else { timeSpent++; updateTimerUI(timeSpent); }
+            }, 1000);
+        };
+        
+        function checkAll() {
+            if (timerInterval) clearInterval(timerInterval);
+            let c = 0, ic = 0, e = 0;
+            document.querySelectorAll('.ans-box').forEach(input => {
+                let u = input.value.trim().replace(',', '.');
+                let r = input.getAttribute('data-ans');
+                if(u === '') { e++; input.style.background = '#f5f5f5'; input.style.borderColor = '#9e9e9e'; }
+                else if(u === r) { c++; input.style.background = '#e8f5e9'; input.style.borderColor = '#4CAF50'; input.style.color = '#1b5e20'; }
+                else { ic++; input.style.background = '#ffebee'; input.style.borderColor = '#f44336'; input.style.color = '#b71c1c'; }
+                input.readOnly = true;
+            });
+            document.getElementById('res-box').innerHTML = '<p style="color:#2e7d32; margin: 5px 0;"><b>Верно:</b> ' + c + '</p><p style="color:#c62828; margin: 5px 0;"><b>Неверно:</b> ' + ic + '</p><p style="color:#555; margin: 5px 0;"><b>Не решено:</b> ' + e + '</p>';
+            document.getElementById('res-box').style.display = 'block';
+            document.getElementById('btn-check').style.display = 'none';
+            document.querySelectorAll('.btn-help').forEach(btn => btn.style.display = 'inline-flex');
+        }
+    ${SCRIPT_END}
+</body>
+</html>`;
+
+        let blob = new Blob([html], {type:"text/html;charset=utf-8"});
+        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Интерактивный_вариант.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
     }
 
     function downloadPrintPDF() {
-        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-        <style>
-            @media print { @page { margin: 15mm; } body { font-family: serif; } .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-family: Caveat; color: #888; } }
-            .task-print-block { page-break-inside: avoid; margin-bottom: 25px; clear: both; }
-            svg { overflow: visible; }
-        </style></head><body><div class="footer">Шкатулка математических интерактивов</div>${currentPrintHTML}
-        <script>setTimeout(() => { window.print(); }, 1000);${SCRIPT_END}</body></html>`;
-        let blob = new Blob([html], {type:"text/html"});
-        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Вариант.html"; a.click();
+        if (!currentPrintHTML) { alert("Сначала сгенерируйте вариант!"); return; }
+        
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        let sigPrint = "";
+        if (document.getElementById('toggle-signature').checked && teacherName !== '') {
+            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
+            sigPrint = `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${verb}: ${teacherName}</div>`;
+        }
+
+        let printHtml = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Печать варианта</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};${SCRIPT_END}
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
+    <style>
+        @media print {
+            @page { margin: 0; size: A4; }
+            body { 
+                background: #fff !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                color: #000 !important; 
+                font-family: 'Times New Roman', serif;
+            }
+            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            table.print-wrapper { width: 100%; border: none; border-collapse: collapse; page-break-inside: auto; }
+            tr { page-break-inside: auto; page-break-after: auto; }
+            td { page-break-inside: auto; page-break-after: auto; }
+            .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 40px; }
+            h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
+        }
+        @media screen {
+            body { background: #f4f7f6; font-family: 'Times New Roman', serif; padding: 40px; }
+            table.print-wrapper { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+        }
+        svg { overflow: visible; }
+    </style>
+</head>
+<body>
+    <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
+        <thead><tr><td style="height: 15mm; border: none;"></td></tr></thead>
+        <tbody>
+            <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
+                ${sigPrint}
+            </td></tr>
+            <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                ${currentPrintHTML}
+            </td></tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td style="height: 20mm; border: none; vertical-align: bottom; text-align: center;">
+                    <div style="font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5);">Шкатулка математических интерактивов</div>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    <script>
+        ${CANVAS_LOGIC_SCRIPT}
+        setTimeout(function(){ window.print(); }, 1500);
+    ${SCRIPT_END}
+</body>
+</html>`;
+        
+        let b = new Blob([printHtml], { type: "text/html;charset=utf-8" });
+        let a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "Вариант_Печать.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
     }
+
+    function downloadAnswers() {
+        if (!currentAnswersHTML) return;
+        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ответы</title></head><body style="padding:40px;font-family:sans-serif;"><h2>Ключи</h2>${currentAnswersHTML}</body></html>`;
+        let blob = new Blob([html], {type:"text/html;charset=utf-8"});
+        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Ответы.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    }
+
+    function openGameMenu() { if (currentGeneratedTasks.length === 0) { alert("Сгенерируйте вариант!"); return; } document.getElementById('game-modal').style.display='flex'; }
+    function openPresentationMenu() { if (currentGeneratedTasks.length === 0) { alert("Сгенерируйте вариант!"); return; } document.getElementById('pres-modal').style.display='flex'; }
 
     function generatePresentation1() {
-        let slides = currentGeneratedTasks.map((t, i) => `
-        <div class="slide" style="width:100vw; height:100vh; position:relative; background:#fff; display:none; flex-direction:column; align-items:center; justify-content:center;">
-            <div style="position:absolute; top:calc(15px - 1cm); left:calc(50% - 5cm); width:280px; height:176px; background:url('${ASSETS_URL}p3.jpg') center/cover; display:flex; align-items:center; justify-content:center;">
-                <h2 style="font-family:Caveat; font-size:31px; margin:0;">Задание ${i+1}</h2>
-            </div>
-            <div style="max-width:80%; font-size:24px; text-align:center;">${t.svg || ""}${t.text}</div>
-        </div>`).join('');
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        let authorLine = "";
+        if (document.getElementById('toggle-signature').checked && teacherName) {
+            let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
+            authorLine = `Вариант ${verb}: ${teacherName}`;
+        }
 
-        let full = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-        <style>body { margin:0; overflow:hidden; } .slide.active { display:flex !important; }</style></head>
-        <body>${slides}
-        <script>
-            let cur = 0; let s = document.querySelectorAll('.slide');
-            function show(n) { s.forEach(x=>x.classList.remove('active')); s[n].classList.add('active'); }
-            window.onclick = () => { cur = (cur+1)%s.length; show(cur); };
-            show(0);
-        ${SCRIPT_END}</body></html>`;
-        let blob = new Blob([full], {type:"text/html"});
-        window.open(URL.createObjectURL(blob));
+        let topicsList = selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
+        
+        let taskSlides = currentGeneratedTasks.map((t, i) => `
+            <div class="slide task-slide" style="background-image: url('${ASSETS_URL}p2.jpg')">
+                <div class="header-plate" style="position: absolute; top: calc(15px - 1cm); left: calc(50% - 5cm); transform: translateX(-50%); width: 280px; height: 176px; background: url('${ASSETS_URL}p3.jpg') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 10;">
+                    <h3 style="font-family: 'Caveat', cursive; font-size: 31px; color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
+                </div>
+                
+                <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; overflow-y: auto; display: block;">
+                    
+                    <div style="display: block; text-align: center; font-size: 1.5em; padding-bottom: 20px;">
+                        ${t.svg ? `<div style="margin-bottom: 25px;">${t.svg}</div>` : ""}
+                        <div style="margin-bottom: 30px; text-align: center;">${t.text}</div>
+                        <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap;">
+                            <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
+                            <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
+                            <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px;" onclick="window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
+                        </div>
+                    </div>
+
+                    <div id="draw-wrapper-pres-${i}" style="display:none; margin-top: 15px; width: 100%; transition: all 0.3s ease; text-align: left;">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
+                            <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
+                            <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                            <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid #90caf9; border-radius: 4px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: #003399; font-weight: 500;">
+                                <option value="" disabled selected hidden>🔺 Фигуры</option>
+                                <option value="line">📏 Прямая</option>
+                                <option value="circle">⭕ Окружность</option>
+                                <option value="triangle">🔺 Треугольник</option>
+                                <option value="cylinder">🛢️ Цилиндр</option>
+                                <option value="cone">🍦 Конус</option>
+                                <option value="sphere">🔮 Сфера</option>
+                            </select>
+                            <input type="color" id="color-pres-${i}" value="#003399" style="cursor:pointer; height: 30px; width: 35px; border: none; background: transparent; padding: 0;">
+                            <input type="range" id="size-pres-${i}" min="1" max="15" value="3" style="cursor:pointer; width: 80px;">
+                            <button onclick="window.setTool('pres-${i}', 'eraser')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Ластик">🧽</button>
+                            <div style="flex-grow:1;"></div>
+                            <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
+                            <input type="hidden" id="tool-pres-${i}" value="pen">
+                        </div>
+                        <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 250px;"><canvas id="canvas-pres-${i}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
+                    </div>
+
+                </div>
+                <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
+            </div>
+        `).join('');
+
+        let hiddenTheories = currentGeneratedTasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory)}</div>`).join('');
+
+        let fullHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Презентация урока</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']] } };${SCRIPT_END}
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${SCRIPT_END}
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        .slide { width: 100vw; height: 100vh; background-size: cover; background-position: center; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 50px; box-sizing: border-box; }
+        .slide.active { display: flex; }
+        .title-box { background: rgba(255,255,255,0.95); padding: 40px 60px; border-radius: 20px; border: 3px solid #ff8c00; text-align: center; max-width: 900px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .topics-list { text-align: left; margin: 20px 0; font-size: 1.3em; color: #333; line-height: 1.4; list-style-type: disc; padding-left: 20px;}
+        .nav-btns { position: fixed; bottom: 40px; right: 70px; display: flex; gap: 20px; z-index: 100; }
+        .nav-btn { background: #333; color: white; border: none; padding: 15px 35px; border-radius: 50px; cursor: pointer; font-size: 1.3em; opacity: 0.85; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .nav-btn:hover { opacity: 1; background: #ff8c00; transform: translateY(-2px); }
+        .pres-btn:hover { background: #e67e00 !important; }
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.2em; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .results-table th, .results-table td { padding: 15px; border-bottom: 1px solid #ddd; text-align: center; }
+        .results-table th { background: #f5f5f5; color: #333; }
+        .row-correct { background-color: #e8f5e9; color: #2e7d32; }
+        .row-incorrect { background-color: #ffebee; color: #c62828; }
+        .pres-footer { position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555; }
+        .logo-small { height: 50px; vertical-align: middle; margin-right: 15px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #fff; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: 2px solid #ff8c00; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px; position: relative; text-align: left; font-size: 18px;}
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 32px; line-height: 1; cursor: pointer; color: #888; transition: 0.2s; }
+        .close-btn:hover { color: #ff8c00; }
+        .help-btn { background: #e3f2fd; color: #003399; border: 1px solid #003399; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        .help-btn:hover { background: #003399; color: #fff; }
+        svg { overflow: visible; }
+    </style>
+</head>
+<body>
+    <div class="slide active" style="background-image: url('${ASSETS_URL}p1.jpg')">
+        <div class="title-box">
+            <h1 style="color:#003399; margin:0; font-size: 3em; border-bottom: 3px solid #ff8c00; padding-bottom: 20px;">Тренировочный вариант</h1>
+            <ul class="topics-list">${topicsList}</ul>
+            <div style="font-family:'Caveat'; font-size:35px; color:#003399; margin-top:30px;">${authorLine}</div>
+            <div style="margin-top:40px; font-size: 1.2em; color: #555; font-style: italic;">
+                <img src="${ASSETS_URL}logo.png" class="logo-small" onerror="this.style.display='none'"> 
+                Шкатулка математических интерактивов
+            </div>
+        </div>
+        <div class="nav-btns" id="start-nav"><button class="nav-btn" onclick="nextSlide()">Начать →</button></div>
+    </div>
+
+    ${taskSlides}
+
+    <div class="slide" id="results-slide" style="background-image: url('${ASSETS_URL}p2.jpg')">
+        <div class="title-box" style="padding: 40px; max-width: 1100px; width: 95%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="font-size:3.5em; color:#4CAF50; margin:0;">Спасибо за работу!</h2>
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Задание</th>
+                        <th>Ваш ответ</th>
+                        <th>Верный ответ</th>
+                        <th>Время</th>
+                        <th>Разбор</th>
+                    </tr>
+                </thead>
+                <tbody id="results-tbody">
+                </tbody>
+            </table>
+
+            <button class="nav-btn" style="margin-top:30px; font-size: 1.3em; padding: 15px 40px; position: static;" onclick="location.reload()">Начать сначала</button>
+        </div>
+        <div class="pres-footer">Шкатулка математических интерактивов</div>
+    </div>
+
+    <div id="hidden-theories-container">
+        ${hiddenTheories}
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this) document.getElementById('modal-overlay').style.display='none'">
+        <div class="modal-box">
+            <div class="close-btn" onclick="document.getElementById('modal-overlay').style.display='none'">&times;</div>
+            <div id="modal-content-box"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        let userResults = [];
+        let slideStartTime = Date.now();
+        
+        function showSlide(idx) {
+            slides.forEach(s => s.classList.remove('active'));
+            slides[idx].classList.add('active');
+            slideStartTime = Date.now();
+            
+            if (idx === slides.length - 1) {
+                renderResults();
+            }
+        }
+
+        function nextSlide() { 
+            if(currentSlide < slides.length - 1) showSlide(++currentSlide); 
+        }
+
+        function submitTask(idx, correctAns) {
+            let userAns = document.getElementById('ans-'+idx).value.trim().replace(',', '.');
+            let timeSpent = Math.round((Date.now() - slideStartTime) / 1000);
+            
+            userResults.push({
+                taskNum: idx + 1,
+                userAns: userAns,
+                correctAns: correctAns,
+                time: timeSpent
+            });
+            
+            nextSlide();
+        }
+
+        function renderResults() {
+            let tbody = document.getElementById('results-tbody');
+            let html = '';
+            userResults.forEach((res, idx) => {
+                let isCorrect = (res.userAns === res.correctAns);
+                let rowClass = isCorrect ? 'row-correct' : 'row-incorrect';
+                let displayAns = res.userAns === "" ? "—" : res.userAns;
+
+                html += \`<tr class="\${rowClass}">
+                    <td>\${res.taskNum}</td>
+                    <td>\${displayAns}</td>
+                    <td>\${res.correctAns}</td>
+                    <td>\${res.time} сек.</td>
+                    <td><button class="help-btn" onclick="window.openTheoryModalLocal('theory-pres-\${idx}')">Смотреть</button></td>
+                </tr>\`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function openTheoryModalLocal(dataId) {
+            let el = document.getElementById(dataId);
+            if(el) {
+                document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
+                document.getElementById('modal-overlay').style.display = 'flex';
+                if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
+            }
+        }
+
+        ${CANVAS_LOGIC_SCRIPT}
+    ${SCRIPT_END}
+</body>
+</html>`;
+
+        let blob = new Blob([fullHTML], { type: "text/html;charset=utf-8" });
+        let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Презентация_Урока.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+        document.getElementById('pres-modal').style.display = 'none';
     }
 
-    function handleThemeChange() {}
-    function handleSignatureChange() {}
-    function openGameMenu() { document.getElementById('game-modal').style.display='flex'; }
-    function openPresentationMenu() { document.getElementById('pres-modal').style.display='flex'; }
-    function downloadAnswers() {}
-    function generateTowerGame() {}
+    function generateTowerGame() {
+        if (currentGeneratedTasks.length !== 9) { alert("Для игры 'Башня знаний' нужно ровно 9 заданий."); return; }
+        
+        let gameQuestions = currentGeneratedTasks.map(t => {
+            let fullPrompt = t.text;
+            if (t.svg) {
+                fullPrompt = `<div style="background: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); color: #000;">${t.svg}</div>` + fullPrompt;
+            }
+            return {
+                type: "input",
+                prompt: fullPrompt,
+                accepts: [t.answer],
+                seconds: parseInt(document.getElementById('timer-input').value) || null
+            };
+        });
+
+        let teacherName = document.getElementById('teacher-name').value.trim();
+        let instructionText = "Решай задачи верно, чтобы построить самую высокую башню!";
+        if (document.getElementById('toggle-signature').checked && teacherName !== '') {
+            let gender = document.getElementById('teacher-gender').value;
+            let verb = (gender === 'male') ? 'Подготовил' : 'Подготовила';
+            instructionText += "\\n" + verb + ": " + teacherName;
+        }
+
+        let cfg = {
+            title: "Башня знаний",
+            questions: gameQuestions,
+            useLatex: true,
+            instruction: {
+                text: instructionText,
+                color: "#ff8c00",
+                glow: true
+            }
+        };
+
+        let configScript = "window.__EMBEDDED_CFG__ = " + JSON.stringify(cfg) + ";";
+        let finalHtml = TOWER_TEMPLATE.replace("/*__CONFIG_DATA__*/", configScript);
+
+        let blob = new Blob([finalHtml], { type: "text/html;charset=utf-8" });
+        let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Игра_Башня.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+    }
 </script>
 </body>
 </html>
