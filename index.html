@@ -68,6 +68,8 @@
         .pres-preview-card:hover { border-color: #ff8c00; transform: translateY(-3px); background: #333; }
         .pres-thumb { width: 100px; height: 70px; background-size: cover; border-radius: 4px; border: 1px solid #555; }
         
+        svg { overflow: visible; }
+        
         /* ИДЕАЛЬНАЯ ПЕЧАТЬ */
         @media screen { 
             #print-container, #print-footer { display: none !important; } 
@@ -98,6 +100,9 @@
                 z-index: 1000; 
             }
             
+            table.print-wrapper { width: 100%; border: none; border-collapse: collapse; page-break-inside: auto; }
+            tr { page-break-inside: auto; page-break-after: auto; }
+            td { page-break-inside: auto; page-break-after: auto; }
             .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 40px; }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
         }
@@ -123,7 +128,7 @@
         <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
             <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
             <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
-                Интерфейс обновлен! Векторы в порядке, скролл в презентации исправлен, стикеры выровнены.
+                Интерфейс обновлен! Использован новый математический алгоритм отрисовки векторов — стрелочки больше не исчезают.
             </p>
         </div>
     </aside>
@@ -262,8 +267,97 @@
     let currentGeneratedTasks = [];
     let selectedBlockTitles = [];
 
-    // Глобальное хранилище холстов для предпросмотра
     window.mainCanvases = {}; 
+
+    // --- НОВЫЙ ЖЕЛЕЗОБЕТОННЫЙ АЛГОРИТМ: ФИЗИЧЕСКИ РИСУЕМ ПОЛИГОНЫ ВМЕСТО МАРКЕРОВ ---
+    window.autoFixSVGArrows = function(container) {
+        if(!container) return;
+        let svgNs = 'http://www.w3.org/2000/svg';
+        
+        function getInheritedStrokeColor(el) {
+            let s = el.getAttribute('stroke') || el.style.stroke;
+            if (s && s !== 'none') return s;
+            if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') {
+                return getInheritedStrokeColor(el.parentElement);
+            }
+            return '#000';
+        }
+        
+        function getInheritedStrokeWidth(el) {
+            let sw = el.getAttribute('stroke-width') || el.style.strokeWidth;
+            if (sw) return parseFloat(sw);
+            if (el.parentElement && el.parentElement.tagName && el.parentElement.tagName.toLowerCase() !== 'svg') {
+                return getInheritedStrokeWidth(el.parentElement);
+            }
+            return 1;
+        }
+
+        container.querySelectorAll('svg').forEach(svg => {
+            svg.style.overflow = 'visible';
+            
+            function drawArrow(el) {
+                if (el.dataset.arrowDrawn) return;
+                let pts = null;
+                let tag = el.tagName.toLowerCase();
+                
+                if (tag === 'line') {
+                    pts = [
+                        {x: parseFloat(el.getAttribute('x1')), y: parseFloat(el.getAttribute('y1'))},
+                        {x: parseFloat(el.getAttribute('x2')), y: parseFloat(el.getAttribute('y2'))}
+                    ];
+                } else if (tag === 'path') {
+                    let d = el.getAttribute('d');
+                    // Игнорируем замкнутые и кривые линии
+                    if (!d || d.toLowerCase().includes('z') || d.toLowerCase().includes('c') || d.toLowerCase().includes('q')) return;
+                    // Извлекаем все числа
+                    let nums = d.match(/[+-]?\d*\.?\d+/g);
+                    if (nums && nums.length >= 4) {
+                        pts = [
+                            {x: parseFloat(nums[nums.length-4]), y: parseFloat(nums[nums.length-3])},
+                            {x: parseFloat(nums[nums.length-2]), y: parseFloat(nums[nums.length-1])}
+                        ];
+                    }
+                }
+                
+                if (pts && !isNaN(pts[0].x) && !isNaN(pts[1].y)) {
+                    let p1 = pts[0], p2 = pts[1];
+                    let dx = p2.x - p1.x, dy = p2.y - p1.y;
+                    let len = Math.sqrt(dx*dx + dy*dy);
+                    if (len > 0.1) {
+                        let angle = Math.atan2(dy, dx);
+                        let sw = getInheritedStrokeWidth(el);
+                        // Вычисляем размер стрелочки (не слишком маленькая, но и не гигантская)
+                        let headlen = Math.max(8, sw * 3.5); 
+                        let color = getInheritedStrokeColor(el);
+                        
+                        let p3 = {x: p2.x - headlen * Math.cos(angle - Math.PI / 7), y: p2.y - headlen * Math.sin(angle - Math.PI / 7)};
+                        let p4 = {x: p2.x - headlen * Math.cos(angle + Math.PI / 7), y: p2.y - headlen * Math.sin(angle + Math.PI / 7)};
+                        
+                        // Создаем жесткий полигон (залитый треугольник)
+                        let arrow = document.createElementNS(svgNs, 'polygon');
+                        arrow.setAttribute('points', `${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`);
+                        arrow.setAttribute('fill', color);
+                        el.parentNode.appendChild(arrow);
+                        el.dataset.arrowDrawn = "true";
+                    }
+                }
+            }
+
+            // 1. Убиваем все ссылки на маркеры (именно они вызывают ошибку Unsafe URL)
+            svg.querySelectorAll('[marker-end]').forEach(el => {
+                el.removeAttribute('marker-end');
+                drawArrow(el);
+            });
+
+            // 2. Ищем просто "толстые" линии без маркеров и тоже лепим на них стрелки
+            svg.querySelectorAll('path, line, polyline').forEach(el => {
+                let sw = getInheritedStrokeWidth(el);
+                if (sw > 1.2 && !el.dataset.arrowDrawn) {
+                    drawArrow(el);
+                }
+            });
+        });
+    };
 
     document.addEventListener('DOMContentLoaded', function() {
         let container = document.getElementById('dynamic-tasks');
@@ -366,11 +460,19 @@
         let sigPrint = (document.getElementById('toggle-signature').checked && teacherName !== '') ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${document.getElementById('teacher-gender').value === 'male' ? 'подготовил' : 'подготовила'}: ${teacherName}</div>` : "";
         
         document.getElementById('print-container').innerHTML = `
-            <div style="padding: 20mm 20mm 30mm 20mm; box-sizing: border-box;">
-                <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
-                ${sigPrint}
-                ${currentPrintHTML}
-            </div>
+            <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
+                <thead><tr><td style="height: 15mm; border: none;"></td></tr></thead>
+                <tbody>
+                    <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
+                        ${sigPrint}
+                    </td></tr>
+                    <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                        ${currentPrintHTML}
+                    </td></tr>
+                </tbody>
+                <tfoot><tr><td style="height: 15mm; border: none;"></td></tr></tfoot>
+            </table>
         `;
 
         if (window.MathJax) { MathJax.typesetPromise(); }
@@ -445,26 +547,52 @@
             finalTasks.forEach(item => {
                 taskCounter++;
                 
+                // ВШИВАЕМ ПОЛИГОНЫ В ОСНОВНУЮ КАРТИНКУ
+                let mainSvg = item.svg || "";
+                if (mainSvg) {
+                    let tmp = document.createElement('div');
+                    tmp.innerHTML = mainSvg;
+                    window.autoFixSVGArrows(tmp);
+                    mainSvg = tmp.innerHTML;
+                }
+
+                // ВШИВАЕМ ПОЛИГОНЫ В РАЗБОР
+                let theorySvgCode = item.theory.svg_code || "";
+                if (theorySvgCode) {
+                    let tmp = document.createElement('div');
+                    tmp.innerHTML = theorySvgCode;
+                    window.autoFixSVGArrows(tmp);
+                    theorySvgCode = tmp.innerHTML;
+                }
+                
                 let theoryHtml = `
                     <h3>Разбор аналогичного задания</h3>
                     <div style='background:#f9f9f9;padding:15px;border-left:4px solid #ff8c00;margin-bottom:15px;border-radius:6px;'>
                         <p style='margin-top:0;'><b>Задача:</b></p>
-                        <div style='min-height: 60px;'>${item.theory.svg_code ? '<div style="float:left; margin-right: 20px; margin-bottom: 10px;">' + item.theory.svg_code + '</div>' : ''}${item.theory.theory_task}</div><div style='clear:both;'></div>
+                        <div style='min-height: 60px;'>${theorySvgCode ? '<div style="float:left; margin-right: 20px; margin-bottom: 10px;">' + theorySvgCode + '</div>' : ''}${item.theory.theory_task}</div><div style='clear:both;'></div>
                         <p style='margin-top: 20px;'><b>Решение:</b></p>
                         <div>${item.theory.theory_sol}</div>
                     </div>
                     <h4 style='color: #ff8c00;'>Задачи для отработки:</h4>
                     <ul style='padding-left:20px;'>
                 `;
+
                 item.theory.tasks.forEach(t => {
-                    let tSvg = t.svg_code ? `<br><div style="margin:10px 0; max-width:300px;">${t.svg_code}</div>` : '';
+                    let tSvgCode = t.svg_code || "";
+                    if (tSvgCode) {
+                        let tmp = document.createElement('div');
+                        tmp.innerHTML = tSvgCode;
+                        window.autoFixSVGArrows(tmp);
+                        tSvgCode = tmp.innerHTML;
+                    }
+                    let tSvg = tSvgCode ? `<br><div style="margin:10px 0; max-width:300px;">${tSvgCode}</div>` : '';
                     theoryHtml += `<li style='margin-bottom:15px;'>${t.text}${tSvg}<br><span style='color:#003399;cursor:pointer;border-bottom:1px dashed #003399;' onclick='this.innerText="Ответ: ${t.answer}"; this.style.border="none"; this.style.fontWeight="bold";'>Показать ответ</span></li>`;
                 });
                 theoryHtml += `</ul>`;
 
                 currentGeneratedTasks.push({ 
                     text: item.text, 
-                    svg: item.svg || "", 
+                    svg: mainSvg, 
                     answer: String(item.answer),
                     theory: theoryHtml
                 });
@@ -479,7 +607,8 @@
                         else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
                     }
                     let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:18px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1;">${sciQuotes[sIdx]}</div>` : "";
-                    stickerHTML = `<div style="float:right; margin-left:15px; margin-bottom:15px; display:flex; flex-direction:column; align-items:center; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
+                    
+                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${mw}px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center;"><img src="${ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
                     nextStickerTarget += 3 + Math.floor(Math.random() * 2);
                 }
 
@@ -519,29 +648,31 @@
                 </div>`;
 
                 let taskHTMLInteractive = `<div style="margin-bottom:30px; clear:both; overflow:hidden; border-bottom:1px dashed #ddd; padding-bottom:20px;">
-                    <div style="display:flex; align-items:flex-start; gap:15px;">
-                        <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
-                        <div style="flex-grow:1;">
-                            ${stickerHTML}
-                            ${item.svg ? `<div style="margin-bottom: 15px; overflow: visible;">${item.svg}</div>` : ""}
-                            <div>${item.text}</div>
-                            <div style="clear:both;"></div>
-                            ${interactiveInput}
+                    <div style="display:flex; align-items:flex-start; justify-content: space-between;">
+                        <div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;">
+                            <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
+                            ${mainSvg ? `<div style="flex-shrink:0;min-width:150px;">${mainSvg}</div>` : ""}
+                            <div style="flex-grow:1; min-width:0;">
+                                <div>${item.text}</div>
+                                ${interactiveInput}
+                            </div>
                         </div>
+                        ${stickerHTML}
                     </div>
                     ${scratchpadHTML}
                 </div>`;
 
                 let taskHTMLPrint = `<div class="task-print-block">
-                    <div style="display:flex; align-items:flex-start; gap:15px;">
-                        <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
-                        <div style="flex-grow:1;">
-                            ${stickerHTML}
-                            ${item.svg ? `<div style="margin-bottom: 15px; overflow: visible;">${item.svg}</div>` : ""}
-                            <div>${item.text}</div>
-                            <div style="clear:both;"></div>
-                            <div style="margin-top:30px; font-size:18px;">Ответ: _______________________</div>
+                    <div style="display:flex; align-items:flex-start; justify-content: space-between;">
+                        <div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;">
+                            <div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>
+                            ${mainSvg ? `<div style="flex-shrink:0;min-width:150px;">${mainSvg}</div>` : ""}
+                            <div style="flex-grow:1; min-width:0;">
+                                <div>${item.text}</div>
+                                <div style="margin-top:30px; font-size:18px;">Ответ: _______________________</div>
+                            </div>
                         </div>
+                        ${stickerHTML}
                     </div>
                 </div>`;
 
@@ -573,9 +704,9 @@
         }
     }
 
-    // Универсальный супер-блок для черновика (Работает ВЕЗДЕ!)
     const CANVAS_LOGIC_SCRIPT = `
         window.mainCanvases = {};
+        
         window.openTheoryModalLocal = function(dataId) {
             let el = document.getElementById(dataId);
             if(el) {
@@ -735,6 +866,7 @@
         .close-btn:hover { color: #ff8c00; }
         .btn-settings { background: #333; color: #aaa; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85em; transition: 0.2s; }
         .btn-settings:hover { background: #444; color: #fff; }
+        svg { overflow: visible; }
     </style>
 </head>
 <body>
@@ -757,6 +889,7 @@
     </div>
 
     <script>
+        ${CANVAS_LOGIC_SCRIPT}
         let timerInterval; let timeLimit = ${timerValue} * 60; let timeSpent = 0; let isCountdown = timeLimit > 0;
         function updateTimerUI(sec) {
             let m = Math.floor(sec / 60).toString().padStart(2, '0');
@@ -789,8 +922,6 @@
             document.getElementById('btn-check').style.display = 'none';
             document.querySelectorAll('.btn-help').forEach(btn => btn.style.display = 'inline-flex');
         }
-
-        ${CANVAS_LOGIC_SCRIPT}
     ${SCRIPT_END}
 </body>
 </html>`;
@@ -827,26 +958,41 @@
                 color: #000 !important; 
                 font-family: 'Times New Roman', serif;
             }
-            #print-container { display: block !important; width: 100%; padding: 20mm !important; box-sizing: border-box !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #print-container { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .print-footer-fixed { position: fixed; bottom: 8mm; left: 0; right: 0; text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); z-index: 1000; }
+            table.print-wrapper { width: 100%; border: none; border-collapse: collapse; page-break-inside: auto; }
+            tr { page-break-inside: auto; page-break-after: auto; }
+            td { page-break-inside: auto; page-break-after: auto; }
             .task-print-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 40px; }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
         }
         @media screen {
             body { background: #f4f7f6; font-family: 'Times New Roman', serif; padding: 40px; }
-            #print-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+            table.print-wrapper { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
             .print-footer-fixed { display: none; }
         }
+        svg { overflow: visible; }
     </style>
 </head>
 <body>
     <div class="print-footer-fixed">Шкатулка математических интерактивов</div>
-    <div id="print-container">
-        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
-        ${sigPrint}
-        ${currentPrintHTML}
-    </div>
-    <script>setTimeout(function(){ window.print(); }, 1500);${SCRIPT_END}
+    <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
+        <thead><tr><td style="height: 15mm; border: none;"></td></tr></thead>
+        <tbody>
+            <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
+                ${sigPrint}
+            </td></tr>
+            <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                ${currentPrintHTML}
+            </td></tr>
+        </tbody>
+        <tfoot><tr><td style="height: 15mm; border: none;"></td></tr></tfoot>
+    </table>
+    <script>
+        ${CANVAS_LOGIC_SCRIPT}
+        setTimeout(function(){ window.print(); }, 1500);
+    ${SCRIPT_END}
 </body>
 </html>`;
         
@@ -882,9 +1028,9 @@
                 
                 <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; overflow-y: auto; display: block;">
                     
-                    <div style="text-align: center; font-size: 1.5em; padding-bottom: 20px;">
-                        ${t.svg ? `<div style="margin-bottom: 25px; overflow: visible;">${t.svg}</div>` : ""}
-                        <div style="margin-bottom: 30px;">${t.text}</div>
+                    <div style="display: block; text-align: center; font-size: 1.5em; padding-bottom: 20px;">
+                        ${t.svg ? `<div style="margin-bottom: 25px;">${t.svg}</div>` : ""}
+                        <div style="margin-bottom: 30px; text-align: center;">${t.text}</div>
                         <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap;">
                             <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
                             <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
@@ -953,6 +1099,7 @@
         .close-btn:hover { color: #ff8c00; }
         .help-btn { background: #e3f2fd; color: #003399; border: 1px solid #003399; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
         .help-btn:hover { background: #003399; color: #fff; }
+        svg { overflow: visible; }
     </style>
 </head>
 <body>
@@ -1056,6 +1203,15 @@
                 </tr>\`;
             });
             tbody.innerHTML = html;
+        }
+
+        function openTheoryModalLocal(dataId) {
+            let el = document.getElementById(dataId);
+            if(el) {
+                document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
+                document.getElementById('modal-overlay').style.display = 'flex';
+                if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
+            }
         }
 
         ${CANVAS_LOGIC_SCRIPT}
