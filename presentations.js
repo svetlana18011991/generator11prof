@@ -17,12 +17,12 @@ function generatePresentation1() {
                 <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.64); color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
             </div>
             
-            <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; overflow-y: auto; display: block; box-sizing: border-box;" onclick="event.stopPropagation();">
+            <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 20px 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;" onclick="event.stopPropagation();">
                 
-                <div style="display: block; text-align: center; font-size: 1.5em; padding-bottom: 20px;">
-                    ${t.svg ? `<div style="margin-bottom: 25px;">${t.svg}</div>` : ""}
-                    <div style="margin-bottom: 30px; text-align: center;">${t.text}</div>
-                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                    ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
+                    <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
+                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
                         <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
                         <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
@@ -65,7 +65,7 @@ function generatePresentation1() {
 }
 
 // ==========================================
-// АВТОРСКИЙ СТИЛЬ 2 (Пастельный, с f1, f2, f3, f4)
+// АВТОРСКИЙ СТИЛЬ 2 (Пастельный, с f1, f2, f4)
 // ==========================================
 function generatePresentation2() {
     let teacherName = document.getElementById('teacher-name').value.trim();
@@ -78,30 +78,31 @@ function generatePresentation2() {
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
     let taskSlides = window.currentGeneratedTasks.map((t, i) => {
-        // Чередуем фоновые картинки f2.png и f3.png
-        let bgImg = (i % 2 === 0) ? 'f2.png' : 'f3.png';
+        // Для всех заданий используем только f2.png
+        let bgImg = 'f2.png';
         
         return `
         <div class="slide task-slide" style="background-image: url('${window.ASSETS_URL}${bgImg}')">
+            
             <div class="header-plate" style="position: absolute; top: calc(15% - 107px); left: 70%; transform: translateX(-50%); width: calc(351px * 0.64); height: calc(220px * 0.64); background: url('${window.ASSETS_URL}f4.png') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 30;">
                 <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.64); color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
             </div>
             
-            <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 20px; box-shadow: 0 15px 40px rgba(233,30,99,0.15); border: 2px solid #ff4081; overflow-y: auto; display: block; box-sizing: border-box;" onclick="event.stopPropagation();">
+            <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 20px 30px; border-radius: 20px; box-shadow: 0 15px 40px rgba(233,30,99,0.15); border: 2px solid #f48fb1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;" onclick="event.stopPropagation();">
                 
-                <div style="display: block; text-align: center; font-size: 1.5em; padding-bottom: 20px;">
-                    ${t.svg ? `<div style="margin-bottom: 25px;">${t.svg}</div>` : ""}
-                    <div style="margin-bottom: 30px; text-align: center; color: #333;">${t.text}</div>
-                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                    ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
+                    <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
+                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #f8bbd0; text-align: center; outline: none; color: #e91e63;">
-                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #ff4081; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(255,64,129,0.3);">ОК</button>
+                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #f48fb1; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(233,30,99,0.2);">ОК</button>
                         <button class="btn-settings" style="background: #fce4ec; color: #d81b60; border: 1px solid #f8bbd0; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
                     </div>
                 </div>
 
             </div>
 
-            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #ff4081; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(233,30,99,0.15); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
+            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #f48fb1; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(233,30,99,0.15); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #fce4ec; padding: 8px 15px; border-radius: 12px; border: 1px solid #f8bbd0; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
@@ -132,8 +133,8 @@ function generatePresentation2() {
 
     let hiddenTheories = window.currentGeneratedTasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory)}</div>`).join('');
 
-    // Титульный фон: f1.png, Фон результатов: f2.png
-    generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, "Презентация_Урока_Стиль2.html", 'f1.png', 'f2.png', '#ff4081');
+    // Титульный фон: f1.png, Фон заданий и результатов: f2.png
+    generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, "Презентация_Урока_Стиль2.html", 'f1.png', 'f2.png', '#f48fb1');
 }
 
 // ==========================================
@@ -171,7 +172,17 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .close-btn:hover { color: ${accentColor}; }
         .help-btn { background: #e3f2fd; color: #003399; border: 1px solid #003399; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
         .help-btn:hover { background: #003399; color: #fff; }
-        svg { overflow: visible; }
+        
+        /* Умное масштабирование контента (чтобы не было скролла) */
+        .task-text { font-size: 1.25em; line-height: 1.3; }
+        .svg-wrapper svg {
+            max-width: 100% !important;
+            max-height: 38vh !important;
+            width: auto !important;
+            height: auto !important;
+            display: block;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
