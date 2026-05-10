@@ -381,7 +381,6 @@
             </div>`;
         }
         
-        // Заставляем MathJax обработать новые динамические элементы
         if (window.MathJax) {
             MathJax.typesetPromise([container]).catch((err) => console.log(err.message));
         }
@@ -408,6 +407,8 @@
     function showTooltip(tid, index, e) {
         let p = window.database[tid].prototypes[index];
         tooltip.innerHTML = `${p.svg_code || ''}<div style="font-size: 0.9em;">${p.tasks[0].text}</div>`;
+        // Вызываем функцию отрисовки стрелочек для всплывающего окна
+        if (window.autoFixSVGArrows) window.autoFixSVGArrows(tooltip);
         tooltip.style.display = 'block';
         if (window.MathJax) MathJax.typesetPromise([tooltip]);
         moveTooltip(e);
