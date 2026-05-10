@@ -123,7 +123,7 @@ function generatePresentation2() {
 }
 
 // ==========================================
-// АВТОРСКИЙ СТИЛЬ 3 (Фиолетовый неон)
+// АВТОРСКИЙ СТИЛЬ 3 (Фиолетовый неон, без плашки)
 // ==========================================
 function generatePresentation3() {
     let teacherName = document.getElementById('teacher-name').value.trim();
@@ -137,8 +137,8 @@ function generatePresentation3() {
     
     let taskSlides = window.currentGeneratedTasks.map((t, i) => `
         <div class="slide task-slide" style="background-image: url('${window.ASSETS_URL}s1.png')">
-            <div class="header-plate" style="position: absolute; top: calc(15% - 107px); left: 70%; transform: translateX(-50%); width: calc(351px * 0.64); height: calc(220px * 0.64); background: url('${window.ASSETS_URL}f4.png') center/100% 100% no-repeat; display: flex; justify-content: center; align-items: center; z-index: 30;">
-                <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.64); color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
+            <div style="position: absolute; top: calc(15% - 55px); left: 70%; transform: translateX(-50%); z-index: 30;">
+                <h3 style="font-family: 'Caveat', cursive; font-size: 38px; color: #fff; text-shadow: 0 0 10px #9c27b0, 0 0 20px #9c27b0; margin: 0;">Задание ${i+1}</h3>
             </div>
             
             <div class="task-right-side" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 20px 30px; border-radius: 20px; box-shadow: 0 0 25px #9c27b0, inset 0 0 15px #9c27b0; border: 2px solid #9c27b0; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;" onclick="event.stopPropagation();">
