@@ -75,10 +75,17 @@
             #print-container, #print-footer-fixed { display: none !important; } 
         }
         @media print {
-            @page { margin: 15mm; size: A4; } 
+            /* Нулевые поля убивают системные надписи (дату, ссылку и т.д.) */
+            @page { margin: 0; size: A4; } 
             body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
             #print-container { display: block !important; width: 100%; }
+            
+            #print-footer-fixed { 
+                display: block !important; position: fixed; bottom: 10mm; left: 0; right: 0; 
+                text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); 
+                z-index: 9999; background: transparent; height: 10mm; line-height: 10mm;
+            }
             
             .task-print-block { 
                 display: block;
@@ -95,6 +102,7 @@
 </head>
 <body>
 
+<div id="print-footer-fixed">Шкатулка математических интерактивов</div>
 <div id="print-container"></div>
 
 <div class="layout-wrapper">
@@ -112,7 +120,7 @@
         <div style="margin-top: 30px; background: #2a2a2a; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 0 8px 8px 0; text-align: left;">
             <h4 style="margin: 0 0 8px 0; color: #4CAF50; font-size: 1.05em;">📌 Новости проекта</h4>
             <p style="font-size: 0.85em; margin: 0; color: #ddd; line-height: 1.4;">
-                Интерфейс оптимизирован! Задания теперь всегда идут по порядку. Исправлена выгрузка файлов для печати и интерактива.
+                Интерфейс оптимизирован! Задания теперь всегда идут по порядку. Исправлена выгрузка файлов для печати (без системных надписей) и интерактива.
             </p>
         </div>
     </aside>
@@ -440,6 +448,29 @@
         
         let previewCode = currentInteractiveHTML.replace(/class="btn-settings btn-help" style="display:none;/g, 'class="btn-settings btn-help" style="display:inline-flex;');
         document.getElementById('output-section').innerHTML = `<div class="theme-wrapper bg-${theme}"><div class="preview-paper">${timerDisplay}<h1 style="color: #003399; text-align: center; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top: 0;">Тренировочный вариант</h1>${signatureHTML}${previewCode}</div></div>`;
+        
+        let sigPrint = (document.getElementById('toggle-signature').checked && teacherName !== '') ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${document.getElementById('teacher-gender').value === 'male' ? 'подготовил' : 'подготовила'}: ${teacherName}</div>` : "";
+        
+        document.getElementById('print-container').innerHTML = `
+            <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
+                <thead><tr><td style="height: 20mm; border: none;"></td></tr></thead>
+                <tbody>
+                    <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
+                        ${sigPrint}
+                    </td></tr>
+                    <tr><td style="padding: 0 20mm; page-break-inside: auto;">
+                        ${currentPrintHTML}
+                    </td></tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td style="height: 20mm; border: none;"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+        if (window.MathJax) { MathJax.typesetPromise(); }
     }
 
     function shuffleArray(array) {
@@ -510,7 +541,36 @@
                 let mainSvg = item.svg || "";
                 if (mainSvg) { let tmp = document.createElement('div'); tmp.innerHTML = mainSvg; window.autoFixSVGArrows(tmp); mainSvg = tmp.innerHTML; }
                 
-                window.currentGeneratedTasks.push({ text: item.text, svg: mainSvg, answer: String(item.answer), theory: item.theory ? item.theory.theory_sol : "" });
+                let theorySvgCode = item.theory && item.theory.svg_code ? item.theory.svg_code : "";
+                if (theorySvgCode) {
+                    let tmp = document.createElement('div'); tmp.innerHTML = theorySvgCode; window.autoFixSVGArrows(tmp); theorySvgCode = tmp.innerHTML;
+                }
+                
+                let theoryHtml = "";
+                if (item.theory) {
+                    theoryHtml = `
+                        <h3>Разбор аналогичного задания</h3>
+                        <div style='background:#f9f9f9;padding:15px;border-left:4px solid #ff8c00;margin-bottom:15px;border-radius:6px;'>
+                            <p style='margin-top:0;'><b>Задача:</b></p>
+                            <div style='min-height: 60px;'>${theorySvgCode ? '<div style="float:left; margin-right: 20px; margin-bottom: 10px;">' + theorySvgCode + '</div>' : ''}${item.theory.theory_task}</div><div style='clear:both;'></div>
+                            <p style='margin-top: 20px;'><b>Решение:</b></p>
+                            <div>${item.theory.theory_sol}</div>
+                        </div>
+                        <h4 style='color: #ff8c00;'>Задачи для отработки:</h4>
+                        <ul style='padding-left:20px;'>
+                    `;
+                    if(item.theory.tasks) {
+                        item.theory.tasks.forEach(t => {
+                            let tSvgCode = t.svg_code || "";
+                            if (tSvgCode) { let tmp = document.createElement('div'); tmp.innerHTML = tSvgCode; window.autoFixSVGArrows(tmp); tSvgCode = tmp.innerHTML; }
+                            let tSvg = tSvgCode ? `<br><div style="margin:10px 0; max-width:300px;">${tSvgCode}</div>` : '';
+                            theoryHtml += `<li style='margin-bottom:15px;'>${t.text}${tSvg}<br><span style='color:#003399;cursor:pointer;border-bottom:1px dashed #003399;' onclick='this.innerText="Ответ: ${t.answer}"; this.style.border="none"; this.style.fontWeight="bold";'>Показать ответ</span></li>`;
+                        });
+                    }
+                    theoryHtml += `</ul>`;
+                }
+
+                window.currentGeneratedTasks.push({ text: item.text, svg: mainSvg, answer: String(item.answer), theory: theoryHtml });
                 
                 let stickerHTML = "";
                 if (stickerPack !== 'none' && taskCounter === nextStickerTarget) {
@@ -523,24 +583,65 @@
                         else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
                     } else if (stickerPack === 'ro') { mw *= 1.3; mh *= 1.3; }
                     let quote = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:16px; color:#003399; margin-top:5px; transform:rotate(${rot/3}deg); text-align:center; line-height:1.1;">${sciQuotes[sIdx]}</div>` : "";
-                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${mw+20}px; display:flex; flex-direction:column; align-items:center; page-break-inside: avoid;"><img src="${window.ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">${quote}</div>`;
+                    stickerHTML = `<div style="flex-shrink:0; margin-left: 20px; width: ${mw+20}px; display:flex; flex-direction:column; align-items:center; page-break-inside: avoid;"><img src="${window.ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-width:${mw}px;max-height:${mh}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quote}</div>`;
                     nextStickerTarget += 3 + Math.floor(Math.random() * 2);
                 }
 
-                let drawBtn = `<button class="btn-settings" style="margin-left: 10px; background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 18px; padding: 8px 12px;" onclick="window.toggleCanvas('${taskCounter}')">✏️</button>`;
-                let helpBtn = includeExplanations && item.theory ? `<button class="btn-settings btn-help" style="display:none; margin-left: 10px;" onclick="window.openTheoryModalLocal('theory-data-${taskCounter}')">РАЗБОР</button><div id="theory-data-${taskCounter}" style="display:none;">${encodeURIComponent(item.theory.theory_sol)}</div>` : "";
+                let drawBtn = `<button class="btn-settings" style="margin-left: 10px; background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 18px; padding: 8px 12px;" onclick="window.toggleCanvas('${taskCounter}')" title="Открыть черновик">✏️</button>`;
+                let helpBtn = includeExplanations && item.theory ? `<button class="btn-settings btn-help" style="display:none; margin-left: 10px; background: #e3f2fd; color: #003399; border: 1px solid #003399; font-weight: bold; padding: 10px 15px;" onclick="window.openTheoryModalLocal('theory-data-${taskCounter}')">РАЗБОР</button><div id="theory-data-${taskCounter}" style="display:none;">${encodeURIComponent(theoryHtml)}</div>` : "";
                 
-                currentInteractiveHTML += `<div style="margin-bottom:30px; clear:both; overflow:hidden; border-bottom:1px dashed #ddd; padding-bottom:20px;"><div style="display:flex; align-items:flex-start;">${mainSvg ? `<div style="flex-shrink:0;min-width:150px;">${mainSvg}</div>` : ""}<div style="flex-grow:1;"><div>${taskCounter}. ${item.text}</div><div style="margin-top:15px; display:flex; align-items:center;"><input type="text" class="ans-box" data-ans="${item.answer}" style="padding:10px; width:150px;">${drawBtn}${helpBtn}</div></div>${stickerHTML}</div><div id="draw-wrapper-${taskCounter}" style="display:none; margin-top:20px; height:250px;"><canvas id="canvas-${taskCounter}" style="width:100%; height:100%; border:1px solid #ccc;"></canvas></div></div>`;
-                currentPrintHTML += `<div class="task-print-block"><div style="display:flex; align-items:flex-start;">${mainSvg ? `<div style="flex-shrink:0;min-width:150px; page-break-inside: avoid;">${mainSvg}</div>` : ""}<div style="flex-grow:1;"><div>${taskCounter}. ${item.text}</div><div style="margin-top:25px;">Ответ: _________________</div></div>${stickerHTML}</div></div>`;
-                currentAnswersHTML += `<div><b>${taskCounter}.</b> ${item.answer}</div>`;
+                let scratchpadHTML = `<div id="draw-wrapper-${taskCounter}" style="display:none; margin-top: 20px; width: 100%; transition: all 0.3s ease; clear: both;">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
+                        <button onclick="window.setTool('${taskCounter}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
+                        <button onclick="window.setTool('${taskCounter}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                        <select id="tool-select-${taskCounter}" onchange="window.setTool('${taskCounter}', this.value)" style="background: #fff; border: 1px solid #90caf9; border-radius: 4px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: #003399; font-weight: 500;">
+                            <option value="" disabled selected hidden>🔺 Фигуры</option>
+                            <option value="line">📏 Прямая</option>
+                            <option value="vector">↗️ Вектор</option>
+                            <option value="circle">⭕ Окружность</option>
+                            <option value="triangle">🔺 Треугольник</option>
+                            <option value="cylinder">🛢️ Цилиндр</option>
+                            <option value="cone">🍦 Конус</option>
+                            <option value="sphere">🔮 Сфера</option>
+                        </select>
+                        <input type="color" id="color-${taskCounter}" value="#003399" style="cursor:pointer; height: 30px; width: 35px; border: none; background: transparent; padding: 0;" title="Цвет">
+                        <input type="range" id="size-${taskCounter}" min="1" max="15" value="3" style="cursor:pointer; width: 80px;" title="Толщина линии">
+                        <button onclick="window.setTool('${taskCounter}', 'eraser')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Ластик">🧽</button>
+                        <div style="flex-grow:1;"></div>
+                        <button onclick="window.clearCanvas('${taskCounter}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
+                        <input type="hidden" id="tool-${taskCounter}" value="pen">
+                    </div>
+                    <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 250px;"><canvas id="canvas-${taskCounter}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
+                </div>`;
+
+                currentInteractiveHTML += `<div style="margin-bottom:30px; clear:both; overflow:hidden; border-bottom:1px dashed #ddd; padding-bottom:20px;"><div style="display:flex; align-items:flex-start; justify-content: space-between;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;"><div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div style="flex-shrink:0;min-width:150px;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div>${item.text}</div><div style="margin-top:15px; display:flex; align-items:center; clear: both;"><input type="text" class="ans-box" placeholder="Ответ..." data-ans="${item.answer}" style="padding: 10px 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 16px; font-weight: bold; width: 150px; outline: none; transition: 0.3s;">${drawBtn}${helpBtn}</div></div></div>${stickerHTML}</div>${scratchpadHTML}</div>`;
+                
+                currentPrintHTML += `<div class="task-print-block"><div style="display:flex; align-items:flex-start; justify-content: space-between;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;"><div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div style="flex-shrink:0;min-width:150px; page-break-inside: avoid;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div>${item.text}</div><div style="margin-top:15px; font-size:18px;">Ответ: _______________________</div></div></div>${stickerHTML}</div></div>`;
+                currentAnswersHTML += `<div style="margin-bottom: 10px; font-size: 18px;"><b>${taskCounter}.</b> Ответ: <strong style="color: #d32f2f;">${item.answer}</strong></div>`;
             });
             currentInteractiveHTML += `</div>`; currentPrintHTML += `</div>`; currentAnswersHTML += `</div>`;
         }
+
+        if (stickerPack !== 'none' && hasContent && (taskCounter - lastStickerAddedAt > 1)) {
+            let sIdx = getNextSticker(maxStickers), rot = Math.floor(Math.random() * 31) - 15;
+            let mw = 112, mh = 112; 
+            if (stickerPack === 'sci') {
+                if ([1,4].includes(sIdx)) { mw *= 1.8; mh *= 1.8; }
+                else if (sIdx === 3) { mw *= 1.35; mh *= 1.35; }
+                else if (sIdx === 5) { mw *= 1.5; mh *= 1.5; }
+            } else if (stickerPack === 'ro') { mw *= 1.3; mh *= 1.3; }
+            let quoteHTML = (stickerPack === 'sci' && sciQuotes[sIdx]) ? `<div style="font-family:'Caveat', cursive; font-size:20px; color:#003399; margin-top:10px; transform:rotate(${rot/3}deg); line-height:1.1; max-width:${mw+40}px; text-align:center;">${sciQuotes[sIdx]}</div>` : "";
+            let bottomSticker = `<div style="clear:both;margin-top:15px;padding-right:40px;display:flex;flex-direction:column;align-items:flex-end; page-break-inside: avoid; page-break-before: avoid; break-before: avoid;"><div style="display:flex;flex-direction:column;align-items:center; page-break-inside: avoid;"><img src="${window.ASSETS_URL}${stickerPack}_${sIdx}.png" style="max-height:${mh}px;max-width:${mw}px;transform:rotate(${rot}deg);filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.15));pointer-events:none;">${quoteHTML}</div></div>`;
+            currentInteractiveHTML += bottomSticker;
+            currentPrintHTML += bottomSticker;
+        }
+
         if (hasContent) { document.getElementById('output-section').style.display = 'block'; document.getElementById('btn-group').style.display = 'flex'; renderPreview(); }
     }
 
     window.CANVAS_LOGIC_SCRIPT = `
         window.mainCanvases = {};
+        
         window.openTheoryModalLocal = function(dataId) {
             let el = document.getElementById(dataId);
             if(el) {
@@ -670,6 +771,7 @@
         };
     `;
 
+    // Активируем код для превью внутри редактора
     eval(window.CANVAS_LOGIC_SCRIPT);
 
     function downloadStudentHTML() {
@@ -795,7 +897,7 @@
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${window.SCRIPT_END}
     <style>
         @media print {
-            @page { margin: 20mm; size: A4; }
+            @page { margin: 0; size: A4; }
             body { 
                 background: #fff !important; 
                 margin: 0 !important; 
@@ -808,7 +910,7 @@
             #print-container { display: block !important; width: 100%; }
             
             #print-footer-fixed { 
-                display: block !important; position: fixed; bottom: 0; left: 0; right: 0; 
+                display: block !important; position: fixed; bottom: 10mm; left: 0; right: 0; 
                 text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); 
                 z-index: 9999; background: transparent; height: 10mm; line-height: 10mm;
             }
@@ -838,19 +940,19 @@
 <body>
     <div id="print-footer-fixed">Шкатулка математических интерактивов</div>
     <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
-        <thead><tr><td style="height: 10mm; border: none;"></td></tr></thead>
+        <thead><tr><td style="height: 20mm; border: none;"></td></tr></thead>
         <tbody>
-            <tr><td style="padding: 0 10mm; page-break-inside: auto;">
+            <tr><td style="padding: 0 20mm; page-break-inside: auto;">
                 <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
                 ${sigPrint}
             </td></tr>
-            <tr><td style="padding: 0 10mm; page-break-inside: auto;">
+            <tr><td style="padding: 0 20mm; page-break-inside: auto;">
                 ${currentPrintHTML}
             </td></tr>
         </tbody>
         <tfoot>
             <tr>
-                <td style="height: 15mm; border: none;"></td>
+                <td style="height: 20mm; border: none;"></td>
             </tr>
         </tfoot>
     </table>
