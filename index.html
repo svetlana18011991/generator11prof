@@ -75,16 +75,10 @@
             #print-container, #print-footer-fixed { display: none !important; } 
         }
         @media print {
-            @page { margin: 20mm; size: A4; } 
+            @page { margin: 15mm; size: A4; } 
             body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
             #print-container { display: block !important; width: 100%; }
-            
-            #print-footer-fixed { 
-                display: block !important; position: fixed; bottom: 0; left: 0; right: 0; 
-                text-align: center; font-family: 'Caveat', cursive; font-size: 20px; color: rgba(0,0,0,0.5); 
-                z-index: 9999; background: transparent; height: 10mm; line-height: 10mm;
-            }
             
             .task-print-block { 
                 display: block;
@@ -101,7 +95,6 @@
 </head>
 <body>
 
-<div id="print-footer-fixed">Шкатулка математических интерактивов</div>
 <div id="print-container"></div>
 
 <div class="layout-wrapper">
@@ -447,23 +440,6 @@
         
         let previewCode = currentInteractiveHTML.replace(/class="btn-settings btn-help" style="display:none;/g, 'class="btn-settings btn-help" style="display:inline-flex;');
         document.getElementById('output-section').innerHTML = `<div class="theme-wrapper bg-${theme}"><div class="preview-paper">${timerDisplay}<h1 style="color: #003399; text-align: center; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top: 0;">Тренировочный вариант</h1>${signatureHTML}${previewCode}</div></div>`;
-        
-        let sigPrint = (document.getElementById('toggle-signature').checked && teacherName !== '') ? `<div style="text-align:center;font-family:'Caveat';font-size:24px;color:#333;margin-top:-10px;margin-bottom:20px;">Вариант ${document.getElementById('teacher-gender').value === 'male' ? 'подготовил' : 'подготовила'}: ${teacherName}</div>` : "";
-        
-        document.getElementById('print-container').innerHTML = `
-            <table class="print-wrapper" style="width: 100%; border: none; border-collapse: collapse; page-break-inside: auto;">
-                <thead><tr><td style="height: 15mm; border: none;"></td></tr></thead>
-                <tbody>
-                    <tr><td style="padding: 0 10mm; page-break-inside: auto;">
-                        <h2 style="text-align:center; text-transform: uppercase; margin-top: 0; margin-bottom: 10px; font-family: 'Times New Roman', serif; color: #000;">Тренировочный вариант</h2>
-                        ${sigPrint}
-                    </td></tr>
-                    <tr><td style="padding: 0 10mm; page-break-inside: auto;">${currentPrintHTML}</td></tr>
-                </tbody>
-                <tfoot><tr><td style="height: 15mm; border: none;"></td></tr></tfoot>
-            </table>
-        `;
-        if (window.MathJax) { MathJax.typesetPromise(); }
     }
 
     function shuffleArray(array) {
@@ -844,9 +820,9 @@
                 display: block;
                 page-break-inside: avoid !important; 
                 break-inside: avoid !important; 
-                margin-bottom: 25px; 
-                position: relative;
+                margin-bottom: 30px; 
                 clear: both;
+                position: relative;
             }
             h3 { page-break-after: avoid; break-after: avoid; font-size: 18px; }
             img { max-width: 100% !important; page-break-inside: avoid; }
