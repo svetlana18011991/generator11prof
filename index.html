@@ -5,7 +5,7 @@
     <title>Рабочее пространство — Светлана Быкова</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
     
-    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=YzrRfT0yI9LYrJg8Fz4MeqH1BhhspNRBLbYewEQ45OT4r_CH4XIfe4fO31EyerSADsH68VpLbOmqvP0_TyL-QF-VAN36J1Aw5TkBzmKE3gM3OQ2GCpxwbGWZJqnj36WlH-sesBqteU2fwE-hflAlFMIL5Zw-9Tzw5h1zEBFwBLTMFICaNP0VNI7IT7Jda4g2_dtoYUsAP3T3aO2tQteN2XbYtkOokyHROkX_woFJz87XYVfNvPVrMFBCgFogk_L1j1R1y0_n4wfUFIuM-ju5pg" charset="UTF-8"></script><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script>window.database = {};</script>
@@ -452,7 +452,11 @@
         }
         
         let previewCode = currentInteractiveHTML.replace(/class="btn-settings btn-help" style="display:none;/g, 'class="btn-settings btn-help" style="display:inline-flex;');
-        document.getElementById('output-section').innerHTML = `<div class="theme-wrapper bg-${theme}"><div class="preview-paper">${timerDisplay}<h1 style="color: #003399; text-align: center; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top: 0;">Тренировочный вариант</h1>${signatureHTML}${previewCode}</div></div>`;
+        let outputSection = document.getElementById('output-section');
+        outputSection.innerHTML = `<div class="theme-wrapper bg-${theme}"><div class="preview-paper">${timerDisplay}<h1 style="color: #003399; text-align: center; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top: 0;">Тренировочный вариант</h1>${signatureHTML}${previewCode}</div></div>`;
+        if (window.MathJax) {
+            MathJax.typesetPromise([outputSection]).catch((err) => console.log(err.message));
+        }
     }
 
     function shuffleArray(array) {
