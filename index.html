@@ -5,7 +5,7 @@
     <title>Рабочее пространство — Светлана Быкова</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
     
-    <script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=YzrRfT0yI9LYrJg8Fz4MeqH1BhhspNRBLbYewEQ45OT4r_CH4XIfe4fO31EyerSADsH68VpLbOmqvP0_TyL-QF-VAN36J1Aw5TkBzmKE3gM3OQ2GCpxwbGWZJqnj36WlH-sesBqteU2fwE-hflAlFMIL5Zw-9Tzw5h1zEBFwBLTMFICaNP0VNI7IT7Jda4g2_dtoYUsAP3T3aO2tQteN2XbYtkOokyHROkX_woFJz87XYVfNvPVrMFBCgFogk_L1j1R1y0_n4wfUFIuM-ju5pg" charset="UTF-8"></script><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=fBxlwMk3doke95iwfW4nKLynz-TWC1BuotG0EJ8BcwLbsW_P_LPWviRdLF7DO-pHybjeDN_5oM9TKcDYY3w5kGWhdRGfDSNFg2--ioAzUjrRqxZ6i3vlh07d24Ix3xhVpnDsQ2TiAP67IHdhADIwTTFNYIMNIO91FN_4YVL8GIRAn-f-xx32OATZ6VpTIIevZyQLGXar7ykhgpF4H8WNNEG6gu6MLe46BIg_kC1OmrQJYxmz-ZOEk01YQij8IiVa2S4H0L05OEPCamW36Up49Q" charset="UTF-8"></script><script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=YzrRfT0yI9LYrJg8Fz4MeqH1BhhspNRBLbYewEQ45OT4r_CH4XIfe4fO31EyerSADsH68VpLbOmqvP0_TyL-QF-VAN36J1Aw5TkBzmKE3gM3OQ2GCpxwbGWZJqnj36WlH-sesBqteU2fwE-hflAlFMIL5Zw-9Tzw5h1zEBFwBLTMFICaNP0VNI7IT7Jda4g2_dtoYUsAP3T3aO2tQteN2XbYtkOokyHROkX_woFJz87XYVfNvPVrMFBCgFogk_L1j1R1y0_n4wfUFIuM-ju5pg" charset="UTF-8"></script><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script>window.database = {};</script>
@@ -349,6 +349,32 @@
         });
     };
 
+
+    function getUniqueTaskIds() {
+        const seenTitles = new Set();
+
+        return Object.keys(window.database)
+            .sort((a, b) => {
+                let numA = parseInt(a.replace(/\D/g, '')) || 0;
+                let numB = parseInt(b.replace(/\D/g, '')) || 0;
+                return numA - numB;
+            })
+            .filter(tid => {
+                const data = window.database[tid];
+                if (!data || !data.title) return false;
+
+                const title = data.title.trim();
+
+                if (seenTitles.has(title)) {
+                    console.warn("Повторное задание скрыто:", tid, title);
+                    return false;
+                }
+
+                seenTitles.add(title);
+                return true;
+            });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         let container = document.getElementById('dynamic-tasks');
         if (!window.database || Object.keys(window.database).length === 0) {
@@ -357,11 +383,8 @@
             return;
         }
 
-        let sortedTaskIds = Object.keys(window.database).sort((a, b) => {
-            let numA = parseInt(a.replace(/\D/g, '')) || 0;
-            let numB = parseInt(b.replace(/\D/g, '')) || 0;
-            return numA - numB;
-        });
+        let sortedTaskIds = getUniqueTaskIds();
+        container.innerHTML = "";
 
         for (let tid of sortedTaskIds) {
             let data = window.database[tid];
@@ -494,7 +517,7 @@
         let nextStickerTarget = 2 + Math.floor(Math.random() * 2);
         let includeExplanations = document.getElementById('toggle-explanations').checked;
 
-        let sortedTaskIds = Object.keys(window.database).sort((a, b) => parseInt(a.replace(/\D/g, '')) - parseInt(b.replace(/\D/g, '')));
+        let sortedTaskIds = getUniqueTaskIds();
 
         for (let tid of sortedTaskIds) {
             let countInput = document.getElementById(`count-${tid}`);
