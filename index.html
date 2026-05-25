@@ -17,6 +17,8 @@
     <script src="task5.js"></script>
     <script src="task6.js"></script>
     <script src="task7.js"></script>
+    <script src="task8.js"></script>
+    <script src="task9.js"></script>
 
     <style>
         body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 40px 20px; }
@@ -378,15 +380,6 @@
             });
     }
 
-    function toggleAllPrototypes(tid, isChecked) {
-        let container = document.getElementById(`protos-${tid}`);
-        if (!container) return;
-        let checkboxes = container.querySelectorAll(`input[type="checkbox"][id^="proto-${tid}-"]`);
-        checkboxes.forEach(cb => {
-            cb.checked = isChecked;
-        });
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
         let container = document.getElementById('dynamic-tasks');
         if (!window.database || Object.keys(window.database).length === 0) {
@@ -400,14 +393,7 @@
 
         for (let tid of sortedTaskIds) {
             let data = window.database[tid];
-            
-            let listHTML = `
-                <label class="proto-item" style="grid-column: 1 / -1; border-bottom: 1px dashed #555; padding-bottom: 10px; margin-bottom: 5px; color: #ff8c00; font-weight: bold;">
-                    <input type="checkbox" id="toggle-all-${tid}" checked onchange="toggleAllPrototypes('${tid}', this.checked)"> 
-                    <span>Выбрать / снять все прототипы</span>
-                </label>
-            `;
-            
+            let listHTML = "";
             data.prototypes.forEach((p, idx) => {
                 listHTML += `
                 <label class="proto-item" onmouseenter="showTooltip('${tid}', ${idx}, event)" onmouseleave="hideTooltip()" onmousemove="moveTooltip(event)">
@@ -883,30 +869,10 @@
             document.querySelectorAll('.ans-box').forEach(input => {
                 let u = input.value.trim().replace(',', '.');
                 let r = input.getAttribute('data-ans');
-                
-                if(u === '') { 
-                    e++; 
-                    input.style.background = '#f5f5f5'; 
-                    input.style.borderColor = '#9e9e9e'; 
-                } else if(u === r) { 
-                    c++; 
-                    input.style.background = '#e8f5e9'; 
-                    input.style.borderColor = '#4CAF50'; 
-                    input.style.color = '#1b5e20'; 
-                } else { 
-                    ic++; 
-                    input.style.background = '#ffebee'; 
-                    input.style.borderColor = '#f44336'; 
-                    input.style.color = '#b71c1c'; 
-                }
+                if(u === '') { e++; input.style.background = '#f5f5f5'; input.style.borderColor = '#9e9e9e'; }
+                else if(u === r) { c++; input.style.background = '#e8f5e9'; input.style.borderColor = '#4CAF50'; input.style.color = '#1b5e20'; }
+                else { ic++; input.style.background = '#ffebee'; input.style.borderColor = '#f44336'; input.style.color = '#b71c1c'; }
                 input.readOnly = true;
-
-                if (u !== r) {
-                    let badge = document.createElement('div');
-                    badge.innerHTML = 'Ответ: <b>' + r + '</b>';
-                    badge.style.cssText = 'margin-left: 12px; color: #1b5e20; background: #e8f5e9; padding: 8px 12px; border-radius: 6px; border: 1px dashed #4CAF50; font-size: 0.95em; white-space: nowrap;';
-                    input.parentNode.insertBefore(badge, input.nextSibling);
-                }
             });
             document.getElementById('res-box').innerHTML = '<p style="color:#2e7d32; margin: 5px 0;"><b>Верно:</b> ' + c + '</p><p style="color:#c62828; margin: 5px 0;"><b>Неверно:</b> ' + ic + '</p><p style="color:#555; margin: 5px 0;"><b>Не решено:</b> ' + e + '</p>';
             document.getElementById('res-box').style.display = 'block';
