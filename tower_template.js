@@ -49,23 +49,24 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         #ansInput{ min-width:0; }
     }
 
-    /* Черновик справа от карточки вопроса */
-    #draftBtn{ width:40px; height:40px; border-radius:12px; border:1px solid rgba(120,190,255,.35); background:rgba(120,190,255,.20); color:var(--text); cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 25px rgba(0,0,0,.20); }
-    #draftBtn:hover{ background:rgba(120,190,255,.30); }
-    #draftBtn.active{ background:rgba(120,255,170,.25); border-color:rgba(120,255,170,.55); }
-    #drawPanel{ display:none; position:absolute; right:18px; top:82px; bottom:24px; width:min(420px, calc(100% - 36px)); background:rgba(20,22,30,.86); border:1px solid rgba(255,255,255,.16); border-radius:18px; box-shadow:var(--shadow); backdrop-filter:blur(10px); padding:14px; box-sizing:border-box; z-index:6; }
+    /* Черновик справа от карточки вопроса — такой же, как в презентациях */
+    #draftBtn{ width:40px; height:40px; border-radius:12px; border:1px solid rgba(255,204,128,.95); background:#fff3e0; color:#e65100; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 25px rgba(0,0,0,.20); }
+    #draftBtn:hover{ background:#ffe0b2; transform:translateY(-1px); }
+    #draftBtn.active{ background:#ff8c00; color:#fff; border-color:#ff8c00; }
+    #drawPanel{ display:none; position:absolute; right:18px; top:82px; bottom:24px; width:min(430px, calc(100% - 36px)); background:rgba(255,255,255,0.95); border:2px solid #ff8c00; border-radius:15px; padding:20px; box-shadow:0 0 25px rgba(0,0,0,0.2); box-sizing:border-box; z-index:6; }
     #drawPanel.open{ display:flex; flex-direction:column; gap:10px; }
-    #drawTitle{ display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--text); font-weight:900; font-size:15px; }
-    #drawClose{ border:none; background:rgba(255,255,255,.08); color:var(--text); border-radius:10px; width:34px; height:34px; font-size:18px; cursor:pointer; }
-    #drawTools{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:9px; }
-    #drawTools button{ border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.08); color:var(--text); border-radius:10px; min-width:34px; height:34px; padding:0 9px; font-size:16px; cursor:pointer; }
-    #drawTools button.active{ background:rgba(120,190,255,.28); border-color:rgba(120,190,255,.45); }
-    #drawTools input[type="color"]{ width:36px; height:34px; border:none; background:transparent; padding:0; cursor:pointer; }
-    #drawTools input[type="range"]{ width:88px; cursor:pointer; }
-    #drawCanvasWrap{ flex:1; min-height:220px; background-color:rgba(255,255,255,.96); background-size:22px 22px; background-image:linear-gradient(to right, rgba(70,120,170,.18) 1px, transparent 1px), linear-gradient(to bottom, rgba(70,120,170,.18) 1px, transparent 1px); border:2px solid rgba(120,190,255,.30); border-radius:14px; overflow:hidden; }
-    #draftCanvas{ display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; }
-    #overlay.draft-open #card{ margin-right:440px; }
-    @media (max-width: 1180px){ #overlay.draft-open #card{ margin-right:0; } #drawPanel{ left:12px; right:12px; top:auto; height:42vh; bottom:12px; width:auto; } #overlay.draft-open #card{ max-height:48vh; } }
+    #drawTools{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:0; background:#e3f2fd; padding:8px 15px; border-radius:8px; border:1px solid #bbdefb; color:#333; box-sizing:border-box; }
+    #drawTools button{ background:none; border:none; cursor:pointer; font-size:20px; padding:2px 4px; border-radius:6px; line-height:1.2; }
+    #drawTools button:hover{ background:rgba(255,255,255,.75); }
+    #drawTools button.active{ background:#fff3e0; box-shadow:0 0 0 1px #ffcc80 inset; }
+    #drawTools select{ background:#fff; border:1px solid #90caf9; border-radius:4px; padding:4px 8px; font-size:14px; cursor:pointer; outline:none; color:#003399; font-weight:500; }
+    #drawTools input[type="color"]{ cursor:pointer; height:30px; width:35px; border:none; background:transparent; padding:0; }
+    #drawTools input[type="range"]{ cursor:pointer; width:80px; }
+    #drawClose{ margin-left:auto; background:#fff3e0 !important; color:#e65100; border:1px solid #ffcc80 !important; width:30px; height:30px; border-radius:8px; font-size:20px !important; line-height:1; }
+    #drawCanvasWrap{ flex:1; min-height:250px; background-color:#fff; background-size:20px 20px; background-image:linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border:2px solid #bbdefb; border-radius:8px; overflow:hidden; }
+    #canvas-tower{ display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; }
+    #overlay.draft-open #card{ margin-right:450px; }
+    @media (max-width: 1180px){ #overlay.draft-open #card{ margin-right:0; } #drawPanel{ left:12px; right:12px; top:auto; height:42vh; bottom:12px; width:auto; padding:14px; } #overlay.draft-open #card{ max-height:48vh; } }
     </style>
 </head>
 <body data-mode="game" class="gameOnly">
@@ -74,7 +75,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             <canvas id="c"></canvas>
             <div id="hud"><div class="pill" id="leftPill">Башня: <b id="heightTxt">0</b><span style="opacity:.5">|</span>Осталось: <b id="remainNum">9</b></div><div id="progressWrap">Прогресс<div id="bar"><div></div></div><span id="pct">0%</span></div><div class="pill" id="scorePill">Счёт: <b id="scoreNum">0</b></div></div>
             <button id="nextBtn" disabled>Далее →</button>
-            <div id="overlay" role="dialog" aria-modal="true"><div id="card"><div id="cardHeader"><div><div id="title">Вопрос</div><div id="q">...</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div style="display:flex; align-items:center; gap:10px;"><button id="draftBtn" type="button" title="Открыть черновик">✏️</button><div id="badge">1 / 9</div></div></div></div><div id="answers"></div><div id="inputRow"><input id="ansInput" type="text" placeholder="Введите ответ..." autocomplete="off" /><button id="submit">ОК</button></div><div id="msg"></div><div id="hint">Верно → блок опускается и становится этажом (+100). Неверно → обугливание, взрыв и исчезает.</div></div><div id="drawPanel"><div id="drawTitle"><span>Черновик</span><button id="drawClose" type="button" title="Закрыть">×</button></div><div id="drawTools"><button type="button" data-tool="pointer" title="Указатель">👆</button><button type="button" data-tool="pen" class="active" title="Карандаш">🖊️</button><button type="button" data-tool="line" title="Прямая">📏</button><button type="button" data-tool="vector" title="Вектор">↗️</button><button type="button" data-tool="circle" title="Окружность">⭕</button><button type="button" data-tool="triangle" title="Треугольник">🔺</button><input id="drawColor" type="color" value="#003399" title="Цвет"><input id="drawSize" type="range" min="1" max="15" value="3" title="Толщина"><button type="button" data-tool="eraser" title="Ластик">🧽</button><button type="button" id="drawClear" title="Очистить всё">🗑️</button></div><div id="drawCanvasWrap"><canvas id="draftCanvas"></canvas></div></div></div>
+            <div id="overlay" role="dialog" aria-modal="true"><div id="card"><div id="cardHeader"><div><div id="title">Вопрос</div><div id="q">...</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div style="display:flex; align-items:center; gap:10px;"><button id="draftBtn" type="button" title="Открыть черновик">✏️</button><div id="badge">1 / 9</div></div></div></div><div id="answers"></div><div id="inputRow"><input id="ansInput" type="text" placeholder="Введите ответ..." autocomplete="off" /><button id="submit">ОК</button></div><div id="msg"></div><div id="hint">Верно → блок опускается и становится этажом (+100). Неверно → обугливание, взрыв и исчезает.</div></div><div id="drawPanel" onclick="event.stopPropagation();"><div id="drawTools"><button type="button" onclick="window.setTool('tower', 'pointer')" title="Указатель (Перетаскивание)">👆</button><button type="button" onclick="window.setTool('tower', 'pen')" title="Карандаш">🖊️</button><select id="tool-select-tower" onchange="window.setTool('tower', this.value)"><option value="" disabled selected hidden>🔺 Фигуры</option><option value="line">📏 Прямая</option><option value="vector">↗️ Вектор</option><option value="circle">⭕ Окружность</option><option value="triangle">🔺 Треугольник</option><option value="cylinder">🛢️ Цилиндр</option><option value="cone">🍦 Конус</option><option value="sphere">🔮 Сфера</option></select><input type="color" id="color-tower" value="#003399" title="Цвет"><input type="range" id="size-tower" min="1" max="15" value="3" title="Толщина линии"><button type="button" onclick="window.setTool('tower', 'eraser')" title="Ластик">🧽</button><div style="flex-grow:1;"></div><button type="button" onclick="window.clearCanvas('tower')" title="Очистить всё">🗑️</button><button id="drawClose" type="button" title="Закрыть">×</button><input type="hidden" id="tool-tower" value="pen"></div><div id="drawCanvasWrap"><canvas id="canvas-tower"></canvas></div></div></div>
             <div id="start"><div id="startCard"><h1>Башня знаний</h1><p></p><button id="play">▶ Начать</button><div id="err" style="display:none;"></div></div></div>
             <div id="finish"><div id="finishCard"><div id="finishTitle">Отлично!</div><div id="finishText">Заработано <b id="finishScore">0</b> баллов из 900</div><div id="finishCustomText" style="color:var(--text); margin-bottom:14px; font-size:16px; line-height:1.4; display:none;"></div><div id="stats"><div class="stat"><b id="stCorrect">0</b><div>правильных ответов</div></div><div class="stat"><b id="stWrong">0</b><div>неправильных ответов</div></div><div class="stat"><b id="stHeight">0</b><div>блоков в башне</div></div></div><button id="restart">↻ Сыграть ещё раз</button></div></div>
         </div>
@@ -106,7 +107,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         const TRIM_ALPHA_MIN = 34; const PROFILE_ALPHA_MIN = 22; const CENTROID_ALPHA_MIN = 24; const LAND_BOUNCE_UP = 10; const LAND_BOUNCE_TIME = 0.10;  
 
         const canvas = document.getElementById("c"); const ctx = canvas.getContext("2d", {alpha: false});
-        const overlay = document.getElementById("overlay"); const qEl = document.getElementById("q"); const badgeEl = document.getElementById("badge"); const answersEl = document.getElementById("answers"); const inputRow = document.getElementById("inputRow"); const ansInput = document.getElementById("ansInput"); const submitBtn = document.getElementById("submit"); const msgEl = document.getElementById("msg"); const draftBtn = document.getElementById("draftBtn"); const drawPanel = document.getElementById("drawPanel"); const drawClose = document.getElementById("drawClose"); const draftCanvas = document.getElementById("draftCanvas"); const drawColor = document.getElementById("drawColor"); const drawSize = document.getElementById("drawSize"); const drawClear = document.getElementById("drawClear"); const startLayer = document.getElementById("start"); const playBtn = document.getElementById("play"); const finishLayer = document.getElementById("finish"); const finishScoreEl = document.getElementById("finishScore"); const stCorrect = document.getElementById("stCorrect"); const stWrong = document.getElementById("stWrong"); const stHeight = document.getElementById("stHeight"); const restartBtn = document.getElementById("restart"); const errBox = document.getElementById("err"); const heightTxt = document.getElementById("heightTxt"); const remainNum = document.getElementById("remainNum"); const pctTxt = document.getElementById("pct"); const barFill = document.querySelector("#bar > div"); const scoreNum = document.getElementById("scoreNum"); const nextBtn = document.getElementById("nextBtn");
+        const overlay = document.getElementById("overlay"); const qEl = document.getElementById("q"); const badgeEl = document.getElementById("badge"); const answersEl = document.getElementById("answers"); const inputRow = document.getElementById("inputRow"); const ansInput = document.getElementById("ansInput"); const submitBtn = document.getElementById("submit"); const msgEl = document.getElementById("msg"); const draftBtn = document.getElementById("draftBtn"); const drawPanel = document.getElementById("drawPanel"); const drawClose = document.getElementById("drawClose"); const startLayer = document.getElementById("start"); const playBtn = document.getElementById("play"); const finishLayer = document.getElementById("finish"); const finishScoreEl = document.getElementById("finishScore"); const stCorrect = document.getElementById("stCorrect"); const stWrong = document.getElementById("stWrong"); const stHeight = document.getElementById("stHeight"); const restartBtn = document.getElementById("restart"); const errBox = document.getElementById("err"); const heightTxt = document.getElementById("heightTxt"); const remainNum = document.getElementById("remainNum"); const pctTxt = document.getElementById("pct"); const barFill = document.querySelector("#bar > div"); const scoreNum = document.getElementById("scoreNum"); const nextBtn = document.getElementById("nextBtn");
 
         let W=0,H=0,DPR=1;
         function resize(){ DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1)); W = Math.floor(window.innerWidth); H = Math.floor(window.innerHeight); canvas.width = W * DPR; canvas.height = H * DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
@@ -134,148 +135,207 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         function draw(){ ctx.clearRect(0,0,W,H); ctx.save(); ctx.translate(state.cameraX, state.cameraY); drawBackground(); if (state.running || state.finished) { for(const b of state.tower){ drawBlock(b, false, b.squash, 0); } if(state.current){ drawBlock(state.current, true, 1.0, state.current.char || 0); } for(const s of state.smokes){ const t = s.age / s.life; const a = (1 - t) * 0.35; ctx.fillStyle = "rgba(20,20,20," + a + ")"; ctx.beginPath(); ctx.arc(s.x, s.y, s.rad * (1 + t*1.25), 0, Math.PI*2); ctx.fill(); } for(const r of state.rings){ const t = r.age / r.life; const a = (1 - t) * 0.55; ctx.strokeStyle = "rgba(255,255,255," + a + ")"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI*2); ctx.stroke(); } for(const sp of state.sparks){ const t = sp.age / sp.life; const a = Math.max(0, 1 - t); ctx.strokeStyle = "rgba(255,220,140," + (0.9*a) + ")"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sp.x, sp.y); ctx.lineTo(sp.x - sp.vx*0.012, sp.y - sp.vy*0.012); ctx.stroke(); } for(const p of state.particles){ const a = 1 - (p.age/p.life); ctx.fillStyle = "rgba(255,200,120," + (0.78*a) + ")"; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill(); } drawScorePops(); } if(state.flash>0){ ctx.fillStyle = "rgba(255,255,255," + (state.flash*0.22) + ")"; ctx.fillRect(0,0,W,H); } ctx.restore(); requestAnimationFrame(draw); }
         let lastT=0; function loop(t){ if(!lastT) lastT=t; const dt=Math.min(0.033,(t-lastT)/1000); lastT=t; update(dt); requestAnimationFrame(loop); }
 
-        let draftTool = "pen";
-        let draftCtx = null;
-        let draftDrawing = false;
-        let draftStart = null;
-        let draftSnapshot = null;
 
-        function resizeDraftCanvas(clearAfterResize){
-            if(!draftCanvas) return;
-            const wrap = document.getElementById("drawCanvasWrap");
-            const rect = wrap ? wrap.getBoundingClientRect() : {width: 360, height: 300};
-            const dpr = Math.max(1, window.devicePixelRatio || 1);
-            const old = document.createElement("canvas");
-            if(draftCanvas.width && draftCanvas.height){
-                old.width = draftCanvas.width; old.height = draftCanvas.height;
-                old.getContext("2d").drawImage(draftCanvas, 0, 0);
+        // Черновик: логика один-в-один как в презентациях, только панель открывается справа
+        window.mainCanvases = window.mainCanvases || {};
+        window.toggleCanvas = function(id) {
+            const w = document.getElementById('drawPanel');
+            if (!w) return;
+            if (w.classList.contains('open')) {
+                w.classList.remove('open');
+                overlay.classList.remove('draft-open');
+                if (draftBtn) draftBtn.classList.remove('active');
+            } else {
+                w.classList.add('open');
+                overlay.classList.add('draft-open');
+                if (draftBtn) draftBtn.classList.add('active');
+                setTimeout(() => window.initMainCanvas(id), 50);
             }
-            draftCanvas.width = Math.max(1, Math.floor(rect.width * dpr));
-            draftCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
-            draftCtx = draftCanvas.getContext("2d");
-            draftCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            draftCtx.lineCap = "round";
-            draftCtx.lineJoin = "round";
-            if(!clearAfterResize && old.width && old.height){
-                draftCtx.save();
-                draftCtx.setTransform(1,0,0,1,0,0);
-                draftCtx.drawImage(old, 0, 0, draftCanvas.width, draftCanvas.height);
-                draftCtx.restore();
+        };
+        window.initMainCanvas = function(id) {
+            const canvas = document.getElementById('canvas-' + id);
+            if(!canvas) return;
+            let state = window.mainCanvases[id];
+            if (state && state.initialized) {
+                resizeCanvasPreserve();
+                return;
             }
-        }
+            const ctx = canvas.getContext('2d');
+            let objects = [];
+            let currentObj = null;
+            let draggingObj = null;
+            let action = null;
+            let dragStartX = 0, dragStartY = 0, dragStartDist = 1, initialScale = 1, dragStartAngle = 0, initialAngle = 0;
+            let isDrawing = false;
 
-        function clearDraft(){
-            if(!draftCanvas) return;
-            if(!draftCtx) resizeDraftCanvas(true);
-            draftCtx.clearRect(0, 0, draftCanvas.width, draftCanvas.height);
-        }
+            window.mainCanvases[id] = { initialized: true, canvas, ctx, objects, renderAll: () => renderAll(), resize: () => resizeCanvasPreserve() };
 
-        function openDraft(){
-            if(!drawPanel) return;
-            drawPanel.classList.add("open");
-            overlay.classList.add("draft-open");
-            if(draftBtn) draftBtn.classList.add("active");
-            setTimeout(()=>resizeDraftCanvas(false), 60);
-        }
-        function closeDraft(){
-            if(!drawPanel) return;
-            drawPanel.classList.remove("open");
-            overlay.classList.remove("draft-open");
-            if(draftBtn) draftBtn.classList.remove("active");
-        }
-        function toggleDraft(){
-            if(drawPanel && drawPanel.classList.contains("open")) closeDraft(); else openDraft();
-        }
-        function setDraftTool(tool){
-            draftTool = tool || "pen";
-            document.querySelectorAll("#drawTools [data-tool]").forEach(btn => btn.classList.toggle("active", btn.dataset.tool === draftTool));
-            if(draftCanvas) draftCanvas.style.cursor = draftTool === "pointer" ? "default" : "crosshair";
-        }
-        function getDraftPoint(e){
-            const r = draftCanvas.getBoundingClientRect();
-            return { x: e.clientX - r.left, y: e.clientY - r.top };
-        }
-        function prepareDraftStroke(){
-            draftCtx.lineWidth = parseFloat(drawSize.value || "3");
-            draftCtx.strokeStyle = drawColor.value || "#003399";
-            draftCtx.fillStyle = drawColor.value || "#003399";
-            draftCtx.globalCompositeOperation = draftTool === "eraser" ? "destination-out" : "source-over";
-        }
-        function drawDraftArrowHead(x1,y1,x2,y2){
-            const angle = Math.atan2(y2-y1, x2-x1);
-            const len = Math.max(12, parseFloat(drawSize.value || "3") * 4);
-            draftCtx.beginPath();
-            draftCtx.moveTo(x2, y2);
-            draftCtx.lineTo(x2 - len*Math.cos(angle - Math.PI/7), y2 - len*Math.sin(angle - Math.PI/7));
-            draftCtx.lineTo(x2 - len*Math.cos(angle + Math.PI/7), y2 - len*Math.sin(angle + Math.PI/7));
-            draftCtx.closePath();
-            draftCtx.fill();
-        }
-        function drawDraftShape(from, to){
-            prepareDraftStroke();
-            draftCtx.beginPath();
-            if(draftTool === "line" || draftTool === "vector"){
-                draftCtx.moveTo(from.x, from.y); draftCtx.lineTo(to.x, to.y); draftCtx.stroke();
-                if(draftTool === "vector") drawDraftArrowHead(from.x, from.y, to.x, to.y);
-            } else if(draftTool === "circle"){
-                const rx = Math.abs(to.x - from.x) / 2;
-                const ry = Math.abs(to.y - from.y) / 2;
-                draftCtx.ellipse((from.x+to.x)/2, (from.y+to.y)/2, rx, ry, 0, 0, Math.PI*2);
-                draftCtx.stroke();
-            } else if(draftTool === "triangle"){
-                draftCtx.moveTo((from.x+to.x)/2, from.y);
-                draftCtx.lineTo(from.x, to.y);
-                draftCtx.lineTo(to.x, to.y);
-                draftCtx.closePath();
-                draftCtx.stroke();
+            function resizeCanvasPreserve() {
+                const old = document.createElement('canvas');
+                const hadSize = canvas.width && canvas.height;
+                if (hadSize) { old.width = canvas.width; old.height = canvas.height; old.getContext('2d').drawImage(canvas, 0, 0); }
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = Math.max(1, window.devicePixelRatio || 1);
+                canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+                canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                if (objects.length) renderAll();
+                else if (hadSize) { ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(old, 0, 0, canvas.width, canvas.height); ctx.restore(); }
             }
-            draftCtx.globalCompositeOperation = "source-over";
-        }
-        function initDraftBoard(){
-            if(!draftCanvas) return;
-            resizeDraftCanvas(true);
-            if(draftBtn) draftBtn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleDraft(); });
-            if(drawClose) drawClose.addEventListener("click", (e)=>{ e.stopPropagation(); closeDraft(); });
-            if(drawClear) drawClear.addEventListener("click", (e)=>{ e.stopPropagation(); clearDraft(); });
-            document.querySelectorAll("#drawTools [data-tool]").forEach(btn => btn.addEventListener("click", (e)=>{ e.stopPropagation(); setDraftTool(btn.dataset.tool); }));
-            draftCanvas.addEventListener("pointerdown", (e)=>{
-                if(draftTool === "pointer") return;
-                e.preventDefault(); e.stopPropagation();
-                if(!draftCtx) resizeDraftCanvas(false);
-                draftDrawing = true; draftStart = getDraftPoint(e);
-                prepareDraftStroke();
-                if(draftTool === "pen" || draftTool === "eraser"){
-                    draftCtx.beginPath(); draftCtx.moveTo(draftStart.x, draftStart.y);
+            resizeCanvasPreserve();
+
+            function getRawBounds(obj) {
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                if (obj.tool === 'pen' || obj.tool === 'eraser') {
+                    if(!obj.points || obj.points.length === 0) return {minX:0, minY:0, maxX:0, maxY:0};
+                    obj.points.forEach(p => { minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); });
                 } else {
-                    const dpr = Math.max(1, window.devicePixelRatio || 1);
-                    draftSnapshot = draftCtx.getImageData(0, 0, draftCanvas.width/dpr, draftCanvas.height/dpr);
+                    let sx = obj.sx, sy = obj.sy, ex = obj.ex, ey = obj.ey;
+                    let dx = ex - sx, dy = ey - sy;
+                    let rx = Math.abs(dx), ry = Math.abs(dy), r = Math.sqrt(dx*dx + dy*dy);
+                    if (obj.tool === 'line' || obj.tool === 'vector') { minX = Math.min(sx, ex); maxX = Math.max(sx, ex); minY = Math.min(sy, ey); maxY = Math.max(sy, ey); }
+                    else if (obj.tool === 'circle' || obj.tool === 'sphere') { minX = sx - r; maxX = sx + r; minY = sy - r; maxY = sy + r; }
+                    else if (obj.tool === 'triangle') { minX = Math.min(sx, ex, sx + dx/2); maxX = Math.max(sx, ex, sx + dx/2); minY = Math.min(sy, ey); maxY = Math.max(sy, ey); }
+                    else if (obj.tool === 'cylinder' || obj.tool === 'cone') { minX = sx - rx; maxX = sx + rx; let h = ry * 0.2; minY = Math.min(sy - h, ey - h); maxY = Math.max(sy + h, ey + h); }
                 }
-                draftCanvas.setPointerCapture(e.pointerId);
-            });
-            draftCanvas.addEventListener("pointermove", (e)=>{
-                if(!draftDrawing) return;
-                e.preventDefault(); e.stopPropagation();
-                const p = getDraftPoint(e);
-                if(draftTool === "pen" || draftTool === "eraser"){
-                    prepareDraftStroke(); draftCtx.lineTo(p.x, p.y); draftCtx.stroke(); draftCtx.globalCompositeOperation = "source-over";
-                } else if(draftSnapshot){
-                    draftCtx.putImageData(draftSnapshot, 0, 0); drawDraftShape(draftStart, p);
-                }
-            });
-            function finish(e){
-                if(!draftDrawing) return;
-                e.preventDefault(); e.stopPropagation();
-                const p = getDraftPoint(e);
-                if(draftTool !== "pen" && draftTool !== "eraser" && draftSnapshot){
-                    draftCtx.putImageData(draftSnapshot, 0, 0); drawDraftShape(draftStart, p);
-                }
-                draftDrawing = false; draftSnapshot = null; draftStart = null; draftCtx.globalCompositeOperation = "source-over";
+                let pad = parseFloat(obj.size) || 3;
+                return { minX: minX - pad, minY: minY - pad, maxX: maxX + pad, maxY: maxY + pad };
             }
-            draftCanvas.addEventListener("pointerup", finish);
-            draftCanvas.addEventListener("pointercancel", finish);
-            window.addEventListener("resize", ()=>{ if(drawPanel && drawPanel.classList.contains("open")) resizeDraftCanvas(false); });
-        }
-        initDraftBoard();
+            function smoothPath(points) {
+                if (!points || points.length < 3) return;
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length - 2; i++) {
+                    const xc = (points[i].x + points[i + 1].x) / 2;
+                    const yc = (points[i].y + points[i + 1].y) / 2;
+                    ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                }
+                const last = points[points.length - 1];
+                const prev = points[points.length - 2];
+                ctx.quadraticCurveTo(prev.x, prev.y, last.x, last.y);
+            }
+            function drawObj(ctx, obj, isSelected) {
+                ctx.save();
+                let cx = obj.cx || 0, cy = obj.cy || 0, s = obj.scale || 1;
+                ctx.translate((obj.x || 0) + cx, (obj.y || 0) + cy);
+                ctx.rotate(obj.angle || 0); ctx.scale(s, s); ctx.translate(-cx, -cy);
+                ctx.strokeStyle = obj.color; ctx.lineWidth = obj.size; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                if (obj.tool === 'pen' || obj.tool === 'eraser') {
+                    ctx.globalCompositeOperation = obj.tool === 'eraser' ? 'destination-out' : 'source-over';
+                    if(obj.tool === 'eraser') ctx.lineWidth = obj.size * 3;
+                    ctx.beginPath();
+                    if(obj.points && obj.points.length > 0) {
+                        if(obj.points.length < 3){ ctx.moveTo(obj.points[0].x, obj.points[0].y); obj.points.forEach(p => ctx.lineTo(p.x, p.y)); }
+                        else smoothPath(obj.points);
+                    }
+                    ctx.stroke();
+                } else {
+                    ctx.globalCompositeOperation = 'source-over'; ctx.beginPath();
+                    let sx = obj.sx, sy = obj.sy, ex = obj.ex, ey = obj.ey;
+                    let dx = ex - sx, dy = ey - sy; let rx = Math.abs(dx), ry = Math.abs(dy); let r = Math.sqrt(dx*dx + dy*dy);
+                    if (obj.tool === 'line' || obj.tool === 'vector') {
+                        ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+                        if(obj.tool === 'vector') {
+                            let angle = Math.atan2(ey - sy, ex - sx); let headlen = 10 + (parseFloat(obj.size)||3);
+                            ctx.beginPath(); ctx.moveTo(ex, ey);
+                            ctx.lineTo(ex - headlen * Math.cos(angle - Math.PI / 6), ey - headlen * Math.sin(angle - Math.PI / 6));
+                            ctx.moveTo(ex, ey);
+                            ctx.lineTo(ex - headlen * Math.cos(angle + Math.PI / 6), ey - headlen * Math.sin(angle + Math.PI / 6));
+                            ctx.stroke();
+                        }
+                    }
+                    else if (obj.tool === 'circle') { ctx.arc(sx, sy, r, 0, 2 * Math.PI); ctx.stroke(); }
+                    else if (obj.tool === 'triangle') { ctx.moveTo(sx + dx/2, sy); ctx.lineTo(sx, ey); ctx.lineTo(ex, ey); ctx.closePath(); ctx.stroke(); }
+                    else if (obj.tool === 'cylinder') { let w = rx, h = ry * 0.2; if(w>0 && h>0){ctx.ellipse(sx, sy, w, h, 0, 0, 2*Math.PI); ctx.moveTo(sx - w, sy); ctx.lineTo(sx - w, ey); ctx.moveTo(sx + w, sy); ctx.lineTo(sx + w, ey); ctx.stroke(); ctx.beginPath(); ctx.ellipse(sx, ey, w, h, 0, 0, Math.PI); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.ellipse(sx, ey, w, h, 0, Math.PI, 2*Math.PI); ctx.stroke(); ctx.setLineDash([]);} }
+                    else if (obj.tool === 'cone') { let w = rx, h = ry * 0.2; if(w>0 && h>0){ctx.moveTo(sx, sy); ctx.lineTo(sx - w, ey); ctx.moveTo(sx, sy); ctx.lineTo(sx + w, ey); ctx.stroke(); ctx.beginPath(); ctx.ellipse(sx, ey, w, h, 0, 0, Math.PI); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.ellipse(sx, ey, w, h, 0, Math.PI, 2*Math.PI); ctx.stroke(); ctx.setLineDash([]);} }
+                    else if (obj.tool === 'sphere') { ctx.arc(sx, sy, r, 0, 2 * Math.PI); ctx.stroke(); if(r>0){ctx.beginPath(); ctx.ellipse(sx, sy, r, r*0.3, 0, 0, Math.PI); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.ellipse(sx, sy, r, r*0.3, 0, Math.PI, 2*Math.PI); ctx.stroke(); ctx.setLineDash([]);} }
+                }
+                if (isSelected) {
+                    let b = getRawBounds(obj); ctx.strokeStyle = 'rgba(255, 140, 0, 0.7)'; ctx.lineWidth = 1.5 / s; ctx.setLineDash([5 / s, 5 / s]); ctx.strokeRect(b.minX - 5, b.minY - 5, b.maxX - b.minX + 10, b.maxY - b.minY + 10); ctx.setLineDash([]);
+                    let rotHX = (b.minX + b.maxX)/2, rotHY = b.minY - 25; ctx.beginPath(); ctx.moveTo(rotHX, b.minY - 5); ctx.lineTo(rotHX, rotHY); ctx.stroke(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(rotHX, rotHY, 5 / s, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                    let scaleHX = b.maxX + 5, scaleHY = b.maxY + 5, hSize = 10 / s; ctx.fillStyle = '#ff8c00'; ctx.fillRect(scaleHX - hSize/2, scaleHY - hSize/2, hSize, hSize);
+                }
+                ctx.restore();
+            }
+            function getLocalPos(p, obj) { let cx = obj.cx || 0, cy = obj.cy || 0; let tx = (obj.x || 0) + cx, ty = (obj.y || 0) + cy; let nx = p.x - tx, ny = p.y - ty; let angle = -(obj.angle || 0); let rx = nx * Math.cos(angle) - ny * Math.sin(angle); let ry = nx * Math.sin(angle) + ny * Math.cos(angle); let scale = obj.scale || 1; return {x: (rx / scale) + cx, y: (ry / scale) + cy}; }
+            function renderAll() { ctx.clearRect(0, 0, canvas.width, canvas.height); objects.forEach(obj => drawObj(ctx, obj, draggingObj === obj)); if (currentObj) drawObj(ctx, currentObj, false); }
+            function getPos(e) { const rect = canvas.getBoundingClientRect(); let x = e.clientX, y = e.clientY; if (e.touches && e.touches.length > 0) { x = e.touches[0].clientX; y = e.touches[0].clientY; } return { x: x - rect.left, y: y - rect.top }; }
+            function startDraw(e) {
+                isDrawing = true; let p = getPos(e);
+                let tool = document.getElementById('tool-' + id).value; let color = document.getElementById('color-' + id).value; let size = document.getElementById('size-' + id).value;
+                if (tool === 'pointer') {
+                    let hitHandle = false;
+                    if (draggingObj) {
+                        let b = getRawBounds(draggingObj); let lp = getLocalPos(p, draggingObj); let hr = 10 / (draggingObj.scale || 1);
+                        if (Math.abs(lp.x - (b.maxX + 5)) < hr && Math.abs(lp.y - (b.maxY + 5)) < hr) { action = 'scale'; let tx = (draggingObj.x||0) + (draggingObj.cx||0); let ty = (draggingObj.y||0) + (draggingObj.cy||0); dragStartDist = Math.hypot(p.x - tx, p.y - ty); initialScale = draggingObj.scale || 1; hitHandle = true; }
+                        if (!hitHandle && Math.abs(lp.x - ((b.minX + b.maxX)/2)) < hr && Math.abs(lp.y - (b.minY - 25)) < hr) { action = 'rotate'; initialAngle = draggingObj.angle || 0; let tx = (draggingObj.x||0) + (draggingObj.cx||0); let ty = (draggingObj.y||0) + (draggingObj.cy||0); dragStartAngle = Math.atan2(p.y - ty, p.x - tx); hitHandle = true; }
+                        if (!hitHandle && lp.x >= b.minX - 5 && lp.x <= b.maxX + 5 && lp.y >= b.minY - 5 && lp.y <= b.maxY + 5) { action = 'move'; dragStartX = p.x; dragStartY = p.y; hitHandle = true; }
+                    }
+                    if (!hitHandle) { draggingObj = null; action = null; for (let i = objects.length - 1; i >= 0; i--) { if (objects[i].tool === 'eraser') continue; let lp = getLocalPos(p, objects[i]); let b = getRawBounds(objects[i]); if (lp.x >= b.minX && lp.x <= b.maxX && lp.y >= b.minY && lp.y <= b.maxY) { draggingObj = objects[i]; action = 'move'; dragStartX = p.x; dragStartY = p.y; break; } } }
+                    renderAll();
+                } else {
+                    currentObj = { tool: tool, color: color, size: size, x: 0, y: 0, scale: 1, angle: 0 };
+                    if (tool === 'pen' || tool === 'eraser') currentObj.points = [p];
+                    else { currentObj.sx = p.x; currentObj.sy = p.y; currentObj.ex = p.x; currentObj.ey = p.y; }
+                }
+                if (e.cancelable) e.preventDefault();
+            }
+            function drawMove(e) {
+                if (!isDrawing) return; if (e.cancelable) e.preventDefault(); let p = getPos(e);
+                if (document.getElementById('tool-' + id).value === 'pointer' && draggingObj && action) {
+                    if (action === 'move') { draggingObj.x = (draggingObj.x || 0) + (p.x - dragStartX); draggingObj.y = (draggingObj.y || 0) + (p.y - dragStartY); dragStartX = p.x; dragStartY = p.y; }
+                    else if (action === 'scale') { let tx = (draggingObj.x||0) + (draggingObj.cx||0); let ty = (draggingObj.y||0) + (draggingObj.cy||0); let dist = Math.hypot(p.x - tx, p.y - ty); draggingObj.scale = Math.max(0.1, initialScale * (dist / dragStartDist)); }
+                    else if (action === 'rotate') { let tx = (draggingObj.x||0) + (draggingObj.cx||0); let ty = (draggingObj.y||0) + (draggingObj.cy||0); let angle = Math.atan2(p.y - ty, p.x - tx); draggingObj.angle = initialAngle + (angle - dragStartAngle); }
+                    renderAll(); return;
+                }
+                if (!currentObj) return;
+                if (currentObj.tool === 'pen' || currentObj.tool === 'eraser') currentObj.points.push(p);
+                else { currentObj.ex = p.x; currentObj.ey = p.y; }
+                renderAll();
+            }
+            function endDraw(e) {
+                if (!isDrawing) return; isDrawing = false;
+                if (currentObj) {
+                    if (currentObj.tool === 'pen' || currentObj.tool === 'eraser' || Math.hypot((currentObj.ex||0)-(currentObj.sx||0), (currentObj.ey||0)-(currentObj.sy||0)) > 3) {
+                        let b = getRawBounds(currentObj); currentObj.cx = (b.minX + b.maxX)/2; currentObj.cy = (b.minY + b.maxY)/2; objects.push(currentObj);
+                    }
+                    currentObj = null;
+                }
+                action = null; renderAll();
+            }
+            canvas.addEventListener('pointerdown', startDraw);
+            canvas.addEventListener('pointermove', drawMove);
+            canvas.addEventListener('pointerup', endDraw);
+            canvas.addEventListener('pointercancel', endDraw);
+            window.addEventListener('resize', () => { if (drawPanel && drawPanel.classList.contains('open')) resizeCanvasPreserve(); });
+        };
+        window.clearCanvas = function(id) {
+            let cnv = window.mainCanvases[id];
+            if (cnv && cnv.objects) { cnv.objects.length = 0; cnv.ctx.clearRect(0, 0, cnv.canvas.width, cnv.canvas.height); }
+        };
+        window.setTool = function(id, tool) {
+            const input = document.getElementById('tool-' + id);
+            if(input) input.value = tool;
+            document.querySelectorAll('#drawTools [data-tool], #drawTools button').forEach(btn => {
+                if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tool + "'")) btn.classList.add('active');
+                else if(btn.id !== 'drawClose' && btn.id !== 'drawClear') btn.classList.remove('active');
+            });
+            let select = document.getElementById('tool-select-' + id);
+            if (select && ['line','vector','circle','triangle','cylinder','cone','sphere'].includes(tool)) select.value = tool;
+            let canvas = document.getElementById('canvas-' + id);
+            if (canvas) {
+                if (tool === 'eraser') canvas.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22><text y=%2220%22 font-size=%2220%22>🧽</text></svg>') 0 20, auto";
+                else if (tool === 'pointer') canvas.style.cursor = 'move';
+                else canvas.style.cursor = 'crosshair';
+            }
+        };
+        if (draftBtn) draftBtn.addEventListener('click', (e)=>{ e.stopPropagation(); window.toggleCanvas('tower'); });
+        if (drawClose) drawClose.addEventListener('click', (e)=>{ e.stopPropagation(); if(drawPanel){ drawPanel.classList.remove('open'); overlay.classList.remove('draft-open'); } if(draftBtn) draftBtn.classList.remove('active'); });
+        window.setTool('tower', 'pen');
+
         function normalizeAnswer(s){ return String(s||"").trim().toLowerCase(); }
 
         function normalizeQuestionMedia(root){
@@ -303,7 +363,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 svg.style.overflow = 'visible';
             });
         }
-        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); clearDraft(); closeDraft(); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
+        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); window.clearCanvas('tower'); if(drawPanel){ drawPanel.classList.remove('open'); overlay.classList.remove('draft-open'); } if(draftBtn) draftBtn.classList.remove('active'); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
         function checkAnswer(userValue){ if (state.answered) return; state.answered = true; const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; let ok=false; const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue); const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer]; ok = acc.map(normalizeAnswer).includes(valStr); const waitingBlock = state.current; if(ok){ state.correct++; msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100)."; playGood(); state.dropping = false; setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(state.current) state.dropping = true; else setNextEnabled(true); }, 220); } else { state.wrong++; msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается и исчезает."; state.dropping = false; const scorchDur = 0.35; let elapsed = 0; function scorchStep(){ if(!state.current || state.current !== waitingBlock) return; elapsed += 1/60; state.current.char = Math.min(1, elapsed / scorchDur); if(Math.random() < 0.25){ state.smokes.push({ x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15), y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10), vx: (Math.random()*2-1)*40, vy: -80 - Math.random()*80, life:0.6+Math.random()*0.4, age:0, rad: 14+Math.random()*18 }); } if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); } } requestAnimationFrame(scorchStep); setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); } state.current = null; setNextEnabled(true); }, 520); } state.blockIndex++; }
         ansInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") checkAnswer(ansInput.value); }); document.addEventListener("keydown",(e)=>{ if(overlay.style.display==="flex" && e.key==="Enter"){ checkAnswer(ansInput.value); } }); nextBtn.addEventListener("click", ()=>{ if(nextBtn.disabled) return; state.questionIndex++; if(state.questionIndex >= 9){ finishGame(); return; } spawnBlock(); });
 
