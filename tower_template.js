@@ -48,6 +48,24 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         #inputRow{ flex-direction:row; }
         #ansInput{ min-width:0; }
     }
+
+    /* Черновик справа от карточки вопроса */
+    #draftBtn{ width:40px; height:40px; border-radius:12px; border:1px solid rgba(120,190,255,.35); background:rgba(120,190,255,.20); color:var(--text); cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 25px rgba(0,0,0,.20); }
+    #draftBtn:hover{ background:rgba(120,190,255,.30); }
+    #draftBtn.active{ background:rgba(120,255,170,.25); border-color:rgba(120,255,170,.55); }
+    #drawPanel{ display:none; position:absolute; right:18px; top:82px; bottom:24px; width:min(420px, calc(100% - 36px)); background:rgba(20,22,30,.86); border:1px solid rgba(255,255,255,.16); border-radius:18px; box-shadow:var(--shadow); backdrop-filter:blur(10px); padding:14px; box-sizing:border-box; z-index:6; }
+    #drawPanel.open{ display:flex; flex-direction:column; gap:10px; }
+    #drawTitle{ display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--text); font-weight:900; font-size:15px; }
+    #drawClose{ border:none; background:rgba(255,255,255,.08); color:var(--text); border-radius:10px; width:34px; height:34px; font-size:18px; cursor:pointer; }
+    #drawTools{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:9px; }
+    #drawTools button{ border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.08); color:var(--text); border-radius:10px; min-width:34px; height:34px; padding:0 9px; font-size:16px; cursor:pointer; }
+    #drawTools button.active{ background:rgba(120,190,255,.28); border-color:rgba(120,190,255,.45); }
+    #drawTools input[type="color"]{ width:36px; height:34px; border:none; background:transparent; padding:0; cursor:pointer; }
+    #drawTools input[type="range"]{ width:88px; cursor:pointer; }
+    #drawCanvasWrap{ flex:1; min-height:220px; background-color:rgba(255,255,255,.96); background-size:22px 22px; background-image:linear-gradient(to right, rgba(70,120,170,.18) 1px, transparent 1px), linear-gradient(to bottom, rgba(70,120,170,.18) 1px, transparent 1px); border:2px solid rgba(120,190,255,.30); border-radius:14px; overflow:hidden; }
+    #draftCanvas{ display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; }
+    #overlay.draft-open #card{ margin-right:440px; }
+    @media (max-width: 1180px){ #overlay.draft-open #card{ margin-right:0; } #drawPanel{ left:12px; right:12px; top:auto; height:42vh; bottom:12px; width:auto; } #overlay.draft-open #card{ max-height:48vh; } }
     </style>
 </head>
 <body data-mode="game" class="gameOnly">
@@ -56,7 +74,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             <canvas id="c"></canvas>
             <div id="hud"><div class="pill" id="leftPill">Башня: <b id="heightTxt">0</b><span style="opacity:.5">|</span>Осталось: <b id="remainNum">9</b></div><div id="progressWrap">Прогресс<div id="bar"><div></div></div><span id="pct">0%</span></div><div class="pill" id="scorePill">Счёт: <b id="scoreNum">0</b></div></div>
             <button id="nextBtn" disabled>Далее →</button>
-            <div id="overlay" role="dialog" aria-modal="true"><div id="card"><div id="cardHeader"><div><div id="title">Вопрос</div><div id="q">...</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div style="display:flex; align-items:center; gap:10px;"><div id="badge">1 / 9</div></div></div></div><div id="answers"></div><div id="inputRow"><input id="ansInput" type="text" placeholder="Введите ответ..." autocomplete="off" /><button id="submit">ОК</button></div><div id="msg"></div><div id="hint">Верно → блок опускается и становится этажом (+100). Неверно → обугливание, взрыв и исчезает.</div></div></div>
+            <div id="overlay" role="dialog" aria-modal="true"><div id="card"><div id="cardHeader"><div><div id="title">Вопрос</div><div id="q">...</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div style="display:flex; align-items:center; gap:10px;"><button id="draftBtn" type="button" title="Открыть черновик">✏️</button><div id="badge">1 / 9</div></div></div></div><div id="answers"></div><div id="inputRow"><input id="ansInput" type="text" placeholder="Введите ответ..." autocomplete="off" /><button id="submit">ОК</button></div><div id="msg"></div><div id="hint">Верно → блок опускается и становится этажом (+100). Неверно → обугливание, взрыв и исчезает.</div></div><div id="drawPanel"><div id="drawTitle"><span>Черновик</span><button id="drawClose" type="button" title="Закрыть">×</button></div><div id="drawTools"><button type="button" data-tool="pointer" title="Указатель">👆</button><button type="button" data-tool="pen" class="active" title="Карандаш">🖊️</button><button type="button" data-tool="line" title="Прямая">📏</button><button type="button" data-tool="vector" title="Вектор">↗️</button><button type="button" data-tool="circle" title="Окружность">⭕</button><button type="button" data-tool="triangle" title="Треугольник">🔺</button><input id="drawColor" type="color" value="#003399" title="Цвет"><input id="drawSize" type="range" min="1" max="15" value="3" title="Толщина"><button type="button" data-tool="eraser" title="Ластик">🧽</button><button type="button" id="drawClear" title="Очистить всё">🗑️</button></div><div id="drawCanvasWrap"><canvas id="draftCanvas"></canvas></div></div></div>
             <div id="start"><div id="startCard"><h1>Башня знаний</h1><p></p><button id="play">▶ Начать</button><div id="err" style="display:none;"></div></div></div>
             <div id="finish"><div id="finishCard"><div id="finishTitle">Отлично!</div><div id="finishText">Заработано <b id="finishScore">0</b> баллов из 900</div><div id="finishCustomText" style="color:var(--text); margin-bottom:14px; font-size:16px; line-height:1.4; display:none;"></div><div id="stats"><div class="stat"><b id="stCorrect">0</b><div>правильных ответов</div></div><div class="stat"><b id="stWrong">0</b><div>неправильных ответов</div></div><div class="stat"><b id="stHeight">0</b><div>блоков в башне</div></div></div><button id="restart">↻ Сыграть ещё раз</button></div></div>
         </div>
@@ -88,7 +106,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         const TRIM_ALPHA_MIN = 34; const PROFILE_ALPHA_MIN = 22; const CENTROID_ALPHA_MIN = 24; const LAND_BOUNCE_UP = 10; const LAND_BOUNCE_TIME = 0.10;  
 
         const canvas = document.getElementById("c"); const ctx = canvas.getContext("2d", {alpha: false});
-        const overlay = document.getElementById("overlay"); const qEl = document.getElementById("q"); const badgeEl = document.getElementById("badge"); const answersEl = document.getElementById("answers"); const inputRow = document.getElementById("inputRow"); const ansInput = document.getElementById("ansInput"); const submitBtn = document.getElementById("submit"); const msgEl = document.getElementById("msg"); const startLayer = document.getElementById("start"); const playBtn = document.getElementById("play"); const finishLayer = document.getElementById("finish"); const finishScoreEl = document.getElementById("finishScore"); const stCorrect = document.getElementById("stCorrect"); const stWrong = document.getElementById("stWrong"); const stHeight = document.getElementById("stHeight"); const restartBtn = document.getElementById("restart"); const errBox = document.getElementById("err"); const heightTxt = document.getElementById("heightTxt"); const remainNum = document.getElementById("remainNum"); const pctTxt = document.getElementById("pct"); const barFill = document.querySelector("#bar > div"); const scoreNum = document.getElementById("scoreNum"); const nextBtn = document.getElementById("nextBtn");
+        const overlay = document.getElementById("overlay"); const qEl = document.getElementById("q"); const badgeEl = document.getElementById("badge"); const answersEl = document.getElementById("answers"); const inputRow = document.getElementById("inputRow"); const ansInput = document.getElementById("ansInput"); const submitBtn = document.getElementById("submit"); const msgEl = document.getElementById("msg"); const draftBtn = document.getElementById("draftBtn"); const drawPanel = document.getElementById("drawPanel"); const drawClose = document.getElementById("drawClose"); const draftCanvas = document.getElementById("draftCanvas"); const drawColor = document.getElementById("drawColor"); const drawSize = document.getElementById("drawSize"); const drawClear = document.getElementById("drawClear"); const startLayer = document.getElementById("start"); const playBtn = document.getElementById("play"); const finishLayer = document.getElementById("finish"); const finishScoreEl = document.getElementById("finishScore"); const stCorrect = document.getElementById("stCorrect"); const stWrong = document.getElementById("stWrong"); const stHeight = document.getElementById("stHeight"); const restartBtn = document.getElementById("restart"); const errBox = document.getElementById("err"); const heightTxt = document.getElementById("heightTxt"); const remainNum = document.getElementById("remainNum"); const pctTxt = document.getElementById("pct"); const barFill = document.querySelector("#bar > div"); const scoreNum = document.getElementById("scoreNum"); const nextBtn = document.getElementById("nextBtn");
 
         let W=0,H=0,DPR=1;
         function resize(){ DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1)); W = Math.floor(window.innerWidth); H = Math.floor(window.innerHeight); canvas.width = W * DPR; canvas.height = H * DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
@@ -115,6 +133,149 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         function drawScorePops(){ for(const f of state.scoreFloats){ const a = Math.max(0, 1 - (f.age / f.life)); const s = 1 + (1 - a) * 0.15; ctx.save(); ctx.globalAlpha = a; ctx.translate(f.x, f.y); ctx.scale(s, s); ctx.font = "900 22px system-ui, sans-serif"; ctx.lineWidth = 5; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.strokeText(f.text, 0, 0); ctx.fillStyle = "rgba(120,255,170,.95)"; ctx.fillText(f.text, 0, 0); ctx.restore(); } }
         function draw(){ ctx.clearRect(0,0,W,H); ctx.save(); ctx.translate(state.cameraX, state.cameraY); drawBackground(); if (state.running || state.finished) { for(const b of state.tower){ drawBlock(b, false, b.squash, 0); } if(state.current){ drawBlock(state.current, true, 1.0, state.current.char || 0); } for(const s of state.smokes){ const t = s.age / s.life; const a = (1 - t) * 0.35; ctx.fillStyle = "rgba(20,20,20," + a + ")"; ctx.beginPath(); ctx.arc(s.x, s.y, s.rad * (1 + t*1.25), 0, Math.PI*2); ctx.fill(); } for(const r of state.rings){ const t = r.age / r.life; const a = (1 - t) * 0.55; ctx.strokeStyle = "rgba(255,255,255," + a + ")"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI*2); ctx.stroke(); } for(const sp of state.sparks){ const t = sp.age / sp.life; const a = Math.max(0, 1 - t); ctx.strokeStyle = "rgba(255,220,140," + (0.9*a) + ")"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sp.x, sp.y); ctx.lineTo(sp.x - sp.vx*0.012, sp.y - sp.vy*0.012); ctx.stroke(); } for(const p of state.particles){ const a = 1 - (p.age/p.life); ctx.fillStyle = "rgba(255,200,120," + (0.78*a) + ")"; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill(); } drawScorePops(); } if(state.flash>0){ ctx.fillStyle = "rgba(255,255,255," + (state.flash*0.22) + ")"; ctx.fillRect(0,0,W,H); } ctx.restore(); requestAnimationFrame(draw); }
         let lastT=0; function loop(t){ if(!lastT) lastT=t; const dt=Math.min(0.033,(t-lastT)/1000); lastT=t; update(dt); requestAnimationFrame(loop); }
+
+        let draftTool = "pen";
+        let draftCtx = null;
+        let draftDrawing = false;
+        let draftStart = null;
+        let draftSnapshot = null;
+
+        function resizeDraftCanvas(clearAfterResize){
+            if(!draftCanvas) return;
+            const wrap = document.getElementById("drawCanvasWrap");
+            const rect = wrap ? wrap.getBoundingClientRect() : {width: 360, height: 300};
+            const dpr = Math.max(1, window.devicePixelRatio || 1);
+            const old = document.createElement("canvas");
+            if(draftCanvas.width && draftCanvas.height){
+                old.width = draftCanvas.width; old.height = draftCanvas.height;
+                old.getContext("2d").drawImage(draftCanvas, 0, 0);
+            }
+            draftCanvas.width = Math.max(1, Math.floor(rect.width * dpr));
+            draftCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
+            draftCtx = draftCanvas.getContext("2d");
+            draftCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            draftCtx.lineCap = "round";
+            draftCtx.lineJoin = "round";
+            if(!clearAfterResize && old.width && old.height){
+                draftCtx.save();
+                draftCtx.setTransform(1,0,0,1,0,0);
+                draftCtx.drawImage(old, 0, 0, draftCanvas.width, draftCanvas.height);
+                draftCtx.restore();
+            }
+        }
+
+        function clearDraft(){
+            if(!draftCanvas) return;
+            if(!draftCtx) resizeDraftCanvas(true);
+            draftCtx.clearRect(0, 0, draftCanvas.width, draftCanvas.height);
+        }
+
+        function openDraft(){
+            if(!drawPanel) return;
+            drawPanel.classList.add("open");
+            overlay.classList.add("draft-open");
+            if(draftBtn) draftBtn.classList.add("active");
+            setTimeout(()=>resizeDraftCanvas(false), 60);
+        }
+        function closeDraft(){
+            if(!drawPanel) return;
+            drawPanel.classList.remove("open");
+            overlay.classList.remove("draft-open");
+            if(draftBtn) draftBtn.classList.remove("active");
+        }
+        function toggleDraft(){
+            if(drawPanel && drawPanel.classList.contains("open")) closeDraft(); else openDraft();
+        }
+        function setDraftTool(tool){
+            draftTool = tool || "pen";
+            document.querySelectorAll("#drawTools [data-tool]").forEach(btn => btn.classList.toggle("active", btn.dataset.tool === draftTool));
+            if(draftCanvas) draftCanvas.style.cursor = draftTool === "pointer" ? "default" : "crosshair";
+        }
+        function getDraftPoint(e){
+            const r = draftCanvas.getBoundingClientRect();
+            return { x: e.clientX - r.left, y: e.clientY - r.top };
+        }
+        function prepareDraftStroke(){
+            draftCtx.lineWidth = parseFloat(drawSize.value || "3");
+            draftCtx.strokeStyle = drawColor.value || "#003399";
+            draftCtx.fillStyle = drawColor.value || "#003399";
+            draftCtx.globalCompositeOperation = draftTool === "eraser" ? "destination-out" : "source-over";
+        }
+        function drawDraftArrowHead(x1,y1,x2,y2){
+            const angle = Math.atan2(y2-y1, x2-x1);
+            const len = Math.max(12, parseFloat(drawSize.value || "3") * 4);
+            draftCtx.beginPath();
+            draftCtx.moveTo(x2, y2);
+            draftCtx.lineTo(x2 - len*Math.cos(angle - Math.PI/7), y2 - len*Math.sin(angle - Math.PI/7));
+            draftCtx.lineTo(x2 - len*Math.cos(angle + Math.PI/7), y2 - len*Math.sin(angle + Math.PI/7));
+            draftCtx.closePath();
+            draftCtx.fill();
+        }
+        function drawDraftShape(from, to){
+            prepareDraftStroke();
+            draftCtx.beginPath();
+            if(draftTool === "line" || draftTool === "vector"){
+                draftCtx.moveTo(from.x, from.y); draftCtx.lineTo(to.x, to.y); draftCtx.stroke();
+                if(draftTool === "vector") drawDraftArrowHead(from.x, from.y, to.x, to.y);
+            } else if(draftTool === "circle"){
+                const rx = Math.abs(to.x - from.x) / 2;
+                const ry = Math.abs(to.y - from.y) / 2;
+                draftCtx.ellipse((from.x+to.x)/2, (from.y+to.y)/2, rx, ry, 0, 0, Math.PI*2);
+                draftCtx.stroke();
+            } else if(draftTool === "triangle"){
+                draftCtx.moveTo((from.x+to.x)/2, from.y);
+                draftCtx.lineTo(from.x, to.y);
+                draftCtx.lineTo(to.x, to.y);
+                draftCtx.closePath();
+                draftCtx.stroke();
+            }
+            draftCtx.globalCompositeOperation = "source-over";
+        }
+        function initDraftBoard(){
+            if(!draftCanvas) return;
+            resizeDraftCanvas(true);
+            if(draftBtn) draftBtn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleDraft(); });
+            if(drawClose) drawClose.addEventListener("click", (e)=>{ e.stopPropagation(); closeDraft(); });
+            if(drawClear) drawClear.addEventListener("click", (e)=>{ e.stopPropagation(); clearDraft(); });
+            document.querySelectorAll("#drawTools [data-tool]").forEach(btn => btn.addEventListener("click", (e)=>{ e.stopPropagation(); setDraftTool(btn.dataset.tool); }));
+            draftCanvas.addEventListener("pointerdown", (e)=>{
+                if(draftTool === "pointer") return;
+                e.preventDefault(); e.stopPropagation();
+                if(!draftCtx) resizeDraftCanvas(false);
+                draftDrawing = true; draftStart = getDraftPoint(e);
+                prepareDraftStroke();
+                if(draftTool === "pen" || draftTool === "eraser"){
+                    draftCtx.beginPath(); draftCtx.moveTo(draftStart.x, draftStart.y);
+                } else {
+                    const dpr = Math.max(1, window.devicePixelRatio || 1);
+                    draftSnapshot = draftCtx.getImageData(0, 0, draftCanvas.width/dpr, draftCanvas.height/dpr);
+                }
+                draftCanvas.setPointerCapture(e.pointerId);
+            });
+            draftCanvas.addEventListener("pointermove", (e)=>{
+                if(!draftDrawing) return;
+                e.preventDefault(); e.stopPropagation();
+                const p = getDraftPoint(e);
+                if(draftTool === "pen" || draftTool === "eraser"){
+                    prepareDraftStroke(); draftCtx.lineTo(p.x, p.y); draftCtx.stroke(); draftCtx.globalCompositeOperation = "source-over";
+                } else if(draftSnapshot){
+                    draftCtx.putImageData(draftSnapshot, 0, 0); drawDraftShape(draftStart, p);
+                }
+            });
+            function finish(e){
+                if(!draftDrawing) return;
+                e.preventDefault(); e.stopPropagation();
+                const p = getDraftPoint(e);
+                if(draftTool !== "pen" && draftTool !== "eraser" && draftSnapshot){
+                    draftCtx.putImageData(draftSnapshot, 0, 0); drawDraftShape(draftStart, p);
+                }
+                draftDrawing = false; draftSnapshot = null; draftStart = null; draftCtx.globalCompositeOperation = "source-over";
+            }
+            draftCanvas.addEventListener("pointerup", finish);
+            draftCanvas.addEventListener("pointercancel", finish);
+            window.addEventListener("resize", ()=>{ if(drawPanel && drawPanel.classList.contains("open")) resizeDraftCanvas(false); });
+        }
+        initDraftBoard();
         function normalizeAnswer(s){ return String(s||"").trim().toLowerCase(); }
 
         function normalizeQuestionMedia(root){
@@ -142,7 +303,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 svg.style.overflow = 'visible';
             });
         }
-        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
+        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); clearDraft(); closeDraft(); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
         function checkAnswer(userValue){ if (state.answered) return; state.answered = true; const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; let ok=false; const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue); const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer]; ok = acc.map(normalizeAnswer).includes(valStr); const waitingBlock = state.current; if(ok){ state.correct++; msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100)."; playGood(); state.dropping = false; setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(state.current) state.dropping = true; else setNextEnabled(true); }, 220); } else { state.wrong++; msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается и исчезает."; state.dropping = false; const scorchDur = 0.35; let elapsed = 0; function scorchStep(){ if(!state.current || state.current !== waitingBlock) return; elapsed += 1/60; state.current.char = Math.min(1, elapsed / scorchDur); if(Math.random() < 0.25){ state.smokes.push({ x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15), y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10), vx: (Math.random()*2-1)*40, vy: -80 - Math.random()*80, life:0.6+Math.random()*0.4, age:0, rad: 14+Math.random()*18 }); } if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); } } requestAnimationFrame(scorchStep); setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); } state.current = null; setNextEnabled(true); }, 520); } state.blockIndex++; }
         ansInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") checkAnswer(ansInput.value); }); document.addEventListener("keydown",(e)=>{ if(overlay.style.display==="flex" && e.key==="Enter"){ checkAnswer(ansInput.value); } }); nextBtn.addEventListener("click", ()=>{ if(nextBtn.disabled) return; state.questionIndex++; if(state.questionIndex >= 9){ finishGame(); return; } spawnBlock(); });
 
