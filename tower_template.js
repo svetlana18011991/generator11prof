@@ -20,15 +20,34 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
     #nextBtn:active{ transform: translateX(160px) scale(.99); } #nextBtn[disabled]{ opacity:.45; cursor:not-allowed; filter:saturate(.7); }
     #overlay{ position:absolute; inset:0; display:none; flex-direction: column; align-items: center; overflow-y: auto; background: rgba(0,0,0,.25); backdrop-filter: blur(6px); z-index: 5; }
     #overlay::before { content: ""; flex: 1 0 60px; width: 100%; } #overlay::after { content: ""; flex: 1 0 30px; width: 100%; }
-    #card{ position:relative; width:min(640px, calc(100% - 24px)); flex-shrink: 0; background:var(--panel-bg); border:1px solid var(--panel-stroke); border-radius:18px; box-shadow:var(--shadow); padding:18px 18px 14px; transform: translateY(10px) scale(.96); opacity: 0; transition: transform .18s ease, opacity .18s ease; will-change: transform, opacity; }
+    #card{ position:relative; width:min(640px, calc(100% - 24px)); max-height: calc(100vh - 112px); overflow-y:auto; flex-shrink: 0; background:var(--panel-bg); border:1px solid var(--panel-stroke); border-radius:18px; box-shadow:var(--shadow); padding:18px 18px 14px; transform: translateY(10px) scale(.96); opacity: 0; transition: transform .18s ease, opacity .18s ease; will-change: transform, opacity; box-sizing:border-box; scrollbar-width:thin; }
     #overlay.show #card{ transform: translateY(0) scale(1); opacity: 1; }
-    #cardHeader{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; } #title{ font-size:16px; color:var(--muted); letter-spacing:.2px; font-family: system-ui, sans-serif; } #q{ font-size:20px; line-height:1.25; margin-top:6px; } #badge{ border-radius:999px; padding:6px 10px; border:1px solid rgba(255,255,255,.12); color:var(--muted); font-size:12px; white-space:nowrap; font-family: system-ui, sans-serif; }
+    #cardHeader{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; } #cardHeader>div:first-child{ min-width:0; flex:1; } #title{ font-size:16px; color:var(--muted); letter-spacing:.2px; font-family: system-ui, sans-serif; } #q{ font-size:clamp(16px, 2.1vh, 20px); line-height:1.25; margin-top:6px; overflow-wrap:anywhere; } #q img{ display:block; max-width:100% !important; width:auto !important; height:auto !important; max-height:min(42vh, 390px) !important; object-fit:contain !important; margin:0 auto 14px auto !important; border-radius:10px; } #q svg{ display:block; max-width:100% !important; width:auto !important; height:auto !important; max-height:min(42vh, 390px) !important; margin:0 auto 14px auto !important; } #badge{ border-radius:999px; padding:6px 10px; border:1px solid rgba(255,255,255,.12); color:var(--muted); font-size:12px; white-space:nowrap; font-family: system-ui, sans-serif; }
     #answers{ display:flex; flex-direction:column; gap:10px; margin-top:14px; } .btn{ width:100%; text-align:left; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:14px 16px; color:var(--text); cursor:pointer; transition: transform .08s ease, background .12s ease; font-size: 16px; white-space: normal !important; line-height: 1.4; word-break: break-word; } .btn:hover{ background:rgba(255,255,255,.11); } .btn:active{ transform:scale(.99); } .btn.selected { background: rgba(120,255,170,.25) !important; border-color: rgba(120,255,170,.5) !important; transform: scale(0.98); }
     #inputRow{ display:none; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap;} #ansInput{ flex:1; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); border-radius:14px; padding:12px 12px; color:var(--text); outline:none; font-size:16px; } #submit{ background:rgba(120,190,255,.20); border:1px solid rgba(120,190,255,.35); border-radius:14px; padding:12px 14px; cursor:pointer; color:var(--text); font-weight:800; min-width: 80px; } #submit:hover{ background:rgba(120,190,255,.26); }
     #msg{ margin-top:12px; min-height:18px; font-size:14px; color:var(--muted); font-family: system-ui, sans-serif; } #hint{ margin-top:10px; font-size:12px; color:rgba(255,255,255,.55); font-family: system-ui, sans-serif; }
     #start{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background: radial-gradient(1200px 800px at 50% 45%, rgba(0,0,0,.25), rgba(0,0,0,.65)); backdrop-filter: blur(8px); z-index: 6; } #startCard{ width:min(700px, calc(100% - 24px)); background: rgba(20, 22, 30, .75); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; box-shadow: var(--shadow); padding: 18px; } #startCard h1{ margin:0 0 8px 0; font-size:24px; } #startCard p{ margin:0 0 14px 0; color: var(--text); line-height:1.4; font-size: 16px; } #play{ display:inline-flex; gap:10px; align-items:center; padding:12px 14px; border-radius:14px; border:1px solid rgba(120,190,255,.35); background: rgba(120,190,255,.22); color: var(--text); font-weight:900; cursor:pointer; } #play:hover{ background: rgba(120,190,255,.28); }
     #err{ display:none; margin-top:12px; padding:12px; border-radius:14px; border:1px solid rgba(255,120,140,.35); background: rgba(255,120,140,.12); color: rgba(255,235,238,.95); font-size:13px; line-height:1.35; }
     #finish{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,.35); backdrop-filter: blur(8px); z-index: 7; } #finishCard{ width:min(720px, calc(100% - 24px)); border-radius:20px; border:1px solid rgba(255,255,255,.14); background: rgba(18, 20, 28, .75); box-shadow: var(--shadow); padding: 18px 18px 16px; text-align:center; } #finishTitle{ font-size:30px; font-weight:1000; letter-spacing:.3px; margin: 4px 0 8px; background: linear-gradient(90deg, rgba(120,190,255,.95), rgba(120,255,170,.95)); -webkit-background-clip:text; background-clip:text; color:transparent; } #finishText{ color: rgba(255,255,255,.82); font-size:18px; margin: 0 0 10px; } #stats{ display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin: 10px 0 14px; } .stat{ background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 10px 12px; min-width: 160px; text-align:left; } .stat b{ font-size:18px; } .stat div{ color: rgba(255,255,255,.70); font-size:12px; margin-top:4px; } #restart{ display:inline-flex; gap:10px; align-items:center; padding:12px 14px; border-radius:14px; border:1px solid rgba(120,190,255,.35); background: rgba(120,190,255,.22); color: var(--text); font-weight:900; cursor:pointer; } #restart:hover{ background: rgba(120,190,255,.28); }
+
+    @media (max-height: 760px){
+        #overlay::before{ flex-basis:44px; }
+        #overlay::after{ flex-basis:18px; }
+        #card{ max-height:calc(100vh - 78px); padding:14px 14px 12px; }
+        #cardHeader{ margin-bottom:8px; }
+        #q{ font-size:clamp(15px, 2.2vh, 18px); }
+        #q img, #q svg{ max-height:min(34vh, 300px) !important; margin-bottom:10px !important; }
+        #inputRow{ margin-top:8px; }
+        #hint{ display:none; }
+        #msg{ margin-top:8px; }
+    }
+    @media (max-width: 720px){
+        #card{ width:calc(100% - 18px); }
+        #cardHeader{ gap:8px; }
+        #q img, #q svg{ max-height:36vh !important; }
+        #inputRow{ flex-direction:row; }
+        #ansInput{ min-width:0; }
+    }
     </style>
 </head>
 <body data-mode="game" class="gameOnly">
@@ -97,7 +116,33 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         function draw(){ ctx.clearRect(0,0,W,H); ctx.save(); ctx.translate(state.cameraX, state.cameraY); drawBackground(); if (state.running || state.finished) { for(const b of state.tower){ drawBlock(b, false, b.squash, 0); } if(state.current){ drawBlock(state.current, true, 1.0, state.current.char || 0); } for(const s of state.smokes){ const t = s.age / s.life; const a = (1 - t) * 0.35; ctx.fillStyle = "rgba(20,20,20," + a + ")"; ctx.beginPath(); ctx.arc(s.x, s.y, s.rad * (1 + t*1.25), 0, Math.PI*2); ctx.fill(); } for(const r of state.rings){ const t = r.age / r.life; const a = (1 - t) * 0.55; ctx.strokeStyle = "rgba(255,255,255," + a + ")"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI*2); ctx.stroke(); } for(const sp of state.sparks){ const t = sp.age / sp.life; const a = Math.max(0, 1 - t); ctx.strokeStyle = "rgba(255,220,140," + (0.9*a) + ")"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sp.x, sp.y); ctx.lineTo(sp.x - sp.vx*0.012, sp.y - sp.vy*0.012); ctx.stroke(); } for(const p of state.particles){ const a = 1 - (p.age/p.life); ctx.fillStyle = "rgba(255,200,120," + (0.78*a) + ")"; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill(); } drawScorePops(); } if(state.flash>0){ ctx.fillStyle = "rgba(255,255,255," + (state.flash*0.22) + ")"; ctx.fillRect(0,0,W,H); } ctx.restore(); requestAnimationFrame(draw); }
         let lastT=0; function loop(t){ if(!lastT) lastT=t; const dt=Math.min(0.033,(t-lastT)/1000); lastT=t; update(dt); requestAnimationFrame(loop); }
         function normalizeAnswer(s){ return String(s||"").trim().toLowerCase(); }
-        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
+
+        function normalizeQuestionMedia(root){
+            if(!root) return;
+            root.querySelectorAll('img').forEach(img => {
+                img.removeAttribute('width');
+                img.removeAttribute('height');
+                img.style.maxWidth = '100%';
+                img.style.width = 'auto';
+                img.style.height = 'auto';
+                img.style.maxHeight = 'min(42vh, 390px)';
+                img.style.objectFit = 'contain';
+                img.style.display = 'block';
+                img.style.margin = '0 auto 14px auto';
+            });
+            root.querySelectorAll('svg').forEach(svg => {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.maxWidth = '100%';
+                svg.style.width = 'auto';
+                svg.style.height = 'auto';
+                svg.style.maxHeight = 'min(42vh, 390px)';
+                svg.style.display = 'block';
+                svg.style.margin = '0 auto 14px auto';
+                svg.style.overflow = 'visible';
+            });
+        }
+        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
         function checkAnswer(userValue){ if (state.answered) return; state.answered = true; const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; let ok=false; const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue); const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer]; ok = acc.map(normalizeAnswer).includes(valStr); const waitingBlock = state.current; if(ok){ state.correct++; msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100)."; playGood(); state.dropping = false; setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(state.current) state.dropping = true; else setNextEnabled(true); }, 220); } else { state.wrong++; msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается и исчезает."; state.dropping = false; const scorchDur = 0.35; let elapsed = 0; function scorchStep(){ if(!state.current || state.current !== waitingBlock) return; elapsed += 1/60; state.current.char = Math.min(1, elapsed / scorchDur); if(Math.random() < 0.25){ state.smokes.push({ x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15), y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10), vx: (Math.random()*2-1)*40, vy: -80 - Math.random()*80, life:0.6+Math.random()*0.4, age:0, rad: 14+Math.random()*18 }); } if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); } } requestAnimationFrame(scorchStep); setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); } state.current = null; setNextEnabled(true); }, 520); } state.blockIndex++; }
         ansInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") checkAnswer(ansInput.value); }); document.addEventListener("keydown",(e)=>{ if(overlay.style.display==="flex" && e.key==="Enter"){ checkAnswer(ansInput.value); } }); nextBtn.addEventListener("click", ()=>{ if(nextBtn.disabled) return; state.questionIndex++; if(state.questionIndex >= 9){ finishGame(); return; } spawnBlock(); });
 
