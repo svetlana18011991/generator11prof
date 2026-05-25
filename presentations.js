@@ -221,14 +221,65 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .help-btn { background: #e3f2fd; color: #003399; border: 1px solid #003399; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
         .help-btn:hover { background: #003399; color: #fff; }
         
-        .task-text { font-size: 1.2em; line-height: 1.25; }
+        /*
+           ФИКС СЛАЙДОВ С КАРТИНКАМИ.
+           Раньше ограничение max-height применялось только к svg.
+           Задания из task8 приходят как <img>, поэтому картинка занимала всю карточку,
+           текст и кнопки уезжали вниз/обрезались. Ниже — единая адаптивная раскладка.
+        */
+        .task-right-side {
+            overflow: hidden !important;
+        }
+        .task-right-side > div {
+            min-height: 0 !important;
+            height: 100% !important;
+            justify-content: flex-start !important;
+            overflow: hidden !important;
+        }
+        .svg-wrapper {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            max-height: 54% !important;
+            width: 100% !important;
+            overflow: hidden !important;
+            margin-bottom: 10px !important;
+        }
+        .svg-wrapper img,
         .svg-wrapper svg {
             max-width: 100% !important;
-            max-height: 38vh !important;
+            max-height: 100% !important;
             width: auto !important;
             height: auto !important;
-            display: block;
-            margin: 0 auto;
+            object-fit: contain !important;
+            display: block !important;
+            margin: 0 auto !important;
+        }
+        .task-text {
+            font-size: clamp(14px, 1.35vw, 21px) !important;
+            line-height: 1.18 !important;
+            max-height: 24% !important;
+            min-height: 0 !important;
+            flex: 0 1 auto !important;
+            overflow-y: auto !important;
+            padding: 0 8px 0 0 !important;
+            margin-bottom: 10px !important;
+            box-sizing: border-box !important;
+        }
+        .pres-check-zone {
+            flex: 0 0 auto !important;
+            margin-top: auto !important;
+            gap: 10px !important;
+        }
+        .pres-input {
+            max-width: 180px !important;
+            box-sizing: border-box !important;
+        }
+        @media (max-height: 760px), (max-width: 1200px) {
+            .task-right-side { padding: 14px 18px !important; }
+            .svg-wrapper { max-height: 50% !important; }
+            .task-text { font-size: 14px !important; line-height: 1.15 !important; max-height: 26% !important; }
+            .pres-input { padding: 9px 14px !important; width: 150px !important; }
+            .pres-btn { padding: 9px 22px !important; }
         }
     </style>
 </head>
