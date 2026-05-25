@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Рабочее пространство — Светлана Быкова</title>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-    
-    <script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=0u811f0ZuH93Uv3P1NpchIdH2nQl5k-n8PMBaJHo9XABvNwqL1EO2nolCcP_uZ83faOMndfaj8L2Zubrtes-REqtd24ydqmAueBdyzzXd1d1CITFdRAcrnDC1xsLKkn2_2Ynjl5DpLouELKPNw1esqBawPXfSiT1iS00oOFy44EOE2EcSJ4f4wyeFFRakt84QHxQTOztMSEsVPQhiJIXZF7m7wRRDRrk63KU3urtsqB_j3ejsUyFumt6VeUTc0d55hbX-hYSpvyVD1zbHC1BRBpM3gANbjcRIgREHua6yveskhuDAaiKSdOIWUQ2VelQnxKwoWHxPELYWup_RUfVtw" charset="UTF-8"></script><script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=cbytmHwc3zgfdrMXzFDESAJk-BYt9y96zHT4nz8f-AoZ2djNQWV1uuvhcaOH2bUejQnx-ZN0C4ugVymQXbyxpBcgD1o91c4Ik5lRW-KcH1a3XgcaTCjH3CcPDpnTPnxnybwfuHTXgIhuleHzYTAB9NjegCwQRa6ubg4lGNRHNFk61bNPwpu7JQwLs2MkrXJMsxhHARvKxbi3nbrIYA0-1-rGMaYkXktNGoPiBFNdA3wmWPJ6lmu4ym075c0BZ0NT99tA_G_8_vpqwU2qx102tg" charset="UTF-8"></script><script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=fBxlwMk3doke95iwfW4nKLynz-TWC1BuotG0EJ8BcwLbsW_P_LPWviRdLF7DO-pHybjeDN_5oM9TKcDYY3w5kGWhdRGfDSNFg2--ioAzUjrRqxZ6i3vlh07d24Ix3xhVpnDsQ2TiAP67IHdhADIwTTFNYIMNIO91FN_4YVL8GIRAn-f-xx32OATZ6VpTIIevZyQLGXar7ykhgpF4H8WNNEG6gu6MLe46BIg_kC1OmrQJYxmz-ZOEk01YQij8IiVa2S4H0L05OEPCamW36Up49Q" charset="UTF-8"></script><script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=YzrRfT0yI9LYrJg8Fz4MeqH1BhhspNRBLbYewEQ45OT4r_CH4XIfe4fO31EyerSADsH68VpLbOmqvP0_TyL-QF-VAN36J1Aw5TkBzmKE3gM3OQ2GCpxwbGWZJqnj36WlH-sesBqteU2fwE-hflAlFMIL5Zw-9Tzw5h1zEBFwBLTMFICaNP0VNI7IT7Jda4g2_dtoYUsAP3T3aO2tQteN2XbYtkOokyHROkX_woFJz87XYVfNvPVrMFBCgFogk_L1j1R1y0_n4wfUFIuM-ju5pg" charset="UTF-8"></script><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet"><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script>window.database = {};</script>
@@ -18,7 +16,9 @@
     <script src="task6.js"></script>
     <script src="task7.js"></script>
     <script src="task8.js"></script>
+    <!-- Задание 9: основной файл. Если рядом есть task9_corrected_full.js, он перезапишет task9 на полную исправленную базу. -->
     <script src="task9.js"></script>
+    <script src="task9_corrected_full.js"></script>
 
     <style>
         body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 40px 20px; }
@@ -386,6 +386,11 @@
             document.getElementById('info-board').innerHTML = "<b>Критическая ошибка:</b> База данных пуста! Убедитесь, что файлы заданий (task1.js и т.д.) находятся в одной папке с index.html.";
             document.getElementById('info-board').style.display = "block";
             return;
+        }
+
+        if (!window.database["task9"]) {
+            document.getElementById('info-board').innerHTML = "<b>Внимание:</b> файл задания 9 не загрузился. Проверьте, что рядом с index.html есть файл task9.js или task9_corrected_full.js.";
+            document.getElementById('info-board').style.display = "block";
         }
 
         let sortedTaskIds = getUniqueTaskIds();
