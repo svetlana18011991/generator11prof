@@ -20,7 +20,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
     #nextBtn:active{ transform: translateX(160px) scale(.99); } #nextBtn[disabled]{ opacity:.45; cursor:not-allowed; filter:saturate(.7); }
     #overlay{ position:absolute; inset:0; display:none; flex-direction: column; align-items: center; overflow-y: auto; background: rgba(0,0,0,.25); backdrop-filter: blur(6px); z-index: 5; }
     #overlay::before { content: ""; flex: 1 0 60px; width: 100%; } #overlay::after { content: ""; flex: 1 0 30px; width: 100%; }
-    #card{ position:relative; width:min(640px, calc(100% - 24px)); max-height: calc(100vh - 112px); overflow-y:auto; flex-shrink: 0; background:var(--panel-bg); border:1px solid var(--panel-stroke); border-radius:18px; box-shadow:var(--shadow); padding:18px 18px 14px; transform: translateY(10px) scale(.96); opacity: 0; transition: transform .18s ease, opacity .18s ease; will-change: transform, opacity; box-sizing:border-box; scrollbar-width:thin; }
+    #card{ position:relative; width:min(720px, calc(100% - 24px)); max-height: calc(100vh - 112px); overflow-y:auto; flex-shrink: 0; background:var(--panel-bg); border:1px solid var(--panel-stroke); border-radius:18px; box-shadow:var(--shadow); padding:18px 18px 14px; transform: translateY(10px) scale(.96); opacity: 0; transition: transform .18s ease, opacity .18s ease; will-change: transform, opacity; box-sizing:border-box; scrollbar-width:thin; }
     #overlay.show #card{ transform: translateY(0) scale(1); opacity: 1; }
     #cardHeader{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; } #cardHeader>div:first-child{ min-width:0; flex:1; } #title{ font-size:16px; color:var(--muted); letter-spacing:.2px; font-family: system-ui, sans-serif; } #q{ font-size:clamp(16px, 2.1vh, 20px); line-height:1.25; margin-top:6px; overflow-wrap:anywhere; } #q img{ display:block; max-width:100% !important; width:auto !important; height:auto !important; max-height:min(42vh, 390px) !important; object-fit:contain !important; margin:0 auto 14px auto !important; border-radius:10px; } #q svg{ display:block; max-width:100% !important; width:auto !important; height:auto !important; max-height:min(42vh, 390px) !important; margin:0 auto 14px auto !important; } #badge{ border-radius:999px; padding:6px 10px; border:1px solid rgba(255,255,255,.12); color:var(--muted); font-size:12px; white-space:nowrap; font-family: system-ui, sans-serif; }
     #answers{ display:flex; flex-direction:column; gap:10px; margin-top:14px; } .btn{ width:100%; text-align:left; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:14px 16px; color:var(--text); cursor:pointer; transition: transform .08s ease, background .12s ease; font-size: 16px; white-space: normal !important; line-height: 1.4; word-break: break-word; } .btn:hover{ background:rgba(255,255,255,.11); } .btn:active{ transform:scale(.99); } .btn.selected { background: rgba(120,255,170,.25) !important; border-color: rgba(120,255,170,.5) !important; transform: scale(0.98); }
@@ -65,7 +65,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
     #drawClose{ margin-left:auto; background:#fff3e0 !important; color:#e65100; border:1px solid #ffcc80 !important; width:30px; height:30px; border-radius:8px; font-size:20px !important; line-height:1; }
     #drawCanvasWrap{ flex:1; min-height:250px; background-color:#fff; background-size:20px 20px; background-image:linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border:2px solid #bbdefb; border-radius:8px; overflow:hidden; }
     #canvas-tower{ display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; }
-    #overlay.draft-open #card{ margin-right:450px; }
+    #overlay.draft-open #card{ margin-right:470px; }
     @media (max-width: 1180px){ #overlay.draft-open #card{ margin-right:0; } #drawPanel{ left:12px; right:12px; top:auto; height:42vh; bottom:12px; width:auto; padding:14px; } #overlay.draft-open #card{ max-height:48vh; } }
     </style>
 </head>
@@ -206,16 +206,29 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 return { minX: minX - pad, minY: minY - pad, maxX: maxX + pad, maxY: maxY + pad };
             }
             function smoothPath(points) {
-                if (!points || points.length < 3) return;
+                if (!points || points.length === 0) return;
                 ctx.moveTo(points[0].x, points[0].y);
-                for (let i = 1; i < points.length - 2; i++) {
-                    const xc = (points[i].x + points[i + 1].x) / 2;
-                    const yc = (points[i].y + points[i + 1].y) / 2;
-                    ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+                if (points.length === 1) {
+                    ctx.lineTo(points[0].x + 0.01, points[0].y + 0.01);
+                    return;
                 }
-                const last = points[points.length - 1];
-                const prev = points[points.length - 2];
-                ctx.quadraticCurveTo(prev.x, prev.y, last.x, last.y);
+                if (points.length === 2) {
+                    ctx.lineTo(points[1].x, points[1].y);
+                    return;
+                }
+                // Более плавная линия: Catmull-Rom -> Bezier.
+                // Так рукописный ввод получается мягче, без углов на быстрых движениях мыши/пера.
+                for (let i = 0; i < points.length - 1; i++) {
+                    const p0 = points[i - 1] || points[i];
+                    const p1 = points[i];
+                    const p2 = points[i + 1];
+                    const p3 = points[i + 2] || p2;
+                    const cp1x = p1.x + (p2.x - p0.x) / 6;
+                    const cp1y = p1.y + (p2.y - p0.y) / 6;
+                    const cp2x = p2.x - (p3.x - p1.x) / 6;
+                    const cp2y = p2.y - (p3.y - p1.y) / 6;
+                    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+                }
             }
             function drawObj(ctx, obj, isSelected) {
                 ctx.save();
@@ -261,8 +274,26 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 ctx.restore();
             }
             function getLocalPos(p, obj) { let cx = obj.cx || 0, cy = obj.cy || 0; let tx = (obj.x || 0) + cx, ty = (obj.y || 0) + cy; let nx = p.x - tx, ny = p.y - ty; let angle = -(obj.angle || 0); let rx = nx * Math.cos(angle) - ny * Math.sin(angle); let ry = nx * Math.sin(angle) + ny * Math.cos(angle); let scale = obj.scale || 1; return {x: (rx / scale) + cx, y: (ry / scale) + cy}; }
-            function renderAll() { ctx.clearRect(0, 0, canvas.width, canvas.height); objects.forEach(obj => drawObj(ctx, obj, draggingObj === obj)); if (currentObj) drawObj(ctx, currentObj, false); }
+            function renderAll() { const rect = canvas.getBoundingClientRect(); ctx.clearRect(0, 0, rect.width || canvas.width, rect.height || canvas.height); objects.forEach(obj => drawObj(ctx, obj, draggingObj === obj)); if (currentObj) drawObj(ctx, currentObj, false); }
             function getPos(e) { const rect = canvas.getBoundingClientRect(); let x = e.clientX, y = e.clientY; if (e.touches && e.touches.length > 0) { x = e.touches[0].clientX; y = e.touches[0].clientY; } return { x: x - rect.left, y: y - rect.top }; }
+            function addFreePoint(obj, p) {
+                if (!obj.points) obj.points = [];
+                const last = obj.points[obj.points.length - 1];
+                if (!last) { obj.points.push({x:p.x, y:p.y}); return; }
+                const dx = p.x - last.x, dy = p.y - last.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 0.45) return;
+                // При быстром движении браузер даёт редкие точки. Добавляем промежуточные,
+                // чтобы линия не становилась ломаной.
+                const step = 3.5;
+                if (dist > step) {
+                    const parts = Math.floor(dist / step);
+                    for (let i = 1; i <= parts; i++) {
+                        obj.points.push({ x: last.x + dx * (i / (parts + 1)), y: last.y + dy * (i / (parts + 1)) });
+                    }
+                }
+                obj.points.push({x:p.x, y:p.y});
+            }
             function startDraw(e) {
                 isDrawing = true; let p = getPos(e);
                 let tool = document.getElementById('tool-' + id).value; let color = document.getElementById('color-' + id).value; let size = document.getElementById('size-' + id).value;
@@ -278,7 +309,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                     renderAll();
                 } else {
                     currentObj = { tool: tool, color: color, size: size, x: 0, y: 0, scale: 1, angle: 0 };
-                    if (tool === 'pen' || tool === 'eraser') currentObj.points = [p];
+                    if (tool === 'pen' || tool === 'eraser') { currentObj.points = []; addFreePoint(currentObj, p); }
                     else { currentObj.sx = p.x; currentObj.sy = p.y; currentObj.ex = p.x; currentObj.ey = p.y; }
                 }
                 if (e.cancelable) e.preventDefault();
@@ -292,8 +323,10 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                     renderAll(); return;
                 }
                 if (!currentObj) return;
-                if (currentObj.tool === 'pen' || currentObj.tool === 'eraser') currentObj.points.push(p);
-                else { currentObj.ex = p.x; currentObj.ey = p.y; }
+                if (currentObj.tool === 'pen' || currentObj.tool === 'eraser') {
+                    const events = (typeof e.getCoalescedEvents === 'function') ? e.getCoalescedEvents() : [e];
+                    events.forEach(ev => addFreePoint(currentObj, getPos(ev)));
+                } else { currentObj.ex = p.x; currentObj.ey = p.y; }
                 renderAll();
             }
             function endDraw(e) {
@@ -314,7 +347,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         };
         window.clearCanvas = function(id) {
             let cnv = window.mainCanvases[id];
-            if (cnv && cnv.objects) { cnv.objects.length = 0; cnv.ctx.clearRect(0, 0, cnv.canvas.width, cnv.canvas.height); }
+            if (cnv && cnv.objects) { const rect = cnv.canvas.getBoundingClientRect(); cnv.objects.length = 0; cnv.ctx.clearRect(0, 0, rect.width || cnv.canvas.width, rect.height || cnv.canvas.height); }
         };
         window.setTool = function(id, tool) {
             const input = document.getElementById('tool-' + id);
@@ -363,7 +396,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 svg.style.overflow = 'visible';
             });
         }
-        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); window.clearCanvas('tower'); if(drawPanel){ drawPanel.classList.remove('open'); overlay.classList.remove('draft-open'); } if(draftBtn) draftBtn.classList.remove('active'); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
+        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); window.clearCanvas('tower'); if(drawPanel){ drawPanel.classList.remove('open'); overlay.classList.remove('draft-open'); } if(draftBtn) draftBtn.classList.remove('active'); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); setTimeout(()=>MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}), 350); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
         function checkAnswer(userValue){ if (state.answered) return; state.answered = true; const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; let ok=false; const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue); const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer]; ok = acc.map(normalizeAnswer).includes(valStr); const waitingBlock = state.current; if(ok){ state.correct++; msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100)."; playGood(); state.dropping = false; setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(state.current) state.dropping = true; else setNextEnabled(true); }, 220); } else { state.wrong++; msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается и исчезает."; state.dropping = false; const scorchDur = 0.35; let elapsed = 0; function scorchStep(){ if(!state.current || state.current !== waitingBlock) return; elapsed += 1/60; state.current.char = Math.min(1, elapsed / scorchDur); if(Math.random() < 0.25){ state.smokes.push({ x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15), y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10), vx: (Math.random()*2-1)*40, vy: -80 - Math.random()*80, life:0.6+Math.random()*0.4, age:0, rad: 14+Math.random()*18 }); } if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); } } requestAnimationFrame(scorchStep); setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); } state.current = null; setNextEnabled(true); }, 520); } state.blockIndex++; }
         ansInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") checkAnswer(ansInput.value); }); document.addEventListener("keydown",(e)=>{ if(overlay.style.display==="flex" && e.key==="Enter"){ checkAnswer(ansInput.value); } }); nextBtn.addEventListener("click", ()=>{ if(nextBtn.disabled) return; state.questionIndex++; if(state.questionIndex >= 9){ finishGame(); return; } spawnBlock(); });
 

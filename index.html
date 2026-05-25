@@ -41,6 +41,9 @@
         .proto-list { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #555; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9em; }
         .proto-item { display: flex; align-items: flex-start; gap: 8px; color: #bbb; cursor: pointer; }
         .proto-item input { margin-top: 3px; cursor: pointer; }
+        .proto-select-all { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; color: #ff8c00; font-weight: bold; background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.25); border-radius: 8px; padding: 10px 12px; margin-bottom: 4px; cursor: pointer; }
+        .proto-select-all input { cursor: pointer; }
+        .proto-select-all span { border-bottom: 1px dashed rgba(255,140,0,0.6); }
         .proto-label-text { border-bottom: 1px dashed #666; transition: 0.2s; }
         .proto-item:hover .proto-label-text { color: #ff8c00; }
         
@@ -398,11 +401,15 @@
 
         for (let tid of sortedTaskIds) {
             let data = window.database[tid];
-            let listHTML = "";
+            let listHTML = `
+                <label class="proto-select-all" title="Выбрать или снять все прототипы этого задания">
+                    <input type="checkbox" id="proto-all-${tid}" checked onchange="toggleAllProtos('${tid}', this.checked)">
+                    <span>Выбрать все / снять все</span>
+                </label>`;
             data.prototypes.forEach((p, idx) => {
                 listHTML += `
                 <label class="proto-item" onmouseenter="showTooltip('${tid}', ${idx}, event)" onmouseleave="hideTooltip()" onmousemove="moveTooltip(event)">
-                    <input type="checkbox" id="proto-${tid}-${idx}" checked> 
+                    <input type="checkbox" id="proto-${tid}-${idx}" checked onchange="syncProtoMaster('${tid}')"> 
                     <span class="proto-label-text">${idx + 1}. ${p.desc} 👁️</span>
                 </label>`;
             });
@@ -440,6 +447,36 @@
     function toggleSettings(tid) {
         let el = document.getElementById(`protos-${tid}`);
         if (el) el.style.display = (el.style.display === 'grid') ? 'none' : 'grid';
+    }
+
+    function toggleAllProtos(tid, checked) {
+        const data = window.database[tid];
+        if (!data || !data.prototypes) return;
+
+        data.prototypes.forEach((p, idx) => {
+            const cb = document.getElementById(`proto-${tid}-${idx}`);
+            if (cb) cb.checked = checked;
+        });
+
+        const master = document.getElementById(`proto-all-${tid}`);
+        if (master) {
+            master.checked = checked;
+            master.indeterminate = false;
+        }
+    }
+
+    function syncProtoMaster(tid) {
+        const data = window.database[tid];
+        const master = document.getElementById(`proto-all-${tid}`);
+        if (!data || !data.prototypes || !master) return;
+
+        const boxes = data.prototypes
+            .map((p, idx) => document.getElementById(`proto-${tid}-${idx}`))
+            .filter(Boolean);
+
+        const checkedCount = boxes.filter(cb => cb.checked).length;
+        master.checked = checkedCount === boxes.length;
+        master.indeterminate = checkedCount > 0 && checkedCount < boxes.length;
     }
 
     const tooltip = document.getElementById('proto-tooltip');
