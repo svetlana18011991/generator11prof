@@ -255,15 +255,19 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             margin: 0 auto !important;
         }
         .task-text {
-            font-size: clamp(14px, 1.35vw, 21px) !important;
-            line-height: 1.18 !important;
-            max-height: 24% !important;
+            font-size: clamp(16px, 1.5vw, 23px) !important;
+            line-height: 1.22 !important;
+            max-height: 28% !important;
             min-height: 0 !important;
             flex: 0 1 auto !important;
-            overflow-y: auto !important;
-            padding: 0 8px 0 0 !important;
+            overflow: hidden !important;
+            padding: 0 8px !important;
             margin-bottom: 10px !important;
             box-sizing: border-box !important;
+            text-align: center !important;
+        }
+        .task-card-visual .task-text mjx-container {
+            font-size: 108% !important;
         }
         .pres-check-zone {
             flex: 0 0 auto !important;
@@ -277,7 +281,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         @media (max-height: 760px), (max-width: 1200px) {
             .task-right-side { padding: 14px 18px !important; }
             .svg-wrapper { max-height: 50% !important; }
-            .task-text { font-size: 14px !important; line-height: 1.15 !important; max-height: 26% !important; }
+            .task-text { font-size: 15px !important; line-height: 1.16 !important; max-height: 30% !important; }
             .pres-input { padding: 9px 14px !important; width: 150px !important; }
             .pres-btn { padding: 9px 22px !important; }
         }
@@ -289,35 +293,35 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
            она становится компактной, текст и формулы увеличиваются, а кнопки остаются рядом.
         */
         .task-card-text-only {
-            width: min(58vw, 760px) !important;
-            min-height: 245px !important;
+            width: min(58vw, 780px) !important;
+            min-height: 230px !important;
             height: auto !important;
-            max-height: 58vh !important;
+            max-height: 68vh !important;
             top: 50% !important;
             bottom: auto !important;
             right: 7% !important;
             transform: translateY(-50%) !important;
-            padding: 26px 34px !important;
+            padding: 24px 34px !important;
             justify-content: center !important;
         }
         .task-card-text-only > div {
             justify-content: center !important;
             min-height: 0 !important;
             height: auto !important;
-            overflow: visible !important;
+            overflow: hidden !important;
         }
         .task-card-text-only .task-text {
-            font-size: clamp(24px, 2.25vw, 36px) !important;
-            line-height: 1.35 !important;
-            max-height: 34vh !important;
-            overflow-y: auto !important;
+            font-size: clamp(19px, 1.72vw, 27px) !important;
+            line-height: 1.28 !important;
+            max-height: 44vh !important;
+            overflow: hidden !important;
             text-align: center !important;
-            margin: 0 0 28px 0 !important;
+            margin: 0 0 22px 0 !important;
             padding: 0 6px !important;
             color: #222 !important;
         }
         .task-card-text-only .task-text mjx-container {
-            font-size: 115% !important;
+            font-size: 104% !important;
         }
         .task-card-text-only .pres-check-zone {
             margin-top: 0 !important;
@@ -332,16 +336,16 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         }
         @media (max-height: 760px), (max-width: 1200px) {
             .task-card-text-only {
-                width: min(62vw, 720px) !important;
-                min-height: 215px !important;
-                max-height: 62vh !important;
-                padding: 20px 24px !important;
+                width: min(64vw, 760px) !important;
+                min-height: 210px !important;
+                max-height: 70vh !important;
+                padding: 18px 24px !important;
             }
             .task-card-text-only .task-text {
-                font-size: clamp(20px, 2.1vw, 30px) !important;
-                max-height: 34vh !important;
-                line-height: 1.25 !important;
-                margin-bottom: 20px !important;
+                font-size: clamp(16px, 1.65vw, 24px) !important;
+                max-height: 46vh !important;
+                line-height: 1.22 !important;
+                margin-bottom: 18px !important;
             }
         }
     </style>
@@ -396,12 +400,71 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         const slides = document.querySelectorAll('.slide');
         let userResults = [];
         let slideStartTime = Date.now();
+
+        function fitTextToBox(textEl, maxPx, minPx) {
+            if (!textEl) return;
+            textEl.style.fontSize = maxPx + 'px';
+            textEl.style.overflow = 'hidden';
+
+            let size = maxPx;
+            let safety = 0;
+            while (safety < 80 && size > minPx && (textEl.scrollHeight > textEl.clientHeight + 2 || textEl.scrollWidth > textEl.clientWidth + 2)) {
+                size -= 1;
+                textEl.style.fontSize = size + 'px';
+                safety++;
+            }
+
+            if (textEl.scrollHeight > textEl.clientHeight + 3 && size <= minPx) {
+                textEl.style.lineHeight = '1.12';
+            }
+        }
+
+
+        function chooseTextOnlyMax(textEl) {
+            const plain = (textEl.textContent || '').replace(/\s+/g, ' ').trim();
+            const len = plain.length;
+
+            // Верхний предел шрифта: короткие задания больше не раздуваются на всю рамку.
+            // Длинные задания автоматически получают меньший стартовый размер, чтобы не появлялся скролл.
+            if (len > 520) return 19;
+            if (len > 420) return 21;
+            if (len > 300) return 23;
+            if (len > 200) return 25;
+            return 27;
+        }
+
+        function fitCurrentSlideText() {
+            let slide = slides[currentSlide];
+            if (!slide) return;
+            slide.querySelectorAll('.task-right-side').forEach(card => {
+                let textEl = card.querySelector('.task-text');
+                if (!textEl) return;
+                if (card.classList.contains('task-card-text-only')) {
+                    fitTextToBox(textEl, chooseTextOnlyMax(textEl), 13);
+                } else {
+                    fitTextToBox(textEl, 23, 14);
+                }
+            });
+        }
+
+        function scheduleFitText() {
+            requestAnimationFrame(() => {
+                fitCurrentSlideText();
+                setTimeout(fitCurrentSlideText, 120);
+                setTimeout(fitCurrentSlideText, 500);
+            });
+        }
         
         function showSlide(idx) {
             slides.forEach(s => s.classList.remove('active'));
             slides[idx].classList.add('active');
             slideStartTime = Date.now();
             if (idx === slides.length - 1) { renderResults(); }
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise([slides[idx]]).then(scheduleFitText).catch(scheduleFitText);
+            } else {
+                scheduleFitText();
+            }
         }
 
         function nextSlide() { if(currentSlide < slides.length - 1) showSlide(++currentSlide); }
@@ -441,6 +504,15 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         }
 
         window.onclick = function() { if(currentSlide < slides.length - 1) showSlide(++currentSlide); };
+
+        window.addEventListener('load', () => {
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise([document.body]).then(scheduleFitText).catch(scheduleFitText);
+            } else {
+                scheduleFitText();
+            }
+        });
+        window.addEventListener('resize', scheduleFitText);
         ${window.CANVAS_LOGIC_SCRIPT}
     ${window.SCRIPT_END}
 </body>
