@@ -189,9 +189,9 @@ function generatePresentation3() {
 // ==========================================
 function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, fileName, bgTitle, bgMain, accentColor) {
     
-    // Считываем состояние галочки "Показывать разборы"
+    // Считываем состояние галочки "Показывать разборы" (ПО ПРАВИЛЬНОМУ ID!)
     let showSolutions = true;
-    let solToggle = document.getElementById('toggle-solutions'); 
+    let solToggle = document.getElementById('toggle-explanations'); 
     if (solToggle) {
         showSolutions = solToggle.checked;
     }
