@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Рабочее пространство — Светлана Быкова</title>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet"><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet"><script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=2c5uNHt79EvoNeOouFvM6owRexdHT7s5sc82g0mlYjyyRhhlg0dcZM6HnMbHCuP3aT-ZuqnKv6RQfb047aVGmAW9fYiN5EoI9cqN8OLh5a23ug5MAulwN3Sbe7JW0HEt_3wp_OLliY-GF_ULKFvrJpSyIItEvNctGV2MzMvYuM6niLlHhpiWBuKIwSjcrp3I3_wVrtNxyRGy5gMOAQ2T5MkCAlRaBUTxyOSoDSZVr6u7r676CHpI4tphoKxpt0dJuByuxvZyRY2ZJaHMTpD73abIqzdqOk5TcweKZHzWjAHeGb-SCtdnxqQnPMolQsh7" charset="UTF-8"></script><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script>window.database = {};</script>
@@ -16,8 +16,10 @@
     <script src="task6.js"></script>
     <script src="task7.js"></script>
     <script src="task8.js"></script>
+    <!-- Задание 9: основной файл. Если рядом есть task9_corrected_full.js, он перезапишет task9 на полную исправленную базу. -->
     <script src="task9.js"></script>
     <script src="task9_corrected_full.js"></script>
+    <script src="task10.js"></script>
 
     <style>
         body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 40px 20px; }
@@ -77,10 +79,12 @@
         
         svg { overflow: visible; }
         
+        /* ИДЕАЛЬНАЯ ПЕЧАТЬ С ПОЛЯМИ И ЖЕСТКОЙ ПОДПИСЬЮ */
         @media screen { 
             #print-container, #print-footer-fixed { display: none !important; } 
         }
         @media print {
+            /* Нулевые поля убивают системные надписи браузера (дату, ссылку и т.д.) */
             @page { margin: 0; size: A4; } 
             body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay { display: none !important; }
@@ -211,14 +215,10 @@
         </div>
 
         <div class="task-row" style="border-left-color: #2196F3; padding: 12px 20px;">
-            <div class="row-header" style="justify-content: flex-start; gap: 20px; flex-wrap: wrap;">
-                <label style="cursor: pointer; color: #bbb; font-weight: normal; font-size: 0.95em; display: flex; align-items: center;">
+            <div class="row-header" style="justify-content: flex-start;">
+                <label style="cursor: pointer; color: #bbb; font-weight: normal; font-size: 0.95em;">
                     <input type="checkbox" id="toggle-explanations" class="custom-checkbox" checked>
-                    Добавить разборы заданий
-                </label>
-                <label style="cursor: pointer; color: #bbb; font-weight: normal; font-size: 0.95em; display: flex; align-items: center;">
-                    <input type="checkbox" id="toggle-instant-check" class="custom-checkbox">
-                    Мгновенная проверка при решении (✅)
+                    Добавить разборы заданий после подведения итогов
                 </label>
             </div>
         </div>
@@ -589,10 +589,7 @@
         }
 
         let nextStickerTarget = 2 + Math.floor(Math.random() * 2);
-        
-        // Считываем состояние обеих галочек
         let includeExplanations = document.getElementById('toggle-explanations').checked;
-        let instantCheck = document.getElementById('toggle-instant-check').checked;
 
         let sortedTaskIds = getUniqueTaskIds();
 
@@ -682,10 +679,8 @@
                     nextStickerTarget += 3 + Math.floor(Math.random() * 2);
                 }
 
-                // Добавляем новые кнопки: Мгновенная проверка и Разбор
-                let instantBtn = instantCheck ? `<button class="btn-instant" onclick="checkSingle(this, ${taskCounter}, '${item.answer}')" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 6px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; transition: 0.2s;" title="Проверить">✅</button>` : "";
-                let drawBtn = `<button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 18px; padding: 8px 12px;" onclick="window.toggleCanvas('${taskCounter}')" title="Открыть черновик">✏️</button>`;
-                let helpBtn = includeExplanations && item.theory ? `<button id="btn-help-${taskCounter}" class="btn-settings btn-help" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #003399; font-weight: bold; padding: 10px 15px;" onclick="window.openTheoryModalLocal('theory-data-${taskCounter}')">РАЗБОР</button><div id="theory-data-${taskCounter}" style="display:none;">${encodeURIComponent(theoryHtml)}</div>` : "";
+                let drawBtn = `<button class="btn-settings" style="margin-left: 10px; background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 18px; padding: 8px 12px;" onclick="window.toggleCanvas('${taskCounter}')" title="Открыть черновик">✏️</button>`;
+                let helpBtn = includeExplanations && item.theory ? `<button class="btn-settings btn-help" style="display:none; margin-left: 10px; background: #e3f2fd; color: #003399; border: 1px solid #003399; font-weight: bold; padding: 10px 15px;" onclick="window.openTheoryModalLocal('theory-data-${taskCounter}')">РАЗБОР</button><div id="theory-data-${taskCounter}" style="display:none;">${encodeURIComponent(theoryHtml)}</div>` : "";
                 
                 let scratchpadHTML = `<div id="draw-wrapper-${taskCounter}" style="display:none; margin-top: 20px; width: 100%; transition: all 0.3s ease; clear: both;">
                     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
@@ -711,7 +706,7 @@
                     <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: 250px;"><canvas id="canvas-${taskCounter}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
                 </div>`;
 
-                currentInteractiveHTML += `<div style="margin-bottom:30px; clear:both; overflow:hidden; border-bottom:1px dashed #ddd; padding-bottom:20px;"><div style="display:flex; align-items:flex-start; justify-content: space-between;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;"><div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div style="flex-shrink:0; min-width:150px; max-width: 350px;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div>${item.text}</div><div style="margin-top:15px; display:flex; align-items:center; flex-wrap:wrap; gap:10px; clear:both;"><input type="text" class="ans-box" id="ans-interactive-${taskCounter}" placeholder="Ответ..." data-ans="${item.answer}" style="padding: 10px 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 16px; font-weight: bold; width: 150px; outline: none; transition: 0.3s;">${instantBtn}${drawBtn}${helpBtn}</div></div></div>${stickerHTMLInteractive}</div>${scratchpadHTML}</div>`;
+                currentInteractiveHTML += `<div style="margin-bottom:30px; clear:both; overflow:hidden; border-bottom:1px dashed #ddd; padding-bottom:20px;"><div style="display:flex; align-items:flex-start; justify-content: space-between;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0;"><div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div style="flex-shrink:0; min-width:150px; max-width: 350px;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div>${item.text}</div><div style="margin-top:15px; display:flex; align-items:center; clear: both;"><input type="text" class="ans-box" placeholder="Ответ..." data-ans="${item.answer}" style="padding: 10px 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 16px; font-weight: bold; width: 150px; outline: none; transition: 0.3s;">${drawBtn}${helpBtn}</div></div></div>${stickerHTMLInteractive}</div>${scratchpadHTML}</div>`;
                 
                 currentPrintHTML += `<div class="task-print-block" style="position: relative;"><div class="task-print-flex" style="display:flex; align-items:flex-start; gap:15px; page-break-inside:avoid; break-inside:avoid;"><div style="flex-shrink:0; font-weight:bold; font-size: 1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div class="task-print-img" style="flex-shrink:0; min-width:150px; max-width: 300px; page-break-inside: avoid; break-inside:avoid;">${mainSvg}</div>` : ""}<div class="task-print-text" style="flex:1 1 auto; min-width:0;"><div>${item.text}</div><div style="margin-top:25px; font-size:18px;">Ответ: _______________________</div></div>${stickerHTMLPrint}</div></div>`;
                 
@@ -938,53 +933,20 @@
             }, 1000);
         };
         
-        // --- ФУНКЦИЯ ОДИНОЧНОЙ (МГНОВЕННОЙ) ПРОВЕРКИ ---
-        function checkSingle(btn, taskNum, correctAns) {
-            let input = document.getElementById('ans-interactive-' + taskNum);
-            if (!input) return;
-            let u = input.value.trim().replace(',', '.');
-            if (u === '') return; // не проверяем, если пусто
-            
-            if (u === correctAns) {
-                input.style.background = '#e8f5e9'; input.style.borderColor = '#4CAF50'; input.style.color = '#1b5e20';
-            } else {
-                input.style.background = '#ffebee'; input.style.borderColor = '#f44336'; input.style.color = '#b71c1c';
-            }
-            input.readOnly = true;
-            btn.style.display = 'none'; // Прячем галочку после проверки
-            
-            // Если разбор предусмотрен - сразу показываем его
-            let helpBtn = document.getElementById('btn-help-' + taskNum);
-            if (helpBtn) helpBtn.style.display = 'inline-flex';
-        }
-
-        // --- ПОДВЕДЕНИЕ ОБЩИХ ИТОГОВ ---
         function checkAll() {
             if (timerInterval) clearInterval(timerInterval);
             let c = 0, ic = 0, e = 0;
             document.querySelectorAll('.ans-box').forEach(input => {
                 let u = input.value.trim().replace(',', '.');
                 let r = input.getAttribute('data-ans');
-                
-                if(u === '') { 
-                    e++; input.style.background = '#f5f5f5'; input.style.borderColor = '#9e9e9e'; 
-                } else if(u === r) { 
-                    c++; input.style.background = '#e8f5e9'; input.style.borderColor = '#4CAF50'; input.style.color = '#1b5e20'; 
-                } else { 
-                    ic++; input.style.background = '#ffebee'; input.style.borderColor = '#f44336'; input.style.color = '#b71c1c'; 
-                }
+                if(u === '') { e++; input.style.background = '#f5f5f5'; input.style.borderColor = '#9e9e9e'; }
+                else if(u === r) { c++; input.style.background = '#e8f5e9'; input.style.borderColor = '#4CAF50'; input.style.color = '#1b5e20'; }
+                else { ic++; input.style.background = '#ffebee'; input.style.borderColor = '#f44336'; input.style.color = '#b71c1c'; }
                 input.readOnly = true;
             });
-            
-            // Прячем все оставшиеся не нажатыми галочки
-            document.querySelectorAll('.btn-instant').forEach(btn => btn.style.display = 'none');
-            
-            // Выводим статистику
             document.getElementById('res-box').innerHTML = '<p style="color:#2e7d32; margin: 5px 0;"><b>Верно:</b> ' + c + '</p><p style="color:#c62828; margin: 5px 0;"><b>Неверно:</b> ' + ic + '</p><p style="color:#555; margin: 5px 0;"><b>Не решено:</b> ' + e + '</p>';
             document.getElementById('res-box').style.display = 'block';
             document.getElementById('btn-check').style.display = 'none';
-            
-            // Открываем все доступные разборы в конце
             document.querySelectorAll('.btn-help').forEach(btn => btn.style.display = 'inline-flex');
         }
     ${window.SCRIPT_END}
@@ -1016,6 +978,7 @@
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${window.SCRIPT_END}
     <style>
         @media print {
+            /* Нулевые поля убивают системные надписи браузера (дату, ссылку и т.д.) */
             @page { margin: 0; size: A4; } 
             body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             #print-container { display: block !important; width: 100%; }
