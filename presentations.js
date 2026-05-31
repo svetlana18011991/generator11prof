@@ -188,6 +188,14 @@ function generatePresentation3() {
 // ОБЩИЙ СБОРЩИК ПРЕЗЕНТАЦИЙ (ДЛЯ ЛЮБОГО СТИЛЯ)
 // ==========================================
 function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, fileName, bgTitle, bgMain, accentColor) {
+    
+    // Считываем состояние галочки "Показывать разборы"
+    let showSolutions = true;
+    let solToggle = document.getElementById('toggle-solutions'); 
+    if (solToggle) {
+        showSolutions = solToggle.checked;
+    }
+
     let fullHTML = `<!DOCTYPE html>
 <html>
 <head>
@@ -221,63 +229,16 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .help-btn { background: #e3f2fd; color: #003399; border: 1px solid #003399; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
         .help-btn:hover { background: #003399; color: #fff; }
         
-        /*
-           ФИКС СЛАЙДОВ С КАРТИНКАМИ.
-           Раньше ограничение max-height применялось только к svg.
-           Задания из task8 приходят как <img>, поэтому картинка занимала всю карточку,
-           текст и кнопки уезжали вниз/обрезались. Ниже — единая адаптивная раскладка.
-        */
-        .task-right-side {
-            overflow: hidden !important;
-        }
-        .task-right-side > div {
-            min-height: 0 !important;
-            height: 100% !important;
-            justify-content: flex-start !important;
-            overflow: hidden !important;
-        }
-        .svg-wrapper {
-            flex: 1 1 auto !important;
-            min-height: 0 !important;
-            max-height: 54% !important;
-            width: 100% !important;
-            overflow: hidden !important;
-            margin-bottom: 10px !important;
-        }
-        .svg-wrapper img,
-        .svg-wrapper svg {
-            max-width: 100% !important;
-            max-height: 100% !important;
-            width: auto !important;
-            height: auto !important;
-            object-fit: contain !important;
-            display: block !important;
-            margin: 0 auto !important;
-        }
-        .task-text {
-            font-size: clamp(16px, 1.5vw, 23px) !important;
-            line-height: 1.22 !important;
-            max-height: 28% !important;
-            min-height: 0 !important;
-            flex: 0 1 auto !important;
-            overflow: hidden !important;
-            padding: 0 8px !important;
-            margin-bottom: 10px !important;
-            box-sizing: border-box !important;
-            text-align: center !important;
-        }
-        .task-card-visual .task-text mjx-container {
-            font-size: 108% !important;
-        }
-        .pres-check-zone {
-            flex: 0 0 auto !important;
-            margin-top: auto !important;
-            gap: 10px !important;
-        }
-        .pres-input {
-            max-width: 180px !important;
-            box-sizing: border-box !important;
-        }
+        /* ФИКС СЛАЙДОВ С КАРТИНКАМИ */
+        .task-right-side { overflow: hidden !important; }
+        .task-right-side > div { min-height: 0 !important; height: 100% !important; justify-content: flex-start !important; overflow: hidden !important; }
+        .svg-wrapper { flex: 1 1 auto !important; min-height: 0 !important; max-height: 54% !important; width: 100% !important; overflow: hidden !important; margin-bottom: 10px !important; }
+        .svg-wrapper img, .svg-wrapper svg { max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; object-fit: contain !important; display: block !important; margin: 0 auto !important; }
+        .task-text { font-size: clamp(16px, 1.5vw, 23px) !important; line-height: 1.22 !important; max-height: 28% !important; min-height: 0 !important; flex: 0 1 auto !important; overflow: hidden !important; padding: 0 8px !important; margin-bottom: 10px !important; box-sizing: border-box !important; text-align: center !important; }
+        .task-card-visual .task-text mjx-container { font-size: 108% !important; }
+        .pres-check-zone { flex: 0 0 auto !important; margin-top: auto !important; gap: 10px !important; }
+        .pres-input { max-width: 180px !important; box-sizing: border-box !important; }
+        
         @media (max-height: 760px), (max-width: 1200px) {
             .task-right-side { padding: 14px 18px !important; }
             .svg-wrapper { max-height: 50% !important; }
@@ -286,67 +247,18 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             .pres-btn { padding: 9px 22px !important; }
         }
 
-
-        /*
-           РЕЖИМ ДЛЯ ЗАДАНИЙ БЕЗ ЧЕРТЕЖА / КАРТИНКИ.
-           Если у задания нет t.svg, карточка больше не растягивается на 70% экрана:
-           она становится компактной, текст и формулы увеличиваются, а кнопки остаются рядом.
-        */
-        .task-card-text-only {
-            width: min(58vw, 780px) !important;
-            min-height: 230px !important;
-            height: auto !important;
-            max-height: 68vh !important;
-            top: 50% !important;
-            bottom: auto !important;
-            right: 7% !important;
-            transform: translateY(-50%) !important;
-            padding: 24px 34px !important;
-            justify-content: center !important;
-        }
-        .task-card-text-only > div {
-            justify-content: center !important;
-            min-height: 0 !important;
-            height: auto !important;
-            overflow: hidden !important;
-        }
-        .task-card-text-only .task-text {
-            font-size: clamp(19px, 1.72vw, 27px) !important;
-            line-height: 1.28 !important;
-            max-height: 44vh !important;
-            overflow: hidden !important;
-            text-align: center !important;
-            margin: 0 0 22px 0 !important;
-            padding: 0 6px !important;
-            color: #222 !important;
-        }
-        .task-card-text-only .task-text mjx-container {
-            font-size: 104% !important;
-        }
-        .task-card-text-only .pres-check-zone {
-            margin-top: 0 !important;
-            gap: 14px !important;
-        }
-        .task-card-text-only .pres-input {
-            width: 190px !important;
-            font-size: 1.15em !important;
-        }
-        .task-card-text-only .pres-btn {
-            font-size: 1.15em !important;
-        }
+        /* РЕЖИМ ДЛЯ ЗАДАНИЙ БЕЗ ЧЕРТЕЖА */
+        .task-card-text-only { width: min(58vw, 780px) !important; min-height: 230px !important; height: auto !important; max-height: 68vh !important; top: 50% !important; bottom: auto !important; right: 7% !important; transform: translateY(-50%) !important; padding: 24px 34px !important; justify-content: center !important; }
+        .task-card-text-only > div { justify-content: center !important; min-height: 0 !important; height: auto !important; overflow: hidden !important; }
+        .task-card-text-only .task-text { font-size: clamp(19px, 1.72vw, 27px) !important; line-height: 1.28 !important; max-height: 44vh !important; overflow: hidden !important; text-align: center !important; margin: 0 0 22px 0 !important; padding: 0 6px !important; color: #222 !important; }
+        .task-card-text-only .task-text mjx-container { font-size: 104% !important; }
+        .task-card-text-only .pres-check-zone { margin-top: 0 !important; gap: 14px !important; }
+        .task-card-text-only .pres-input { width: 190px !important; font-size: 1.15em !important; }
+        .task-card-text-only .pres-btn { font-size: 1.15em !important; }
+        
         @media (max-height: 760px), (max-width: 1200px) {
-            .task-card-text-only {
-                width: min(64vw, 760px) !important;
-                min-height: 210px !important;
-                max-height: 70vh !important;
-                padding: 18px 24px !important;
-            }
-            .task-card-text-only .task-text {
-                font-size: clamp(16px, 1.65vw, 24px) !important;
-                max-height: 46vh !important;
-                line-height: 1.22 !important;
-                margin-bottom: 18px !important;
-            }
+            .task-card-text-only { width: min(64vw, 760px) !important; min-height: 210px !important; max-height: 70vh !important; padding: 18px 24px !important; }
+            .task-card-text-only .task-text { font-size: clamp(16px, 1.65vw, 24px) !important; max-height: 46vh !important; line-height: 1.22 !important; margin-bottom: 18px !important; }
         }
     </style>
 </head>
@@ -376,7 +288,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
                         <th>Ваш ответ</th>
                         <th>Верный ответ</th>
                         <th>Время</th>
-                        <th>Разбор</th>
+                        ${showSolutions ? '<th>Разбор</th>' : ''}
                     </tr>
                 </thead>
                 <tbody id="results-tbody"></tbody>
@@ -419,13 +331,9 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             }
         }
 
-
         function chooseTextOnlyMax(textEl) {
-            const plain = (textEl.textContent || '').replace(/\s+/g, ' ').trim();
+            const plain = (textEl.textContent || '').replace(/\\s+/g, ' ').trim();
             const len = plain.length;
-
-            // Верхний предел шрифта: короткие задания больше не раздуваются на всю рамку.
-            // Длинные задания автоматически получают меньший стартовый размер, чтобы не появлялся скролл.
             if (len > 520) return 19;
             if (len > 420) return 21;
             if (len > 300) return 23;
@@ -479,16 +387,24 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         function renderResults() {
             let tbody = document.getElementById('results-tbody');
             let html = '';
+            
+            // Забираем значение из генератора
+            let showSol = ${showSolutions}; 
+            
             userResults.forEach((res, idx) => {
                 let isCorrect = (res.userAns === res.correctAns);
                 let rowClass = isCorrect ? 'row-correct' : 'row-incorrect';
                 let displayAns = res.userAns === "" ? "—" : res.userAns;
+                
+                // Динамически добавляем ячейку с кнопкой только если галочка включена
+                let solutionCell = showSol ? \`<td><button class="help-btn" onclick="window.openTheoryModalLocal('theory-pres-\${idx}')">Смотреть</button></td>\` : '';
+
                 html += \`<tr class="\${rowClass}">
                     <td>\${res.taskNum}</td>
                     <td>\${displayAns}</td>
                     <td>\${res.correctAns}</td>
                     <td>\${res.time} сек.</td>
-                    <td><button class="help-btn" onclick="window.openTheoryModalLocal('theory-pres-\${idx}')">Смотреть</button></td>
+                    \${solutionCell}
                 </tr>\`;
             });
             tbody.innerHTML = html;
