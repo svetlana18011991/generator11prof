@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Рабочее пространство — Светлана Быкова</title>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet"><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet"><script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=na-LaKhLmuZxr5O-EvbEqDOdRt0SHDkBGHfM8vSGEy1sAn7VxEXbIt-upRd0fCen9AH2hJjHADgkJAbCQLUDRkvfQdzTRAD2ltpswtDVR-zacm2iaD2rNC696JT7cRcSlitoNPlpk4ff6yd_TKbFDbet_jfw573hR3eOxGxMFS30QKwNKoYncUNwVSHtoOBvg1ay-hr0W_2fq0guKUfzIZRnSUh_Z-7I30FyL3qcejs6mkAd_1SwtEkf1D8iDv7NmA9cmlCJhJlVkToexV-4ZKdvW-8t3P5caLzvZ-FDYUur8ofR-86_laJMmI3Hq2C2D_1MBvvlFpODjVLvsj3Iqw" charset="UTF-8"></script><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script>window.database = {};</script>
@@ -606,15 +606,34 @@
             if (selectedProtos.length === 0) continue;
 
             window.selectedBlockTitles.push(window.database[tid].title);
-            let activePools = selectedProtos.map(p => ({ tasks: shuffleArray([...p.tasks]), svg: p.svg_code, theory: p }));
-            let finalTasks = []; let pIdx = 0;
-            while (finalTasks.length < requiredCount) {
+
+            // ВАЖНО:
+            // 1) Не перемешиваем p.tasks, чтобы задания шли в том порядке, как прописаны в task*.js.
+            // 2) Для картинки берём task.svg_code — картинку конкретной задачи.
+            //    Если у конкретной задачи картинки нет, тогда берём p.svg_code — картинку прототипа.
+            let activePools = selectedProtos.map(p => ({
+                tasks: [...p.tasks],
+                svg: p.svg_code || "",
+                theory: p
+            }));
+
+            let finalTasks = [];
+            let pIdx = 0;
+            let totalAvailable = activePools.reduce((sum, pool) => sum + pool.tasks.length, 0);
+            let targetCount = Math.min(requiredCount, totalAvailable);
+
+            while (finalTasks.length < targetCount) {
                 if (activePools[pIdx].tasks.length > 0) {
-                    finalTasks.push({ ...activePools[pIdx].tasks.pop(), svg: activePools[pIdx].svg, theory: activePools[pIdx].theory });
+                    let task = activePools[pIdx].tasks.shift();
+                    finalTasks.push({
+                        ...task,
+                        svg: task.svg_code || activePools[pIdx].svg || "",
+                        theory: activePools[pIdx].theory
+                    });
                 }
                 pIdx = (pIdx + 1) % activePools.length;
             }
-            finalTasks = shuffleArray(finalTasks);
+
             hasContent = true;
 
             let blockTitle = `<h3 style="background: #e3f2fd; padding: 10px 15px; border-left: 4px solid #003399; margin-top: 30px; border-radius: 0 6px 6px 0; color: #003399;">${window.database[tid].title}</h3>`;
