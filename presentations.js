@@ -9,6 +9,9 @@ function generatePresentation1() {
         authorLine = `Вариант ${verb}: ${teacherName}`;
     }
 
+    let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
+    let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
     let taskSlides = window.currentGeneratedTasks.map((t, i) => `
@@ -21,11 +24,18 @@ function generatePresentation1() {
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
+                    
                     <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
+                        
+                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
+                        
+                        ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
+                        
                         <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
                         <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
                     </div>
+
                 </div>
             </div>
 
@@ -71,6 +81,9 @@ function generatePresentation2() {
         authorLine = `Вариант ${verb}: ${teacherName}`;
     }
 
+    let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
+    let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
     let taskSlides = window.currentGeneratedTasks.map((t, i) => `
@@ -83,11 +96,18 @@ function generatePresentation2() {
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
+                    
                     <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #f8bbd0; text-align: center; outline: none; color: #e91e63;">
+                        
+                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
+                        
+                        ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
+                        
                         <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #ff4081; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(255,64,129,0.3);">ОК</button>
                         <button class="btn-settings" style="background: #fce4ec; color: #d81b60; border: 1px solid #f8bbd0; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
                     </div>
+
                 </div>
             </div>
 
@@ -133,6 +153,9 @@ function generatePresentation3() {
         authorLine = `Вариант ${verb}: ${teacherName}`;
     }
 
+    let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
+    let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
     let taskSlides = window.currentGeneratedTasks.map((t, i) => `
@@ -145,11 +168,18 @@ function generatePresentation3() {
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
+                    
                     <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #e1bee7; text-align: center; outline: none; color: #7b1fa2;">
+                        
+                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
+                        
+                        ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
+                        
                         <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #9c27b0; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(156,39,176,0.3);">ОК</button>
                         <button class="btn-settings" style="background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
                     </div>
+
                 </div>
             </div>
 
@@ -189,7 +219,6 @@ function generatePresentation3() {
 // ==========================================
 function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, fileName, bgTitle, bgMain, accentColor) {
     
-    // Считываем состояние галочки "Показывать разборы" (ПО ПРАВИЛЬНОМУ ID!)
     let showSolutions = true;
     let solToggle = document.getElementById('toggle-explanations'); 
     if (solToggle) {
@@ -377,6 +406,27 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
 
         function nextSlide() { if(currentSlide < slides.length - 1) showSlide(++currentSlide); }
 
+        // --- МГНОВЕННАЯ ПРОВЕРКА В ПРЕЗЕНТАЦИИ ---
+        function checkPresSingle(idx, correctAns, btn) {
+            event.stopPropagation();
+            let input = document.getElementById('ans-'+idx);
+            if (!input) return;
+            let u = input.value.trim().replace(',', '.');
+            if (u === '') return;
+            
+            if (u === correctAns) {
+                input.style.background = '#e8f5e9'; input.style.borderColor = '#4CAF50'; input.style.color = '#1b5e20';
+            } else {
+                input.style.background = '#ffebee'; input.style.borderColor = '#f44336'; input.style.color = '#b71c1c';
+            }
+            input.readOnly = true;
+            btn.style.display = 'none'; // Прячем галочку
+            
+            // Если разбор включен, показываем его
+            let helpBtn = document.getElementById('pres-help-'+idx);
+            if (helpBtn) helpBtn.style.display = 'inline-block';
+        }
+
         function submitTask(idx, correctAns) {
             let userAns = document.getElementById('ans-'+idx).value.trim().replace(',', '.');
             let timeSpent = Math.round((Date.now() - slideStartTime) / 1000);
@@ -388,7 +438,6 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             let tbody = document.getElementById('results-tbody');
             let html = '';
             
-            // Забираем значение из генератора
             let showSol = ${showSolutions}; 
             
             userResults.forEach((res, idx) => {
@@ -396,7 +445,6 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
                 let rowClass = isCorrect ? 'row-correct' : 'row-incorrect';
                 let displayAns = res.userAns === "" ? "—" : res.userAns;
                 
-                // Динамически добавляем ячейку с кнопкой только если галочка включена
                 let solutionCell = showSol ? \`<td><button class="help-btn" onclick="window.openTheoryModalLocal('theory-pres-\${idx}')">Смотреть</button></td>\` : '';
 
                 html += \`<tr class="\${rowClass}">
