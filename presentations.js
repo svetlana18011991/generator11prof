@@ -1,4 +1,22 @@
 // ==========================================
+// ОБЩАЯ НАСТРОЙКА: показывать верный ответ при ошибке
+// ==========================================
+function getShowCorrectOnErrorSetting() {
+    const toggle = document.getElementById('toggle-show-correct');
+    if (toggle) return toggle.checked;
+
+    if (window.presentationSettings && typeof window.presentationSettings.showCorrectOnError !== 'undefined') {
+        return !!window.presentationSettings.showCorrectOnError;
+    }
+
+    if (window.generatorSettings && typeof window.generatorSettings.showCorrectOnError !== 'undefined') {
+        return !!window.generatorSettings.showCorrectOnError;
+    }
+
+    return false;
+}
+
+// ==========================================
 // АВТОРСКИЙ СТИЛЬ 1 (Оранжевый неон)
 // ==========================================
 function generatePresentation1() {
@@ -11,6 +29,7 @@ function generatePresentation1() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+    let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
@@ -27,6 +46,7 @@ function generatePresentation1() {
                     
                     <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
+                        <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
                         
                         ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
                         
@@ -83,6 +103,7 @@ function generatePresentation2() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+    let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
@@ -99,6 +120,7 @@ function generatePresentation2() {
                     
                     <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #f8bbd0; text-align: center; outline: none; color: #e91e63;">
+                        <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
                         
                         ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
                         
@@ -155,6 +177,7 @@ function generatePresentation3() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+    let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
@@ -171,6 +194,7 @@ function generatePresentation3() {
                     
                     <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #e1bee7; text-align: center; outline: none; color: #7b1fa2;">
+                        <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
                         
                         ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
                         
@@ -224,6 +248,8 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     if (solToggle) {
         showSolutions = solToggle.checked;
     }
+
+    let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let fullHTML = `<!DOCTYPE html>
 <html>
@@ -315,7 +341,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
                     <tr>
                         <th>Задание</th>
                         <th>Ваш ответ</th>
-                        <th>Верный ответ</th>
+                        ${showCorrectOnError ? '<th>Верный ответ</th>' : ''}
                         <th>Время</th>
                         ${showSolutions ? '<th>Разбор</th>' : ''}
                     </tr>
@@ -341,6 +367,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         const slides = document.querySelectorAll('.slide');
         let userResults = [];
         let slideStartTime = Date.now();
+        const showCorrectOnError = ${showCorrectOnError};
 
         function fitTextToBox(textEl, maxPx, minPx) {
             if (!textEl) return;
@@ -413,15 +440,36 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             if (!input) return;
             let u = input.value.trim().replace(',', '.');
             if (u === '') return;
-            
+
+            let feedback = document.getElementById('pres-feedback-'+idx);
+
             if (u === correctAns) {
-                input.style.background = '#e8f5e9'; input.style.borderColor = '#4CAF50'; input.style.color = '#1b5e20';
+                input.style.background = '#e8f5e9';
+                input.style.borderColor = '#4CAF50';
+                input.style.color = '#1b5e20';
+
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#2e7d32';
+                    feedback.innerHTML = '✅ Верно';
+                }
             } else {
-                input.style.background = '#ffebee'; input.style.borderColor = '#f44336'; input.style.color = '#b71c1c';
+                input.style.background = '#ffebee';
+                input.style.borderColor = '#f44336';
+                input.style.color = '#b71c1c';
+
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#c62828';
+                    feedback.innerHTML = showCorrectOnError
+                        ? '❌ Неверно. Верный ответ: ' + correctAns
+                        : '❌ Неверно';
+                }
             }
+
             input.readOnly = true;
             btn.style.display = 'none'; // Прячем галочку
-            
+
             // Если разбор включен, показываем его
             let helpBtn = document.getElementById('pres-help-'+idx);
             if (helpBtn) helpBtn.style.display = 'inline-block';
@@ -445,12 +493,13 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
                 let rowClass = isCorrect ? 'row-correct' : 'row-incorrect';
                 let displayAns = res.userAns === "" ? "—" : res.userAns;
                 
+                let correctCell = showCorrect ? \`<td>\${res.correctAns}</td>\` : '';
                 let solutionCell = showSol ? \`<td><button class="help-btn" onclick="window.openTheoryModalLocal('theory-pres-\${idx}')">Смотреть</button></td>\` : '';
 
                 html += \`<tr class="\${rowClass}">
                     <td>\${res.taskNum}</td>
                     <td>\${displayAns}</td>
-                    <td>\${res.correctAns}</td>
+                    \${correctCell}
                     <td>\${res.time} сек.</td>
                     \${solutionCell}
                 </tr>\`;
