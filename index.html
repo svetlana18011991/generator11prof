@@ -617,11 +617,16 @@
             if (selectedProtos.length === 0) continue;
 
             window.selectedBlockTitles.push(window.database[tid].title);
-            let activePools = selectedProtos.map(p => ({ tasks: shuffleArray([...p.tasks]), svg: p.svg_code, theory: p }));
+            let activePools = selectedProtos.map(p => ({ tasks: shuffleArray([...p.tasks]), protoSvg: p.svg_code || "", theory: p }));
             let finalTasks = []; let pIdx = 0;
             while (finalTasks.length < requiredCount) {
                 if (activePools[pIdx].tasks.length > 0) {
-                    finalTasks.push({ ...activePools[pIdx].tasks.pop(), svg: activePools[pIdx].svg, theory: activePools[pIdx].theory });
+                    const pickedTask = activePools[pIdx].tasks.pop();
+                    finalTasks.push({
+                        ...pickedTask,
+                        svg: pickedTask.svg_code || activePools[pIdx].protoSvg || "",
+                        theory: activePools[pIdx].theory
+                    });
                 }
                 pIdx = (pIdx + 1) % activePools.length;
             }
@@ -635,7 +640,7 @@
 
             finalTasks.forEach(item => {
                 taskCounter++;
-                let mainSvg = item.svg || "";
+                let mainSvg = item.svg || item.svg_code || "";
                 if (mainSvg) { let tmp = document.createElement('div'); tmp.innerHTML = mainSvg; window.autoFixSVGArrows(tmp); mainSvg = tmp.innerHTML; }
                 
                 let theorySvgCode = item.theory && item.theory.svg_code ? item.theory.svg_code : "";
