@@ -29,7 +29,6 @@ function generatePresentation1() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
-    let showCorrectOnError = document.getElementById('toggle-show-correct') ? document.getElementById('toggle-show-correct').checked : false;
     let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
@@ -105,7 +104,6 @@ function generatePresentation2() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
-    let showCorrectOnError = document.getElementById('toggle-show-correct') ? document.getElementById('toggle-show-correct').checked : false;
     let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
@@ -181,7 +179,6 @@ function generatePresentation3() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
-    let showCorrectOnError = document.getElementById('toggle-show-correct') ? document.getElementById('toggle-show-correct').checked : false;
     let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
