@@ -46,6 +46,64 @@
         .proto-label-text { border-bottom: 1px dashed #666; transition: 0.2s; }
         .proto-item:hover .proto-label-text { color: #ff8c00; }
         
+
+        .task-total-panel {
+            position: sticky;
+            top: 10px;
+            z-index: 900;
+            background: #252525;
+            border: 1px solid #ff8c00;
+            border-left: 4px solid #ff8c00;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 0 0 18px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+            box-sizing: border-box;
+        }
+        .task-total-text {
+            color: #ff8c00;
+            font-weight: bold;
+            font-size: 1.1em;
+            white-space: nowrap;
+        }
+        .task-total-reset {
+            background: transparent;
+            color: #ff8c00;
+            border: 2px solid #ff8c00;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .task-total-reset:hover {
+            background: #ff8c00;
+            color: #121212;
+        }
+        .task-total-note {
+            color: #8fd694;
+            font-size: 0.95em;
+            display: none;
+        }
+        @media (max-width: 700px) {
+            .task-total-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .task-total-text,
+            .task-total-note {
+                text-align: center;
+            }
+            .task-total-reset {
+                width: 100%;
+            }
+        }
+
         .btn-generate { display: block; width: 100%; background: transparent; color: #ff8c00; border: 2px solid #ff8c00; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 25px; transition: 0.3s; }
         .btn-generate:hover { background: #ff8c00; color: #121212; box-shadow: 0 0 15px rgba(255, 140, 0, 0.4); }
         .btn-group { display: none; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
@@ -225,6 +283,13 @@
                     Показывать верный ответ при ошибке
                 </label>
             </div>
+        </div>
+
+
+        <div id="task-total-panel" class="task-total-panel">
+            <div class="task-total-text">📊 Набрано задач: <span id="task-total-count">0</span></div>
+            <button type="button" class="task-total-reset" onclick="resetTaskCounts()">🔄 Сбросить количества</button>
+            <div id="task-total-note" class="task-total-note">Все количества заданий сброшены.</div>
         </div>
 
         <div id="dynamic-tasks"></div>
@@ -452,12 +517,14 @@
                         <span>${data.title} (${data.prototypes.length})</span>
                         <button type="button" class="btn-settings" onclick="toggleSettings('${tid}'); event.stopPropagation();">⚙️ Настроить</button>
                     </label>
-                    <input type="number" id="count-${tid}" min="0" value="0">
+                    <input type="number" id="count-${tid}" min="0" value="0" oninput="updateTaskTotal()" onchange="updateTaskTotal()">
                 </div>
                 <div id="protos-${tid}" class="proto-list">${listHTML}</div>
             </div>`;
         }
         
+        updateTaskTotal();
+
         if (window.MathJax) {
             MathJax.typesetPromise([container]).catch((err) => console.log(err.message));
         }
@@ -509,6 +576,36 @@
         master.checked = checkedCount === boxes.length;
         master.indeterminate = checkedCount > 0 && checkedCount < boxes.length;
     }
+
+
+    function updateTaskTotal() {
+        let total = 0;
+        document.querySelectorAll('input[id^="count-"]').forEach(input => {
+            let value = parseInt(input.value, 10);
+            if (!isNaN(value) && value > 0) total += value;
+        });
+
+        let totalEl = document.getElementById('task-total-count');
+        if (totalEl) totalEl.textContent = total;
+    }
+
+    function resetTaskCounts() {
+        document.querySelectorAll('input[id^="count-"]').forEach(input => {
+            input.value = 0;
+        });
+
+        updateTaskTotal();
+
+        let note = document.getElementById('task-total-note');
+        if (note) {
+            note.style.display = 'block';
+            clearTimeout(window.taskTotalNoteTimer);
+            window.taskTotalNoteTimer = setTimeout(() => {
+                note.style.display = 'none';
+            }, 1800);
+        }
+    }
+
 
     const tooltip = document.getElementById('proto-tooltip');
     function showTooltip(tid, index, e) {
