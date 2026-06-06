@@ -29,6 +29,7 @@ function generatePresentation1() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+    let showCorrectOnError = document.getElementById('toggle-show-correct') ? document.getElementById('toggle-show-correct').checked : false;
     let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
@@ -48,13 +49,14 @@ function generatePresentation1() {
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
                         <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
                         
-                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
+                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this, ${showCorrectOnError})" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
                         
                         ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
                         
-                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
+                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" data-correct="${t.answer}" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
                         <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
                     </div>
+                    <div id="pres-status-${i}" class="pres-status" style="margin-top: 10px; min-height: 28px; font-size: 18px; font-weight: bold; text-align: center;"></div>
 
                 </div>
             </div>
@@ -103,6 +105,7 @@ function generatePresentation2() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+    let showCorrectOnError = document.getElementById('toggle-show-correct') ? document.getElementById('toggle-show-correct').checked : false;
     let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
@@ -122,13 +125,14 @@ function generatePresentation2() {
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #f8bbd0; text-align: center; outline: none; color: #e91e63;">
                         <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
                         
-                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
+                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this, ${showCorrectOnError})" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
                         
                         ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
                         
-                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #ff4081; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(255,64,129,0.3);">ОК</button>
+                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" data-correct="${t.answer}" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #ff4081; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(255,64,129,0.3);">ОК</button>
                         <button class="btn-settings" style="background: #fce4ec; color: #d81b60; border: 1px solid #f8bbd0; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
                     </div>
+                    <div id="pres-status-${i}" class="pres-status" style="margin-top: 10px; min-height: 28px; font-size: 18px; font-weight: bold; text-align: center;"></div>
 
                 </div>
             </div>
@@ -177,6 +181,7 @@ function generatePresentation3() {
 
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
+    let showCorrectOnError = document.getElementById('toggle-show-correct') ? document.getElementById('toggle-show-correct').checked : false;
     let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
@@ -196,13 +201,14 @@ function generatePresentation3() {
                         <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #e1bee7; text-align: center; outline: none; color: #7b1fa2;">
                         <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
                         
-                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this)" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
+                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this, ${showCorrectOnError})" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
                         
                         ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
                         
-                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #9c27b0; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(156,39,176,0.3);">ОК</button>
+                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" data-correct="${t.answer}" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #9c27b0; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(156,39,176,0.3);">ОК</button>
                         <button class="btn-settings" style="background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
                     </div>
+                    <div id="pres-status-${i}" class="pres-status" style="margin-top: 10px; min-height: 28px; font-size: 18px; font-weight: bold; text-align: center;"></div>
 
                 </div>
             </div>
@@ -242,14 +248,30 @@ function generatePresentation3() {
 // ОБЩИЙ СБОРЩИК ПРЕЗЕНТАЦИЙ (ДЛЯ ЛЮБОГО СТИЛЯ)
 // ==========================================
 function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, fileName, bgTitle, bgMain, accentColor) {
-    
+
     let showSolutions = true;
     let solToggle = document.getElementById('toggle-explanations'); 
     if (solToggle) {
         showSolutions = solToggle.checked;
     }
 
-    let showCorrectOnError = getShowCorrectOnErrorSetting();
+    let instantCheck = false;
+    let instantToggle = document.getElementById('toggle-instant-check');
+    if (instantToggle) {
+        instantCheck = instantToggle.checked;
+    }
+
+    let showCorrectOnError = false;
+    let showCorrectToggle = document.getElementById('toggle-show-correct');
+    if (showCorrectToggle) {
+        showCorrectOnError = showCorrectToggle.checked;
+    }
+
+    let timerMinutes = 0;
+    let timerInput = document.getElementById('timer-input');
+    if (timerInput) {
+        timerMinutes = parseInt(timerInput.value, 10) || 0;
+    }
 
     let fullHTML = `<!DOCTYPE html>
 <html>
@@ -270,8 +292,8 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .nav-btn { background: #333; color: white; border: none; padding: 15px 35px; border-radius: 50px; cursor: pointer; font-size: 1.3em; opacity: 0.85; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .nav-btn:hover { opacity: 1; background: ${accentColor}; transform: translateY(-2px); }
         .pres-btn:hover { filter: brightness(1.1); }
-        .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.2em; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .results-table th, .results-table td { padding: 15px; border-bottom: 1px solid #ddd; text-align: center; }
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 1.05em; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .results-table th, .results-table td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
         .results-table th { background: #f5f5f5; color: #333; }
         .row-correct { background-color: #e8f5e9; color: #2e7d32; }
         .row-incorrect { background-color: #ffebee; color: #c62828; }
@@ -283,7 +305,10 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .close-btn:hover { color: ${accentColor}; }
         .help-btn { background: #e3f2fd; color: #003399; border: 1px solid #003399; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
         .help-btn:hover { background: #003399; color: #fff; }
-        
+        .pres-timer-box { position: fixed; top: 25px; right: 35px; z-index: 200; background: rgba(255,255,255,0.95); border: 2px solid ${accentColor}; color: ${accentColor}; padding: 12px 18px; border-radius: 12px; font-weight: bold; font-size: 22px; box-shadow: 0 5px 18px rgba(0,0,0,0.18); }
+        .pres-status.ok { color: #2e7d32; }
+        .pres-status.bad { color: #c62828; }
+
         /* ФИКС СЛАЙДОВ С КАРТИНКАМИ */
         .task-right-side { overflow: hidden !important; }
         .task-right-side > div { min-height: 0 !important; height: 100% !important; justify-content: flex-start !important; overflow: hidden !important; }
@@ -293,7 +318,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .task-card-visual .task-text mjx-container { font-size: 108% !important; }
         .pres-check-zone { flex: 0 0 auto !important; margin-top: auto !important; gap: 10px !important; }
         .pres-input { max-width: 180px !important; box-sizing: border-box !important; }
-        
+
         @media (max-height: 760px), (max-width: 1200px) {
             .task-right-side { padding: 14px 18px !important; }
             .svg-wrapper { max-height: 50% !important; }
@@ -310,7 +335,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .task-card-text-only .pres-check-zone { margin-top: 0 !important; gap: 14px !important; }
         .task-card-text-only .pres-input { width: 190px !important; font-size: 1.15em !important; }
         .task-card-text-only .pres-btn { font-size: 1.15em !important; }
-        
+
         @media (max-height: 760px), (max-width: 1200px) {
             .task-card-text-only { width: min(64vw, 760px) !important; min-height: 210px !important; max-height: 70vh !important; padding: 18px 24px !important; }
             .task-card-text-only .task-text { font-size: clamp(16px, 1.65vw, 24px) !important; max-height: 46vh !important; line-height: 1.22 !important; margin-bottom: 18px !important; }
@@ -318,6 +343,8 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     </style>
 </head>
 <body>
+    <div id="pres-timer-box" class="pres-timer-box">⏱ 00:00</div>
+
     <div class="slide active" style="background-image: url('${window.ASSETS_URL}${bgTitle}')">
         <div class="title-box" onclick="event.stopPropagation();">
             <h1 style="color:#003399; margin:0; font-size: 3em; border-bottom: 3px solid ${accentColor}; padding-bottom: 20px;">Тренировочный вариант</h1>
@@ -334,13 +361,15 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     ${taskSlides}
 
     <div class="slide" id="results-slide" style="background-image: url('${window.ASSETS_URL}${bgMain}')">
-        <div class="title-box" style="padding: 40px; max-width: 1100px; width: 95%; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation();">
-            <h2 style="font-size:3.5em; color:#4CAF50; margin:0;">Спасибо за работу!</h2>
+        <div class="title-box" style="padding: 40px; max-width: 1200px; width: 95%; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation();">
+            <h2 style="font-size:3.2em; color:#4CAF50; margin:0;">Спасибо за работу!</h2>
+            <div id="results-summary" style="font-size: 1.35em; color:#333; margin-top: 12px; font-weight: bold;"></div>
             <table class="results-table">
                 <thead>
                     <tr>
                         <th>Задание</th>
                         <th>Ваш ответ</th>
+                        <th>Результат</th>
                         ${showCorrectOnError ? '<th>Верный ответ</th>' : ''}
                         <th>Время</th>
                         ${showSolutions ? '<th>Разбор</th>' : ''}
@@ -365,9 +394,74 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     <script>
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
+        const totalTasks = Math.max(0, slides.length - 2);
         let userResults = [];
+        let answeredMap = {};
         let slideStartTime = Date.now();
+        let presentationStartTime = Date.now();
+        let totalTimerSeconds = ${timerMinutes} > 0 ? ${timerMinutes} * 60 : 0;
+        let timerInterval = null;
+        let resultsRendered = false;
+        const showSolutions = ${showSolutions};
         const showCorrectOnError = ${showCorrectOnError};
+        const instantCheck = ${instantCheck};
+
+        function normalizeAnswer(value) {
+            return String(value == null ? '' : value).trim().replace(',', '.');
+        }
+
+        function formatTime(totalSeconds) {
+            totalSeconds = Math.max(0, Math.floor(totalSeconds || 0));
+            let m = Math.floor(totalSeconds / 60);
+            let s = totalSeconds % 60;
+            return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+
+        function updateTimerDisplay() {
+            let box = document.getElementById('pres-timer-box');
+            if (!box) return;
+
+            if (totalTimerSeconds > 0) {
+                let elapsed = Math.floor((Date.now() - presentationStartTime) / 1000);
+                let left = totalTimerSeconds - elapsed;
+                box.textContent = '⏳ ' + formatTime(left);
+                if (left <= 0) {
+                    box.textContent = '⏳ 00:00';
+                    finishPresentationByTimer();
+                }
+            } else {
+                let elapsed = Math.floor((Date.now() - presentationStartTime) / 1000);
+                box.textContent = '⏱ ' + formatTime(elapsed);
+            }
+        }
+
+        function startPresentationTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+        }
+
+        function finishPresentationByTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            collectMissingResults();
+            showSlide(slides.length - 1);
+        }
+
+        function collectMissingResults() {
+            for (let i = 0; i < totalTasks; i++) {
+                if (!answeredMap[i]) {
+                    let input = document.getElementById('ans-' + i);
+                    let userAns = input ? normalizeAnswer(input.value) : '';
+                    let btn = input ? input.closest('.task-right-side')?.querySelector('.pres-btn') : null;
+                    let correctAns = btn ? btn.getAttribute('data-correct') : '';
+                    let timeSpent = Math.round((Date.now() - slideStartTime) / 1000);
+                    userResults.push({ taskNum: i + 1, userAns: userAns, correctAns: correctAns, time: timeSpent });
+                    answeredMap[i] = true;
+                }
+            }
+        }
 
         function fitTextToBox(textEl, maxPx, minPx) {
             if (!textEl) return;
@@ -418,12 +512,20 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
                 setTimeout(fitCurrentSlideText, 500);
             });
         }
-        
+
         function showSlide(idx) {
+            if (idx < 0 || idx >= slides.length) return;
             slides.forEach(s => s.classList.remove('active'));
             slides[idx].classList.add('active');
+            currentSlide = idx;
             slideStartTime = Date.now();
-            if (idx === slides.length - 1) { renderResults(); }
+            if (idx === slides.length - 1) { 
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                renderResults(); 
+            }
             if (window.MathJax && MathJax.typesetPromise) {
                 MathJax.typesetPromise([slides[idx]]).then(scheduleFitText).catch(scheduleFitText);
             } else {
@@ -431,79 +533,94 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             }
         }
 
-        function nextSlide() { if(currentSlide < slides.length - 1) showSlide(++currentSlide); }
+        function nextSlide() { 
+            if (currentSlide < slides.length - 1) showSlide(currentSlide + 1); 
+        }
 
         // --- МГНОВЕННАЯ ПРОВЕРКА В ПРЕЗЕНТАЦИИ ---
-        function checkPresSingle(idx, correctAns, btn) {
+        function checkPresSingle(idx, correctAns, btn, showCorrectFlag) {
             event.stopPropagation();
             let input = document.getElementById('ans-'+idx);
+            let status = document.getElementById('pres-status-'+idx);
             if (!input) return;
-            let u = input.value.trim().replace(',', '.');
+            let u = normalizeAnswer(input.value);
+            let c = normalizeAnswer(correctAns);
             if (u === '') return;
 
-            let feedback = document.getElementById('pres-feedback-'+idx);
-
-            if (u === correctAns) {
-                input.style.background = '#e8f5e9';
-                input.style.borderColor = '#4CAF50';
+            if (u === c) {
+                input.style.background = '#e8f5e9'; 
+                input.style.borderColor = '#4CAF50'; 
                 input.style.color = '#1b5e20';
-
-                if (feedback) {
-                    feedback.style.display = 'block';
-                    feedback.style.color = '#2e7d32';
-                    feedback.innerHTML = '✅ Верно';
+                if (status) {
+                    status.className = 'pres-status ok';
+                    status.textContent = '✅ Верно';
                 }
             } else {
-                input.style.background = '#ffebee';
-                input.style.borderColor = '#f44336';
+                input.style.background = '#ffebee'; 
+                input.style.borderColor = '#f44336'; 
                 input.style.color = '#b71c1c';
-
-                if (feedback) {
-                    feedback.style.display = 'block';
-                    feedback.style.color = '#c62828';
-                    feedback.innerHTML = showCorrectOnError
-                        ? '❌ Неверно. Верный ответ: ' + correctAns
-                        : '❌ Неверно';
+                if (status) {
+                    status.className = 'pres-status bad';
+                    status.textContent = showCorrectFlag ? ('❌ Неверно. Верный ответ: ' + correctAns) : '❌ Неверно';
                 }
             }
 
             input.readOnly = true;
-            btn.style.display = 'none'; // Прячем галочку
+            btn.style.display = 'none';
 
-            // Если разбор включен, показываем его
             let helpBtn = document.getElementById('pres-help-'+idx);
-            if (helpBtn) helpBtn.style.display = 'inline-block';
+            if (helpBtn && showSolutions) helpBtn.style.display = 'inline-block';
         }
 
         function submitTask(idx, correctAns) {
-            let userAns = document.getElementById('ans-'+idx).value.trim().replace(',', '.');
+            event.stopPropagation();
+            let input = document.getElementById('ans-'+idx);
+            let userAns = input ? normalizeAnswer(input.value) : '';
             let timeSpent = Math.round((Date.now() - slideStartTime) / 1000);
-            userResults.push({ taskNum: idx + 1, userAns: userAns, correctAns: correctAns, time: timeSpent });
+
+            if (!answeredMap[idx]) {
+                userResults.push({ taskNum: idx + 1, userAns: userAns, correctAns: normalizeAnswer(correctAns), time: timeSpent });
+                answeredMap[idx] = true;
+            }
             nextSlide();
         }
 
         function renderResults() {
-            let tbody = document.getElementById('results-tbody');
-            let html = '';
-            
-            let showSol = ${showSolutions}; 
-            
-            userResults.forEach((res, idx) => {
-                let isCorrect = (res.userAns === res.correctAns);
-                let rowClass = isCorrect ? 'row-correct' : 'row-incorrect';
-                let displayAns = res.userAns === "" ? "—" : res.userAns;
-                
-                let correctCell = showCorrect ? \`<td>\${res.correctAns}</td>\` : '';
-                let solutionCell = showSol ? \`<td><button class="help-btn" onclick="window.openTheoryModalLocal('theory-pres-\${idx}')">Смотреть</button></td>\` : '';
+            if (resultsRendered) return;
+            resultsRendered = true;
 
-                html += \`<tr class="\${rowClass}">
-                    <td>\${res.taskNum}</td>
-                    <td>\${displayAns}</td>
-                    \${correctCell}
-                    <td>\${res.time} сек.</td>
-                    \${solutionCell}
-                </tr>\`;
-            });
+            collectMissingResults();
+
+            let tbody = document.getElementById('results-tbody');
+            let summary = document.getElementById('results-summary');
+            let html = '';
+            let correctCount = 0;
+
+            userResults
+                .sort((a, b) => a.taskNum - b.taskNum)
+                .forEach((res, idx) => {
+                    let isCorrect = (normalizeAnswer(res.userAns) === normalizeAnswer(res.correctAns));
+                    if (isCorrect) correctCount++;
+                    let rowClass = isCorrect ? 'row-correct' : 'row-incorrect';
+                    let displayAns = res.userAns === "" ? "—" : res.userAns;
+                    let resultText = isCorrect ? '✅ Верно' : '❌ Неверно';
+                    let correctCell = showCorrectOnError ? \`<td>\${res.correctAns}</td>\` : '';
+                    let solutionCell = showSolutions ? \`<td><button class="help-btn" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-\${res.taskNum - 1}')">Смотреть</button></td>\` : '';
+
+                    html += \`<tr class="\${rowClass}">
+                        <td>\${res.taskNum}</td>
+                        <td>\${displayAns}</td>
+                        <td>\${resultText}</td>
+                        \${correctCell}
+                        <td>\${res.time} сек.</td>
+                        \${solutionCell}
+                    </tr>\`;
+                });
+
+            if (summary) {
+                summary.textContent = 'Верно: ' + correctCount + ' из ' + userResults.length;
+            }
+
             tbody.innerHTML = html;
         }
 
@@ -516,9 +633,17 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             }
         }
 
-        window.onclick = function() { if(currentSlide < slides.length - 1) showSlide(++currentSlide); };
+        window.onclick = function() { 
+            if(currentSlide < slides.length - 1) showSlide(currentSlide + 1); 
+        };
 
         window.addEventListener('load', () => {
+            startPresentationTimer();
+            document.querySelectorAll('.pres-btn').forEach(btn => {
+                let match = btn.getAttribute('onclick') ? btn.getAttribute('onclick').match(/submitTask\\((\\d+),\\s*'([^']*)'\\)/) : null;
+                if (match) btn.setAttribute('data-correct', match[2]);
+            });
+
             if (window.MathJax && MathJax.typesetPromise) {
                 MathJax.typesetPromise([document.body]).then(scheduleFitText).catch(scheduleFitText);
             } else {
