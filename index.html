@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Рабочее пространство — Светлана Быкова</title>
+    <title>Генератор вариантов — ЕГЭ профильный задания 1–12</title>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet"><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -198,7 +198,7 @@
     <aside class="sidebar">
         <img src="photo.jpg" alt="Светлана Быкова" class="author-photo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'160\\\' height=\\\'160\\\'><circle cx=\\\'80\\\' cy=\\\'80\\\' r=\\\'80\\\' fill=\\\'#333\\\'/><text x=\\\'80\\\' y=\\\'85\\\' font-size=\\\'40\\\' text-anchor=\\\'middle\\\' fill=\\\'#555\\\'>👤</text></svg>'">
         <h2 style="margin: 0 0 5px 0; color: #ff8c00;">Светлана Быкова</h2>
-        <p style="color: #bbb; font-size: 0.95em; margin-bottom: 25px; line-height: 1.4;">Учитель математики, репетитор и автор интерактивных материалов</p>
+        <p style="color: #bbb; font-size: 0.95em; margin-bottom: 25px; line-height: 1.4;">Учитель математики, репетитор и автор методических материалов</p>
         
         <div style="text-align: center; margin-bottom: 12px; color: #888; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px;">Для связи</div>
         
@@ -220,7 +220,8 @@
     </aside>
 
     <main class="main-content">
-        <h2 style="margin: 0 0 25px 0; text-align: center; border-bottom: 1px dashed #555; padding-bottom: 15px;">Рабочее пространство</h2>
+        <h2 style="margin: 0 0 8px 0; text-align: center;">Генератор вариантов</h2>
+        <div style="text-align: center; color: #bbb; font-size: 1.05em; margin-bottom: 25px; border-bottom: 1px dashed #555; padding-bottom: 15px;">ЕГЭ профильный задания 1–12</div>
         
         <div class="task-row">
             <div class="row-header" style="flex-wrap: wrap; gap: 15px;">
@@ -288,8 +289,8 @@
 
         <div id="task-total-panel" class="task-total-panel">
             <div class="task-total-text">📊 Набрано задач: <span id="task-total-count">0</span></div>
-            <button type="button" class="task-total-reset" onclick="resetTaskCounts()">🔄 Сбросить количества</button>
-            <div id="task-total-note" class="task-total-note">Все количества заданий сброшены.</div>
+            <button type="button" class="task-total-reset" onclick="resetTaskCounts()">🔄 Сбросить набор</button>
+            <div id="task-total-note" class="task-total-note">Набор заданий сброшен.</div>
         </div>
 
         <div id="dynamic-tasks"></div>
