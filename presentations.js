@@ -1,3 +1,4 @@
+<script src="draftEngine.js"></script>
 // ==========================================
 // ОБЩАЯ НАСТРОЙКА: показывать верный ответ при ошибке
 // ==========================================
@@ -657,3 +658,5 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
     document.getElementById('pres-modal').style.display = 'none';
 }
+
+window.toggleCanvas=function(id,tid){DraftEngine.init('canvas-pres-'+id,{taskId:tid,background:''})};
