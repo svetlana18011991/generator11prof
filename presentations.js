@@ -97,8 +97,8 @@ function generatePresentation1() {
                 </div>
             </div>
 
-            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #ff8c00; border-radius: 15px; padding: 20px; box-shadow: 0 0 25px rgba(0,0,0,0.2); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
+            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #ff8c00; border-radius: 15px; padding: 20px; box-shadow: 0 0 25px rgba(0,0,0,0.2); box-sizing: border-box; z-index: 20; overflow: hidden; flex-direction: column; gap: 10px;" onclick="event.stopPropagation();">
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 0; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
                     <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить действие">↶</button>
@@ -120,7 +120,7 @@ function generatePresentation1() {
                     <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
                     <input type="hidden" id="tool-pres-${i}" value="pen">
                 </div>
-                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
+                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; flex: 1 1 auto; height: auto; min-height: 0;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
             </div>
             <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
         </div>
@@ -174,8 +174,8 @@ function generatePresentation2() {
                 </div>
             </div>
 
-            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #ff4081; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(255,64,129,0.15); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #fce4ec; padding: 8px 15px; border-radius: 12px; border: 1px solid #f8bbd0; color: #333;">
+            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #ff4081; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(255,64,129,0.15); box-sizing: border-box; z-index: 20; overflow: hidden; flex-direction: column; gap: 10px;" onclick="event.stopPropagation();">
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 0; background: #fce4ec; padding: 8px 15px; border-radius: 12px; border: 1px solid #f8bbd0; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
                     <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить действие">↶</button>
@@ -197,7 +197,7 @@ function generatePresentation2() {
                     <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
                     <input type="hidden" id="tool-pres-${i}" value="pen">
                 </div>
-                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #fce4ec 1px, transparent 1px), linear-gradient(to bottom, #fce4ec 1px, transparent 1px); border: 2px solid #f8bbd0; border-radius: 12px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
+                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #fce4ec 1px, transparent 1px), linear-gradient(to bottom, #fce4ec 1px, transparent 1px); border: 2px solid #f8bbd0; border-radius: 12px; overflow: hidden; flex: 1 1 auto; height: auto; min-height: 0;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
             </div>
             <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
         </div>
@@ -251,8 +251,8 @@ function generatePresentation3() {
                 </div>
             </div>
 
-            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #9c27b0; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(156,39,176,0.15); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #f3e5f5; padding: 8px 15px; border-radius: 12px; border: 1px solid #e1bee7; color: #333;">
+            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #9c27b0; border-radius: 20px; padding: 20px; box-shadow: 0 15px 40px rgba(156,39,176,0.15); box-sizing: border-box; z-index: 20; overflow: hidden; flex-direction: column; gap: 10px;" onclick="event.stopPropagation();">
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 0; background: #f3e5f5; padding: 8px 15px; border-radius: 12px; border: 1px solid #e1bee7; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
                     <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить действие">↶</button>
@@ -274,7 +274,7 @@ function generatePresentation3() {
                     <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
                     <input type="hidden" id="tool-pres-${i}" value="pen">
                 </div>
-                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #f3e5f5 1px, transparent 1px), linear-gradient(to bottom, #f3e5f5 1px, transparent 1px); border: 2px solid #e1bee7; border-radius: 12px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
+                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #f3e5f5 1px, transparent 1px), linear-gradient(to bottom, #f3e5f5 1px, transparent 1px); border: 2px solid #e1bee7; border-radius: 12px; overflow: hidden; flex: 1 1 auto; height: auto; min-height: 0;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
             </div>
             <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
         </div>
@@ -359,7 +359,10 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .pres-check-zone { flex: 0 0 auto !important; margin-top: auto !important; gap: 10px !important; }
         .pres-input { max-width: 180px !important; box-sizing: border-box !important; }
 
-        .pres-canvas-box { isolation: isolate; }
+        .pres-canvas-box { isolation: isolate; flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; }
+        [id^="draw-wrapper-pres-"] { overflow: hidden !important; }
+        [id^="draw-wrapper-pres-"] > div:first-child { flex: 0 0 auto !important; }
+        [id^="draw-wrapper-pres-"] > .pres-canvas-box { flex: 1 1 auto !important; min-height: 0 !important; height: auto !important; }
         .pres-draft-diagram { position: absolute; left: 12px; top: 12px; z-index: 1; display: inline-flex; align-items: flex-start; justify-content: flex-start; width: fit-content; max-width: calc(100% - 24px); max-height: 62%; padding: 10px; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.10); box-sizing: border-box; overflow: hidden; }
         .pres-draft-diagram-inner { display: inline-flex; align-items: flex-start; justify-content: flex-start; width: fit-content; max-width: 100%; max-height: 100%; }
         .pres-draft-diagram img, .pres-draft-diagram svg, .pres-draft-diagram picture, .pres-draft-diagram canvas { max-width: min(320px, 100%) !important; max-height: 260px !important; width: auto !important; height: auto !important; object-fit: contain !important; display: block !important; margin: 0 !important; }
@@ -697,6 +700,38 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         });
         window.addEventListener('resize', scheduleFitText);
         ${window.CANVAS_LOGIC_SCRIPT}
+
+        (function(){
+            function makeDraftPanelFit(id) {
+                var wrap = document.getElementById('draw-wrapper-' + id);
+                if (!wrap) return;
+                if (wrap.style.display && wrap.style.display !== 'none') {
+                    wrap.style.display = 'flex';
+                    wrap.style.flexDirection = 'column';
+                    wrap.style.overflow = 'hidden';
+                    wrap.style.gap = '10px';
+                }
+                var box = wrap.querySelector('.pres-canvas-box');
+                if (box) {
+                    box.style.flex = '1 1 auto';
+                    box.style.height = 'auto';
+                    box.style.minHeight = '0';
+                }
+            }
+
+            var oldToggleCanvas = window.toggleCanvas;
+            window.toggleCanvas = function(id) {
+                if (typeof oldToggleCanvas === 'function') {
+                    oldToggleCanvas.apply(this, arguments);
+                } else {
+                    var wrap = document.getElementById('draw-wrapper-' + id);
+                    if (wrap) wrap.style.display = (wrap.style.display === 'none' || !wrap.style.display) ? 'flex' : 'none';
+                }
+                makeDraftPanelFit(id);
+                setTimeout(function(){ makeDraftPanelFit(id); if (typeof window.resizeCanvas === 'function') window.resizeCanvas(id); }, 30);
+                setTimeout(function(){ makeDraftPanelFit(id); if (typeof window.resizeCanvas === 'function') window.resizeCanvas(id); }, 180);
+            };
+        })();
     ${window.SCRIPT_END}
 </body>
 </html>`;
