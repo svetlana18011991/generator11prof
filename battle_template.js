@@ -31,9 +31,11 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #heartText{letter-spacing:4px;color:#ff6985;text-shadow:0 0 14px rgba(255,84,112,.55)}
         #scene{position:absolute;inset:0;z-index:2}
         .fighterZone{position:absolute;top:0;bottom:auto;display:flex;flex-direction:column;align-items:center;gap:10px;z-index:3}
-        #heroZone{left:-0.91%;top:20.16%;width:33.14vw}
-        #bossZone{left:58.5%;top:6.81%;width:43.3vw}
-        .fighterName{padding:8px 16px;border-radius:999px;background:rgba(11,18,28,.7);border:1px solid rgba(255,255,255,.16);font-size:15px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;box-shadow:var(--shadow);text-align:center}
+        #heroZone{left:-0.91%;top:16.16%;width:33.14vw}
+        #bossZone{left:58.5%;top:2.81%;width:43.3vw}
+        .fighterName{padding:8px 16px;border-radius:999px;background:rgba(11,18,28,.72);border:2px solid var(--accent);font-size:15px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;box-shadow:0 0 12px var(--accent),0 0 24px rgba(255,140,0,.35),var(--shadow);text-align:center;text-shadow:0 0 8px rgba(255,255,255,.55)}
+        #heroZone .fighterName{border-color:#8b5cff;box-shadow:0 0 12px #8b5cff,0 0 24px rgba(139,92,255,.35),var(--shadow)}
+        #bossZone .fighterName{border-color:#ff8c00;box-shadow:0 0 12px #ff8c00,0 0 24px rgba(255,140,0,.35),var(--shadow)}
         .fighterCard{position:relative;width:100%;height:100%;min-width:0;min-height:0;padding:0;border-radius:24px;background:transparent;border:none;box-shadow:none;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
         .fighterCard img{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));transition:transform .25s ease, filter .25s ease}
         .fighterCard.attack img{transform:scale(1.03) translateX(8px)}
@@ -48,13 +50,13 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         
         #heroCard{width:33.14vw;height:73.08vh}
         #bossCard{width:43.3vw;height:90.92vh}
-        #heroZone .hpWrap{width:min(24vw,300px);margin-top:-18px}
-        #bossZone .hpWrap{width:min(24vw,300px);margin-top:-18px}
+        #heroZone .hpWrap{width:min(24vw,300px);position:absolute;left:50%;top:calc(73.08vh + 8px);transform:translateX(-50%);z-index:8}
+        #bossZone .hpWrap{width:min(24vw,300px);position:absolute;left:50%;top:calc(90.92vh + 8px);transform:translateX(-50%);z-index:8}
 
         #centerControls{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
         #startBattleBtn{border:none;border-radius:18px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:16px 28px;font-size:22px;font-weight:1000;cursor:pointer;box-shadow:0 18px 28px rgba(0,0,0,.28), 0 0 20px rgba(255,140,0,.38)}
         #startBattleBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
-        #questionPanel{display:none;position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:min(820px,calc(100vw - 26px));max-height:min(68vh,760px);background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:18px 18px 16px;z-index:9;overflow:hidden}
+        #questionPanel{display:none;position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:min(700px,calc(100vw - 26px));max-height:min(68vh,760px);background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:18px 18px 16px;z-index:9;overflow:hidden}
         #questionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
         #questionHead .badge{background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:999px;padding:8px 14px;font-weight:900}
         #questionHead .prog{font-weight:900;color:#666}
@@ -97,7 +99,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             #hud{top:14px;left:12px;right:12px;gap:8px;flex-wrap:wrap}
             .pill{font-size:13px;padding:8px 10px}
             #timerPill{margin-left:0}
-            #questionPanel{top:58%;max-height:58vh}
+            #questionPanel{top:58%;max-height:58vh;width:min(92vw,700px)}
             #q{max-height:30vh}
         }
     </style>
