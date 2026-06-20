@@ -22,7 +22,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         body{background:#091018}
         #arena{position:relative;width:100vw;height:100vh;overflow:hidden;background:url('arena.png') center/cover no-repeat}
         #arena::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,.28), rgba(0,0,0,.36));pointer-events:none}
-        #titleWrap{position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:6;text-align:center}
+        #titleWrap{display:none}
         #titleWrap .main{font-size:clamp(30px,4vw,54px);font-weight:1000;letter-spacing:1px;text-transform:uppercase;text-shadow:0 0 18px rgba(255,140,0,.85), 0 0 36px rgba(255,140,0,.45)}
         #titleWrap .sub{margin-top:3px;font-family:'Caveat',cursive;font-size:clamp(22px,2vw,34px);color:rgba(255,255,255,.9)}
         #hud{position:absolute;top:22px;left:20px;right:20px;z-index:7;display:flex;align-items:center;gap:12px;pointer-events:none}
@@ -30,25 +30,25 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #timerPill{margin-left:auto}
         #heartText{letter-spacing:4px;color:#ff6985;text-shadow:0 0 14px rgba(255,84,112,.55)}
         #scene{position:absolute;inset:0;z-index:2}
-        .fighterZone{position:absolute;top:20%;width:min(24vw,280px);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:3}
-        #heroZone{left:5%}
-        #bossZone{right:5%}
+        .fighterZone{position:absolute;top:auto;bottom:18%;width:min(34vw,520px);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:3}
+        #heroZone{left:3%}
+        #bossZone{right:3%}
         .fighterName{padding:8px 16px;border-radius:999px;background:rgba(11,18,28,.7);border:1px solid rgba(255,255,255,.16);font-size:15px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;box-shadow:var(--shadow);text-align:center}
-        .fighterCard{position:relative;width:min(24vw,280px);height:min(38vh,360px);min-width:200px;min-height:250px;padding:14px;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
-        .fighterCard img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 12px 16px rgba(0,0,0,.45));transition:transform .25s ease, filter .25s ease}
+        .fighterCard{position:relative;width:min(34vw,520px);height:min(54vh,560px);min-width:300px;min-height:390px;padding:0;border-radius:24px;background:transparent;border:none;box-shadow:none;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
+        .fighterCard img{max-width:185%;max-height:185%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));transition:transform .25s ease, filter .25s ease}
         .fighterCard.attack img{transform:scale(1.06) translateX(10px)}
         .fighterCard.hit img{transform:scale(.96);filter:drop-shadow(0 0 18px rgba(255,84,112,.9))}
-        .hpWrap{width:min(24vw,280px);background:rgba(11,18,28,.72);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:7px 9px;box-shadow:var(--shadow)}
+        .hpWrap{width:min(24vw,300px);background:rgba(11,18,28,.72);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:7px 9px;box-shadow:var(--shadow);margin-top:-18px}
         .hpLabel{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;color:rgba(255,255,255,.88);margin-bottom:6px;text-transform:uppercase}
         .hpBar{position:relative;height:16px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden;border:1px solid rgba(255,255,255,.15)}
         .hpBar::after{content:"";position:absolute;inset:0;background-repeat:repeat-x;background-size:var(--segment-size, 20px) 100%;background-image:linear-gradient(to right, transparent calc(100% - 1px), rgba(255,255,255,.18) calc(100% - 1px));pointer-events:none;opacity:.9}
         .hpFill{height:100%;width:100%;transition:width .45s ease;border-radius:999px}
         #heroHpFill{background:linear-gradient(90deg,#69f0ae,#d4ff62)}
         #bossHpFill{background:linear-gradient(90deg,#ff5470,#ff8c00)}
-        #centerControls{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
+        #centerControls{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
         #startBattleBtn{border:none;border-radius:18px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:16px 28px;font-size:22px;font-weight:1000;cursor:pointer;box-shadow:0 18px 28px rgba(0,0,0,.28), 0 0 20px rgba(255,140,0,.38)}
         #startBattleBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
-        #questionPanel{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(820px,calc(100vw - 26px));max-height:min(68vh,760px);background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:18px 18px 16px;z-index:9;overflow:hidden}
+        #questionPanel{display:none;position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:min(820px,calc(100vw - 26px));max-height:min(68vh,760px);background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:18px 18px 16px;z-index:9;overflow:hidden}
         #questionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
         #questionHead .badge{background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:999px;padding:8px 14px;font-weight:900}
         #questionHead .prog{font-weight:900;color:#666}
@@ -92,10 +92,10 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             .pill{font-size:13px;padding:8px 10px}
             #timerPill{margin-left:0}
             #titleWrap{top:58px}
-            .fighterZone{top:16%;width:38vw}
+            .fighterZone{bottom:16%;width:40vw}
             #heroZone{left:4%}#bossZone{right:4%}
-            .fighterCard{width:38vw;height:23vh;min-width:130px;min-height:170px;padding:8px}
-            .hpWrap{width:38vw}
+            .fighterCard{width:40vw;height:30vh;min-width:150px;min-height:210px;padding:0}
+            .hpWrap{width:38vw;margin-top:-10px}
             #chars{grid-template-columns:1fr}
             #questionPanel{top:58%;max-height:58vh}
             #q{max-height:30vh}
@@ -160,17 +160,14 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
                 <div class="charCard selected" data-name="Альтаир" data-src="pers1.png" data-desc="смелый и собранный">
                     <div class="charThumb"><img src="pers1.png" alt="Персонаж 1"></div>
                     <div class="charName">Альтаир</div>
-                    <div class="charDesc">мужской персонаж</div>
                 </div>
                 <div class="charCard" data-name="Вега" data-src="pers2.png" data-desc="быстрая и внимательная">
                     <div class="charThumb"><img src="pers2.png" alt="Персонаж 2"></div>
                     <div class="charName">Вега</div>
-                    <div class="charDesc">женский персонаж</div>
                 </div>
                 <div class="charCard" data-name="Квант" data-src="pers3.png" data-desc="спокойный логик">
                     <div class="charThumb"><img src="pers3.png" alt="Персонаж 3"></div>
                     <div class="charName">Квант</div>
-                    <div class="charDesc">нейтральный персонаж</div>
                 </div>
             </div>
             <button id="enterArenaBtn" type="button">Выйти на арену</button>
