@@ -324,6 +324,48 @@ function customPresReadFiles(input, multiple, callback) {
     });
 }
 
+function customPresAppendSlideBackgrounds(input) {
+    customPresReadFiles(input, true, function(v) {
+        if (!Array.isArray(window.customPresentationEditorState.slideBgs)) {
+            window.customPresentationEditorState.slideBgs = [];
+        }
+        window.customPresentationEditorState.slideBgs = window.customPresentationEditorState.slideBgs.concat(v || []);
+        input.value = '';
+        renderCustomPresBgList();
+        updateCustomPresentationPreview();
+    });
+}
+
+function renderCustomPresBgList() {
+    const list = document.getElementById('custom-pres-bg-list');
+    const count = document.getElementById('custom-pres-bg-count');
+    const items = window.customPresentationEditorState.slideBgs || [];
+    if (count) count.textContent = 'Загружено: ' + items.length;
+    if (!list) return;
+    if (!items.length) {
+        list.innerHTML = '<div style="font-size:12px;color:#aaa;">Пока фоновых картинок нет. Нажмите “+ Добавить фон”.</div>';
+        return;
+    }
+    list.innerHTML = items.map((src, idx) => `
+        <div style="display:flex;align-items:center;gap:8px;background:#1b1b1b;border:1px solid #3a3a3a;border-radius:8px;padding:6px;">
+            <div style="width:48px;height:30px;border-radius:5px;background:url('${src}') center/cover no-repeat;border:1px solid #555;flex:0 0 auto;"></div>
+            <div style="font-size:12px;color:#ddd;flex:1;">Фон ${idx + 1}</div>
+            <button type="button" onclick="window.customPresentationEditorState.slideBgs.splice(${idx},1); renderCustomPresBgList(); updateCustomPresentationPreview();" style="background:#333;color:#ff8c00;border:1px solid #555;border-radius:6px;cursor:pointer;padding:3px 7px;">×</button>
+        </div>`).join('');
+}
+
+function bindCustomPresentationEditorLiveEvents() {
+    const ids = ['custom-pres-accent', 'custom-pres-task-side', 'custom-pres-show-plate', 'custom-pres-radius'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || el.dataset.customPreviewBound) return;
+        el.dataset.customPreviewBound = '1';
+        el.addEventListener('input', updateCustomPresentationPreview);
+        el.addEventListener('change', updateCustomPresentationPreview);
+    });
+}
+
+
 function getCustomPresAuthorLine() {
     let teacherName = document.getElementById('teacher-name') ? document.getElementById('teacher-name').value.trim() : '';
     let authorLine = '';
@@ -454,14 +496,21 @@ function updateCustomPresentationPreview() {
     const taskLeft = taskSide === 'left';
     const showPlate = !!getCustomPresSetting('custom-pres-show-plate', true);
     const plateImg = window.customPresentationEditorState.plateImg;
+    const radius = parseInt(getCustomPresSetting('custom-pres-radius', '18'), 10) || 18;
+
+    document.querySelectorAll('#custom-pres-editor-modal h2, #custom-pres-editor-modal h3').forEach(el => el.style.color = accent);
+    const downloadBtn = document.getElementById('custom-pres-download-btn');
+    if (downloadBtn) downloadBtn.style.background = accent;
+
     preview.style.backgroundImage = `url('${bg}')`;
     preview.innerHTML = `
-        ${showPlate ? `<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:120px;height:54px;border-radius:16px;border:2px solid ${accent};background:${plateImg ? `url('${plateImg}') center/contain no-repeat` : 'rgba(255,255,255,.9)'};display:flex;align-items:center;justify-content:center;font-family:Caveat,cursive;font-size:22px;color:#222;">Задание 1</div>` : `<div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:Caveat,cursive;font-size:28px;color:white;text-shadow:0 0 10px ${accent};">Задание 1</div>`}
-        <div style="position:absolute;${taskLeft ? 'left:5%;' : 'right:5%;'}top:20%;width:47%;height:58%;border:2px solid ${accent};border-radius:18px;background:rgba(255,255,255,.94);box-shadow:0 0 18px ${accent};display:flex;align-items:center;justify-content:center;text-align:center;color:#333;font-weight:700;padding:12px;box-sizing:border-box;">Карточка задания</div>
-        <div style="position:absolute;${taskLeft ? 'right:5%;' : 'left:5%;'}top:20%;width:38%;height:58%;border:2px solid ${accent};border-radius:18px;background:rgba(255,255,255,.94);box-shadow:0 0 18px rgba(0,0,0,.15);padding:10px;box-sizing:border-box;">
-            <div style="height:34px;border:1px solid ${accent};border-radius:10px;background:rgba(255,255,255,.65);display:flex;align-items:center;gap:8px;padding:0 8px;color:#222;">👆 🖊️ ↶ ↷ 🔺 🧽 🗑️</div>
+        ${showPlate ? `<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:120px;height:54px;border-radius:${Math.max(10, radius - 2)}px;border:2px solid ${accent};background:${plateImg ? `url('${plateImg}') center/contain no-repeat` : 'rgba(255,255,255,.9)'};display:flex;align-items:center;justify-content:center;font-family:Caveat,cursive;font-size:22px;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.15);">Задание 1</div>` : `<div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:Caveat,cursive;font-size:28px;color:white;text-shadow:0 0 10px ${accent},0 0 18px ${accent};">Задание 1</div>`}
+        <div style="position:absolute;${taskLeft ? 'left:5%;' : 'right:5%;'}top:20%;width:47%;height:58%;border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px ${accent};display:flex;align-items:center;justify-content:center;text-align:center;color:#333;font-weight:700;padding:12px;box-sizing:border-box;">Карточка задания</div>
+        <div style="position:absolute;${taskLeft ? 'right:5%;' : 'left:5%;'}top:20%;width:38%;height:58%;border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px rgba(0,0,0,.15);padding:10px;box-sizing:border-box;">
+            <div style="height:34px;border:1px solid ${accent};border-radius:10px;background:rgba(255,255,255,.65);display:flex;align-items:center;gap:8px;padding:0 8px;color:#222;box-sizing:border-box;">👆 🖊️ ↶ ↷ 🔺 🧽 🗑️</div>
             <div style="margin-top:8px;height:calc(100% - 44px);border:1px solid ${accent};border-radius:10px;background-size:16px 16px;background-image:linear-gradient(to right,rgba(0,0,0,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.12) 1px,transparent 1px);"></div>
         </div>`;
+    renderCustomPresBgList();
 }
 
 function buildCustomPresentationEditorModal() {
@@ -480,16 +529,18 @@ function buildCustomPresentationEditorModal() {
             <div style="display:grid; grid-template-columns: 360px 1fr; gap:18px; padding:18px; min-height:0; overflow:auto;">
                 <div style="background:#252525;border:1px solid #3a3a3a;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px;">
                     <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Цвет акцента
-                        <input id="custom-pres-accent" type="color" value="#ff8c00" style="height:38px;width:70px;" onchange="updateCustomPresentationPreview()">
+                        <input id="custom-pres-accent" type="color" value="#ff8c00" style="height:38px;width:70px;" oninput="updateCustomPresentationPreview()" onchange="updateCustomPresentationPreview()">
                     </label>
                     <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Фон стартового экрана
                         <input id="custom-pres-start-bg" type="file" accept="image/*" onchange="customPresReadFiles(this,false,function(v){window.customPresentationEditorState.startBg=v; updateCustomPresentationPreview();})">
                     </label>
-                    <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Фоны слайдов с заданиями, можно несколько
-                        <input id="custom-pres-slide-bgs" type="file" accept="image/*" multiple onchange="customPresReadFiles(this,true,function(v){window.customPresentationEditorState.slideBgs=v; document.getElementById('custom-pres-bg-count').textContent='Загружено: '+v.length; updateCustomPresentationPreview();})">
+                    <div style="display:flex;flex-direction:column;gap:8px;font-weight:bold;color:#ffb15c;">Фоны слайдов с заданиями
+                        <input id="custom-pres-slide-bgs" type="file" accept="image/*" multiple style="display:none;" onchange="customPresAppendSlideBackgrounds(this)">
+                        <button type="button" onclick="document.getElementById('custom-pres-slide-bgs').click()" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#111;color:#ff8c00;border:1px dashed #ff8c00;border-radius:10px;padding:10px 12px;font-weight:bold;cursor:pointer;">＋ Добавить фон</button>
                         <span id="custom-pres-bg-count" style="font-size:12px;color:#aaa;font-weight:normal;">Загружено: 0</span>
-                        <span style="font-size:12px;color:#aaa;font-weight:normal;">Если загрузить 4 картинки на 15 заданий, они будут идти циклом.</span>
-                    </label>
+                        <div id="custom-pres-bg-list" style="display:flex;flex-direction:column;gap:6px;max-height:125px;overflow:auto;"></div>
+                        <span style="font-size:12px;color:#aaa;font-weight:normal;">Каждое нажатие на плюс добавляет ещё картинки. Если загрузить 4 картинки на 15 заданий, они будут идти циклом.</span>
+                    </div>
                     <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Где расположить задание
                         <select id="custom-pres-task-side" onchange="updateCustomPresentationPreview()" style="padding:9px;border-radius:8px;background:#111;color:#ff8c00;border:1px solid #555;">
                             <option value="right">Справа, черновик слева</option>
@@ -503,9 +554,9 @@ function buildCustomPresentationEditorModal() {
                         <input id="custom-pres-plate-img" type="file" accept="image/*" onchange="customPresReadFiles(this,false,function(v){window.customPresentationEditorState.plateImg=v; updateCustomPresentationPreview();})">
                     </label>
                     <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Скругление карточек
-                        <input id="custom-pres-radius" type="range" min="6" max="30" value="18" onchange="updateCustomPresentationPreview()">
+                        <input id="custom-pres-radius" type="range" min="6" max="30" value="18" oninput="updateCustomPresentationPreview()" onchange="updateCustomPresentationPreview()">
                     </label>
-                    <button onclick="generateCustomPresentationFromEditor()" style="margin-top:6px;background:#ff8c00;color:#121212;border:none;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:bold;cursor:pointer;">Скачать презентацию</button>
+                    <button id="custom-pres-download-btn" onclick="generateCustomPresentationFromEditor()" style="margin-top:6px;background:#ff8c00;color:#121212;border:none;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:bold;cursor:pointer;">Скачать презентацию</button>
                 </div>
                 <div style="background:#252525;border:1px solid #3a3a3a;border-radius:14px;padding:16px;min-height:520px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -520,10 +571,15 @@ function buildCustomPresentationEditorModal() {
 }
 
 function openCustomPresentationEditor() {
+    const presModal = document.getElementById('pres-modal');
+    if (presModal) presModal.style.display = 'none';
     buildCustomPresentationEditorModal();
     const modal = document.getElementById('custom-pres-editor-modal');
     if (modal) modal.style.display = 'flex';
+    bindCustomPresentationEditorLiveEvents();
+    renderCustomPresBgList();
     updateCustomPresentationPreview();
+    setTimeout(updateCustomPresentationPreview, 60);
 }
 
 function injectCustomPresentationCard() {
@@ -537,7 +593,7 @@ function injectCustomPresentationCard() {
     card.className = 'pres-preview-card';
     card.style.borderColor = '#00bcd4';
     card.style.cursor = 'pointer';
-    card.onclick = function(e) { e.stopPropagation(); openCustomPresentationEditor(); };
+    card.onclick = function(e) { e.preventDefault(); e.stopPropagation(); openCustomPresentationEditor(); };
     card.innerHTML = `
         <div class="pres-thumb" style="border-color:#00bcd4;background:linear-gradient(135deg,#fff,#e0f7fa,#fff3e0);display:flex;align-items:center;justify-content:center;color:#00acc1;font-size:34px;font-weight:bold;">⚙️</div>
         <div><div style="font-weight:bold;color:#00bcd4;font-size:1.2em;">Свой стиль</div><div style="font-size:0.85em;color:#bbb;">Редактор фонов, сторон и подложки</div></div>`;
@@ -549,6 +605,14 @@ if (document.readyState === 'loading') {
 } else {
     injectCustomPresentationCard();
 }
+
+
+window.openCustomPresentationEditor = openCustomPresentationEditor;
+window.updateCustomPresentationPreview = updateCustomPresentationPreview;
+window.customPresReadFiles = customPresReadFiles;
+window.customPresAppendSlideBackgrounds = customPresAppendSlideBackgrounds;
+window.renderCustomPresBgList = renderCustomPresBgList;
+window.generateCustomPresentationFromEditor = generateCustomPresentationFromEditor;
 
 // ==========================================
 // ОБЩИЙ СБОРЩИК ПРЕЗЕНТАЦИЙ (ДЛЯ ЛЮБОГО СТИЛЯ)
