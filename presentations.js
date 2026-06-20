@@ -77,7 +77,7 @@ function generatePresentation1() {
                 <h3 style="font-family: 'Caveat', cursive; font-size: calc(39px * 0.64); color: #333; margin: 0; padding-bottom: 5px;">Задание ${i+1}</h3>
             </div>
             
-            <div class="task-right-side ${t.svg && String(t.svg).trim() !== "" ? 'task-card-visual' : 'task-card-text-only'}" style="position: absolute; right: 5%; top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 20px 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;" onclick="event.stopPropagation();">
+            <div class="task-right-side ${t.svg && String(t.svg).trim() !== "" ? 'task-card-visual' : 'task-card-text-only'}" style="position: absolute; right: 5%; top: ${panelTop}; bottom: ${panelBottom}; width: 50%; background: rgba(255,255,255,0.95); padding: 20px 30px; border-radius: 15px; box-shadow: 0 0 25px #ff8c00, inset 0 0 15px #ff8c00; border: 2px solid #ff8c00; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;" onclick="event.stopPropagation();">
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
@@ -98,7 +98,7 @@ function generatePresentation1() {
                 </div>
             </div>
 
-            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid #ff8c00; border-radius: 15px; padding: 20px; box-shadow: 0 0 25px rgba(0,0,0,0.2); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
+            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; left: 5%; top: ${panelTop}; width: 40%; height: calc(100% - ${panelTop} - ${panelBottom}); background: rgba(255,255,255,0.95); border: 2px solid #ff8c00; border-radius: 15px; padding: 20px; box-shadow: 0 0 25px rgba(0,0,0,0.2); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
                 <div style="display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; margin-bottom: 8px; background: #e3f2fd; padding: 6px 10px; border-radius: 8px; border: 1px solid #bbdefb; min-height:34px; box-sizing:border-box; overflow:hidden; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Карандаш">🖊️</button>
@@ -413,6 +413,9 @@ function makeCustomPresentationTaskSlide(t, i, settings) {
     const draftDiagram = getPresentationDraftDiagramHtml(t);
     const radius = settings.roundness || 18;
     const plate = makeCustomPresPlateHtml(i + 1, accent);
+    const showTaskPlate = !!getCustomPresSetting('custom-pres-show-plate', true);
+    const panelTop = showTaskPlate ? '20%' : '15%';
+    const panelBottom = showTaskPlate ? '10%' : '15%';
     const inputAccent = escapePresAttr(accent);
     const showSolutions = settings.showSolutions;
     const instantCheck = settings.instantCheck;
@@ -537,8 +540,8 @@ function updateCustomPresentationPreview() {
         preview.style.backgroundImage = `url('${taskBg}')`;
         preview.innerHTML = `
             ${showPlate ? `<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:120px;height:54px;border-radius:${Math.max(10, radius - 2)}px;border:2px solid ${accent};background:${plateImg ? `url('${plateImg}') center/contain no-repeat` : 'rgba(255,255,255,.9)'};display:flex;align-items:center;justify-content:center;font-family:Caveat,cursive;font-size:22px;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.15);">Задание 1</div>` : `<div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:Caveat,cursive;font-size:28px;color:white;text-shadow:0 0 10px ${accent},0 0 18px ${accent};">Задание 1</div>`}
-            <div style="position:absolute;${taskLeft ? 'left:5%;' : 'right:5%;'}top:20%;width:47%;height:58%;border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px ${accent};display:flex;align-items:center;justify-content:center;text-align:center;color:#333;font-weight:700;padding:12px;box-sizing:border-box;">Карточка задания</div>
-            <div style="position:absolute;${taskLeft ? 'right:5%;' : 'left:5%;'}top:20%;width:38%;height:58%;border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px rgba(0,0,0,.15);padding:10px;box-sizing:border-box;">
+            <div style="position:absolute;${taskLeft ? 'left:5%;' : 'right:5%;'}top:${showPlate ? '24%' : '20%'};width:47%;height:${showPlate ? '54%' : '58%'};border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px ${accent};display:flex;align-items:center;justify-content:center;text-align:center;color:#333;font-weight:700;padding:12px;box-sizing:border-box;">Карточка задания</div>
+            <div style="position:absolute;${taskLeft ? 'right:5%;' : 'left:5%;'}top:${showPlate ? '24%' : '20%'};width:38%;height:${showPlate ? '54%' : '58%'};border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px rgba(0,0,0,.15);padding:10px;box-sizing:border-box;">
                 <div style="height:34px;border:1px solid ${accent};border-radius:10px;background:rgba(255,255,255,.65);display:flex;align-items:center;gap:8px;padding:0 8px;color:#222;box-sizing:border-box;">👆 🖊️ ↶ ↷ 🔺 🧽 🗑️</div>
                 <div style="margin-top:8px;height:calc(100% - 44px);border:1px solid ${accent};border-radius:10px;background-size:16px 16px;background-image:linear-gradient(to right,rgba(0,0,0,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.12) 1px,transparent 1px);"></div>
             </div>`;
