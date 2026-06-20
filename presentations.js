@@ -414,8 +414,8 @@ function makeCustomPresentationTaskSlide(t, i, settings) {
     const radius = settings.roundness || 18;
     const plate = makeCustomPresPlateHtml(i + 1, accent);
     const showTaskPlate = !!getCustomPresSetting('custom-pres-show-plate', true);
-    const panelTop = showTaskPlate ? '20%' : '15%';
-    const panelBottom = showTaskPlate ? '10%' : '15%';
+    const panelTop = showTaskPlate ? '25%' : '15%';
+    const panelBottom = showTaskPlate ? '8%' : '15%';
     const inputAccent = escapePresAttr(accent);
     const showSolutions = settings.showSolutions;
     const instantCheck = settings.instantCheck;
@@ -424,7 +424,7 @@ function makeCustomPresentationTaskSlide(t, i, settings) {
     return `
         <div class="slide task-slide" style="background-image: url('${bg}')">
             ${plate}
-            <div class="task-right-side ${taskHasVisual ? 'task-card-visual' : 'task-card-text-only'}" style="position: absolute; ${taskPos} top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 20px 30px; border-radius: ${radius}px; box-shadow: 0 0 25px ${accent}, inset 0 0 15px ${accent}; border: 2px solid ${accent}; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;" onclick="event.stopPropagation();">
+            <div class="task-right-side ${taskHasVisual ? 'task-card-visual' : 'task-card-text-only'}" style="position: absolute; ${taskPos} top: ${panelTop}; bottom: ${panelBottom}; width: 50%; background: rgba(255,255,255,0.95); padding: 20px 30px; border-radius: ${radius}px; box-shadow: 0 0 25px ${accent}, inset 0 0 15px ${accent}; border: 2px solid ${accent}; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;" onclick="event.stopPropagation();">
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
@@ -440,7 +440,7 @@ function makeCustomPresentationTaskSlide(t, i, settings) {
                 </div>
             </div>
 
-            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; ${draftPos} top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid ${accent}; border-radius: ${radius}px; padding: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.16); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
+            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; ${draftPos} top: ${panelTop}; width: 40%; height: calc(100% - ${panelTop} - ${panelBottom}); background: rgba(255,255,255,0.95); border: 2px solid ${accent}; border-radius: ${radius}px; padding: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.16); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
                 <div style="display: flex; flex-wrap: nowrap; gap: 10px; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,.72); padding: 8px 15px; border-radius: 12px; border: 1px solid ${accent}; color: #333; overflow:hidden;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
