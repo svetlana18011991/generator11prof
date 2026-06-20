@@ -293,7 +293,8 @@ function generatePresentation3() {
 window.customPresentationEditorState = window.customPresentationEditorState || {
     startBg: '',
     slideBgs: [],
-    plateImg: ''
+    plateImg: '',
+    previewMode: 'start'
 };
 
 function escapePresAttr(value) {
@@ -487,29 +488,61 @@ function generateCustomPresentationFromEditor() {
     if (modal) modal.style.display = 'none';
 }
 
+function setCustomPresPreviewMode(mode) {
+    window.customPresentationEditorState.previewMode = (mode === 'task') ? 'task' : 'start';
+    updateCustomPresentationPreview();
+}
+
 function updateCustomPresentationPreview() {
     const preview = document.getElementById('custom-pres-preview');
     if (!preview) return;
     const accent = getCustomPresAccent();
     const taskSide = getCustomPresSetting('custom-pres-task-side', 'right');
-    const bg = (window.customPresentationEditorState.slideBgs && window.customPresentationEditorState.slideBgs[0]) || window.customPresentationEditorState.startBg || window.getEmbeddedAssetUrl('p2.jpg');
+    const startBg = window.customPresentationEditorState.startBg || window.getEmbeddedAssetUrl('p1.jpg');
+    const taskBg = (window.customPresentationEditorState.slideBgs && window.customPresentationEditorState.slideBgs[0]) || window.getEmbeddedAssetUrl('p2.jpg');
     const taskLeft = taskSide === 'left';
     const showPlate = !!getCustomPresSetting('custom-pres-show-plate', true);
     const plateImg = window.customPresentationEditorState.plateImg;
     const radius = parseInt(getCustomPresSetting('custom-pres-radius', '18'), 10) || 18;
+    const previewMode = window.customPresentationEditorState.previewMode || 'start';
 
     document.querySelectorAll('#custom-pres-editor-modal h2, #custom-pres-editor-modal h3').forEach(el => el.style.color = accent);
     const downloadBtn = document.getElementById('custom-pres-download-btn');
     if (downloadBtn) downloadBtn.style.background = accent;
 
-    preview.style.backgroundImage = `url('${bg}')`;
-    preview.innerHTML = `
-        ${showPlate ? `<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:120px;height:54px;border-radius:${Math.max(10, radius - 2)}px;border:2px solid ${accent};background:${plateImg ? `url('${plateImg}') center/contain no-repeat` : 'rgba(255,255,255,.9)'};display:flex;align-items:center;justify-content:center;font-family:Caveat,cursive;font-size:22px;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.15);">Задание 1</div>` : `<div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:Caveat,cursive;font-size:28px;color:white;text-shadow:0 0 10px ${accent},0 0 18px ${accent};">Задание 1</div>`}
-        <div style="position:absolute;${taskLeft ? 'left:5%;' : 'right:5%;'}top:20%;width:47%;height:58%;border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px ${accent};display:flex;align-items:center;justify-content:center;text-align:center;color:#333;font-weight:700;padding:12px;box-sizing:border-box;">Карточка задания</div>
-        <div style="position:absolute;${taskLeft ? 'right:5%;' : 'left:5%;'}top:20%;width:38%;height:58%;border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px rgba(0,0,0,.15);padding:10px;box-sizing:border-box;">
-            <div style="height:34px;border:1px solid ${accent};border-radius:10px;background:rgba(255,255,255,.65);display:flex;align-items:center;gap:8px;padding:0 8px;color:#222;box-sizing:border-box;">👆 🖊️ ↶ ↷ 🔺 🧽 🗑️</div>
-            <div style="margin-top:8px;height:calc(100% - 44px);border:1px solid ${accent};border-radius:10px;background-size:16px 16px;background-image:linear-gradient(to right,rgba(0,0,0,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.12) 1px,transparent 1px);"></div>
-        </div>`;
+    const startBtn = document.getElementById('custom-pres-preview-start-btn');
+    const taskBtn = document.getElementById('custom-pres-preview-task-btn');
+    if (startBtn && taskBtn) {
+        startBtn.style.background = previewMode === 'start' ? accent : '#111';
+        startBtn.style.color = previewMode === 'start' ? '#121212' : accent;
+        startBtn.style.borderColor = accent;
+        taskBtn.style.background = previewMode === 'task' ? accent : '#111';
+        taskBtn.style.color = previewMode === 'task' ? '#121212' : accent;
+        taskBtn.style.borderColor = accent;
+    }
+
+    if (previewMode === 'start') {
+        const topics = (window.selectedBlockTitles || ['Тема 1', 'Тема 2']).slice(0, 4).map(t => `<li style="margin-bottom:4px;">${t}</li>`).join('');
+        const author = getCustomPresAuthorLine();
+        preview.style.backgroundImage = `url('${startBg}')`;
+        preview.innerHTML = `
+            <div style="position:absolute;inset:0;background:rgba(255,255,255,.08);"></div>
+            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68%;max-height:76%;background:rgba(255,255,255,.94);border:2px solid ${accent};border-radius:${radius}px;box-shadow:0 10px 28px rgba(0,0,0,.20);padding:20px 24px;box-sizing:border-box;text-align:center;color:#333;overflow:hidden;">
+                <div style="font-weight:900;font-size:28px;color:#003399;border-bottom:2px solid ${accent};padding-bottom:10px;margin-bottom:10px;">Тренировочный вариант</div>
+                <ul style="text-align:left;margin:8px auto 0;max-width:78%;font-size:13px;line-height:1.25;padding-left:18px;color:#333;">${topics}</ul>
+                <div style="font-family:Caveat,cursive;font-size:21px;color:#003399;margin-top:12px;">${author || 'Вариант подготовила: ...'}</div>
+                <div style="font-family:Caveat,cursive;font-size:17px;color:#555;margin-top:12px;">Шкатулка математических интерактивов</div>
+            </div>`;
+    } else {
+        preview.style.backgroundImage = `url('${taskBg}')`;
+        preview.innerHTML = `
+            ${showPlate ? `<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:120px;height:54px;border-radius:${Math.max(10, radius - 2)}px;border:2px solid ${accent};background:${plateImg ? `url('${plateImg}') center/contain no-repeat` : 'rgba(255,255,255,.9)'};display:flex;align-items:center;justify-content:center;font-family:Caveat,cursive;font-size:22px;color:#222;box-shadow:0 4px 14px rgba(0,0,0,.15);">Задание 1</div>` : `<div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:Caveat,cursive;font-size:28px;color:white;text-shadow:0 0 10px ${accent},0 0 18px ${accent};">Задание 1</div>`}
+            <div style="position:absolute;${taskLeft ? 'left:5%;' : 'right:5%;'}top:20%;width:47%;height:58%;border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px ${accent};display:flex;align-items:center;justify-content:center;text-align:center;color:#333;font-weight:700;padding:12px;box-sizing:border-box;">Карточка задания</div>
+            <div style="position:absolute;${taskLeft ? 'right:5%;' : 'left:5%;'}top:20%;width:38%;height:58%;border:2px solid ${accent};border-radius:${radius}px;background:rgba(255,255,255,.94);box-shadow:0 0 18px rgba(0,0,0,.15);padding:10px;box-sizing:border-box;">
+                <div style="height:34px;border:1px solid ${accent};border-radius:10px;background:rgba(255,255,255,.65);display:flex;align-items:center;gap:8px;padding:0 8px;color:#222;box-sizing:border-box;">👆 🖊️ ↶ ↷ 🔺 🧽 🗑️</div>
+                <div style="margin-top:8px;height:calc(100% - 44px);border:1px solid ${accent};border-radius:10px;background-size:16px 16px;background-image:linear-gradient(to right,rgba(0,0,0,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.12) 1px,transparent 1px);"></div>
+            </div>`;
+    }
     renderCustomPresBgList();
 }
 
@@ -532,7 +565,7 @@ function buildCustomPresentationEditorModal() {
                         <input id="custom-pres-accent" type="color" value="#ff8c00" style="height:38px;width:70px;" oninput="updateCustomPresentationPreview()" onchange="updateCustomPresentationPreview()">
                     </label>
                     <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Фон стартового экрана
-                        <input id="custom-pres-start-bg" type="file" accept="image/*" onchange="customPresReadFiles(this,false,function(v){window.customPresentationEditorState.startBg=v; updateCustomPresentationPreview();})">
+                        <input id="custom-pres-start-bg" type="file" accept="image/*" onchange="customPresReadFiles(this,false,function(v){window.customPresentationEditorState.startBg=v; window.customPresentationEditorState.previewMode='start'; updateCustomPresentationPreview();})">
                     </label>
                     <div style="display:flex;flex-direction:column;gap:8px;font-weight:bold;color:#ffb15c;">Фоны слайдов с заданиями
                         <input id="custom-pres-slide-bgs" type="file" accept="image/*" multiple style="display:none;" onchange="customPresAppendSlideBackgrounds(this)">
@@ -559,9 +592,12 @@ function buildCustomPresentationEditorModal() {
                     <button id="custom-pres-download-btn" onclick="generateCustomPresentationFromEditor()" style="margin-top:6px;background:#ff8c00;color:#121212;border:none;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:bold;cursor:pointer;">Скачать презентацию</button>
                 </div>
                 <div style="background:#252525;border:1px solid #3a3a3a;border-radius:14px;padding:16px;min-height:520px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap;">
                         <h3 style="margin:0;color:#ff8c00;">Предпросмотр</h3>
-                        <span style="color:#aaa;font-size:13px;">пример одного слайда</span>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <button id="custom-pres-preview-start-btn" type="button" onclick="setCustomPresPreviewMode('start')" style="background:#ff8c00;color:#121212;border:1px solid #ff8c00;border-radius:999px;padding:7px 11px;font-weight:bold;cursor:pointer;">Старт</button>
+                            <button id="custom-pres-preview-task-btn" type="button" onclick="setCustomPresPreviewMode('task')" style="background:#111;color:#ff8c00;border:1px solid #ff8c00;border-radius:999px;padding:7px 11px;font-weight:bold;cursor:pointer;">Задание</button>
+                        </div>
                     </div>
                     <div id="custom-pres-preview" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#f4f7f6 center/cover no-repeat;box-shadow:0 10px 30px rgba(0,0,0,.28);"></div>
                 </div>
@@ -609,6 +645,7 @@ if (document.readyState === 'loading') {
 
 window.openCustomPresentationEditor = openCustomPresentationEditor;
 window.updateCustomPresentationPreview = updateCustomPresentationPreview;
+window.setCustomPresPreviewMode = setCustomPresPreviewMode;
 window.customPresReadFiles = customPresReadFiles;
 window.customPresAppendSlideBackgrounds = customPresAppendSlideBackgrounds;
 window.renderCustomPresBgList = renderCustomPresBgList;
@@ -642,6 +679,14 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     if (timerInput) {
         timerMinutes = parseInt(timerInput.value, 10) || 0;
     }
+
+    function resolvePresentationBgUrl(src) {
+        src = String(src || '');
+        if (/^(data:|blob:|https?:|file:)/i.test(src)) return src;
+        return window.getEmbeddedAssetUrl(src);
+    }
+    const resolvedBgTitle = resolvePresentationBgUrl(bgTitle);
+    const resolvedBgMain = resolvePresentationBgUrl(bgMain);
 
     let fullHTML = `<!DOCTYPE html>
 <html>
@@ -720,7 +765,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
 <body>
     <div id="pres-timer-box" class="pres-timer-box">⏱ 00:00</div>
 
-    <div class="slide active" style="background-image: url('${window.getEmbeddedAssetUrl(bgTitle)}')">
+    <div class="slide active" style="background-image: url('${resolvedBgTitle}')">
         <div class="title-box" onclick="event.stopPropagation();">
             <h1 style="color:#003399; margin:0; font-size: 3em; border-bottom: 3px solid ${accentColor}; padding-bottom: 20px;">Тренировочный вариант</h1>
             <ul class="topics-list">${topicsList}</ul>
@@ -735,7 +780,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
 
     ${taskSlides}
 
-    <div class="slide" id="results-slide" style="background-image: url('${window.getEmbeddedAssetUrl(bgMain)}')">
+    <div class="slide" id="results-slide" style="background-image: url('${resolvedBgMain}')">
         <div class="title-box" style="padding: 40px; max-width: 1200px; width: 95%; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation();">
             <h2 style="font-size:3.2em; color:#4CAF50; margin:0;">Спасибо за работу!</h2>
             <div id="results-summary" style="font-size: 1.35em; color:#333; margin-top: 12px; font-weight: bold;"></div>
