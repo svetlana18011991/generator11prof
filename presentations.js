@@ -23,6 +23,36 @@ function getShowCorrectOnErrorSetting() {
     return false;
 }
 
+
+
+// ==========================================
+// ЧЕРНОВИК В ПРЕЗЕНТАЦИЯХ: чертёж на белой подложке
+// ==========================================
+function getPresentationDraftDiagramHtml(task) {
+    function firstVisualFromHtml(html) {
+        if (!html || !String(html).trim()) return '';
+        try {
+            const box = document.createElement('div');
+            box.innerHTML = String(html);
+            const visual = box.querySelector('svg, img, picture, canvas');
+            return visual ? visual.outerHTML : '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    let visualHtml = '';
+    if (task && task.svg && String(task.svg).trim() !== '') {
+        visualHtml = firstVisualFromHtml(task.svg) || String(task.svg);
+    }
+    if (!visualHtml && task && task.text) {
+        visualHtml = firstVisualFromHtml(task.text);
+    }
+    if (!visualHtml) return '';
+
+    return `<div class="pres-draft-diagram" aria-hidden="true"><div class="pres-draft-diagram-inner">${visualHtml}</div></div>`;
+}
+
 // ==========================================
 // АВТОРСКИЙ СТИЛЬ 1 (Оранжевый неон)
 // ==========================================
@@ -71,6 +101,8 @@ function generatePresentation1() {
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                    <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить действие">↶</button>
+                    <button onclick="if(window.redoCanvas) window.redoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Повторить действие">↷</button>
                     <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid #90caf9; border-radius: 4px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: #003399; font-weight: 500;">
                         <option value="" disabled selected hidden>🔺 Фигуры</option>
                         <option value="line">📏 Прямая</option>
@@ -88,7 +120,7 @@ function generatePresentation1() {
                     <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
                     <input type="hidden" id="tool-pres-${i}" value="pen">
                 </div>
-                <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;"><canvas id="canvas-pres-${i}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
+                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border: 2px solid #bbdefb; border-radius: 8px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
             </div>
             <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
         </div>
@@ -146,6 +178,8 @@ function generatePresentation2() {
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #fce4ec; padding: 8px 15px; border-radius: 12px; border: 1px solid #f8bbd0; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                    <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить действие">↶</button>
+                    <button onclick="if(window.redoCanvas) window.redoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Повторить действие">↷</button>
                     <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid #f48fb1; border-radius: 8px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: #d81b60; font-weight: 500;">
                         <option value="" disabled selected hidden>🔺 Фигуры</option>
                         <option value="line">📏 Прямая</option>
@@ -163,7 +197,7 @@ function generatePresentation2() {
                     <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
                     <input type="hidden" id="tool-pres-${i}" value="pen">
                 </div>
-                <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #fce4ec 1px, transparent 1px), linear-gradient(to bottom, #fce4ec 1px, transparent 1px); border: 2px solid #f8bbd0; border-radius: 12px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;"><canvas id="canvas-pres-${i}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
+                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #fce4ec 1px, transparent 1px), linear-gradient(to bottom, #fce4ec 1px, transparent 1px); border: 2px solid #f8bbd0; border-radius: 12px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
             </div>
             <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
         </div>
@@ -221,6 +255,8 @@ function generatePresentation3() {
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; background: #f3e5f5; padding: 8px 15px; border-radius: 12px; border: 1px solid #e1bee7; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                    <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить действие">↶</button>
+                    <button onclick="if(window.redoCanvas) window.redoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Повторить действие">↷</button>
                     <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid #ce93d8; border-radius: 8px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: #7b1fa2; font-weight: 500;">
                         <option value="" disabled selected hidden>🔺 Фигуры</option>
                         <option value="line">📏 Прямая</option>
@@ -238,7 +274,7 @@ function generatePresentation3() {
                     <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
                     <input type="hidden" id="tool-pres-${i}" value="pen">
                 </div>
-                <div style="background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #f3e5f5 1px, transparent 1px), linear-gradient(to bottom, #f3e5f5 1px, transparent 1px); border: 2px solid #e1bee7; border-radius: 12px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;"><canvas id="canvas-pres-${i}" style="display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas></div>
+                <div class="pres-canvas-box" style="position:relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, #f3e5f5 1px, transparent 1px), linear-gradient(to bottom, #f3e5f5 1px, transparent 1px); border: 2px solid #e1bee7; border-radius: 12px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;">${getPresentationDraftDiagramHtml(t)}<canvas id="canvas-pres-${i}" style="position:absolute; inset:0; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair; background: transparent;"></canvas></div>
             </div>
             <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
         </div>
@@ -322,6 +358,11 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .task-card-visual .task-text mjx-container { font-size: 108% !important; }
         .pres-check-zone { flex: 0 0 auto !important; margin-top: auto !important; gap: 10px !important; }
         .pres-input { max-width: 180px !important; box-sizing: border-box !important; }
+
+        .pres-canvas-box { isolation: isolate; }
+        .pres-draft-diagram { position: absolute; left: 12px; top: 12px; z-index: 1; display: inline-flex; align-items: flex-start; justify-content: flex-start; width: fit-content; max-width: calc(100% - 24px); max-height: 62%; padding: 10px; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.10); box-sizing: border-box; overflow: hidden; }
+        .pres-draft-diagram-inner { display: inline-flex; align-items: flex-start; justify-content: flex-start; width: fit-content; max-width: 100%; max-height: 100%; }
+        .pres-draft-diagram img, .pres-draft-diagram svg, .pres-draft-diagram picture, .pres-draft-diagram canvas { max-width: min(320px, 100%) !important; max-height: 260px !important; width: auto !important; height: auto !important; object-fit: contain !important; display: block !important; margin: 0 !important; }
 
         @media (max-height: 760px), (max-width: 1200px) {
             .task-right-side { padding: 14px 18px !important; }
