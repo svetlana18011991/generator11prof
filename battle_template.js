@@ -35,8 +35,8 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #bossZone{left:58.5%;top:6.81%;width:43.3vw}
         .fighterName{padding:8px 16px;border-radius:999px;background:rgba(11,18,28,.7);border:1px solid rgba(255,255,255,.16);font-size:15px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;box-shadow:var(--shadow);text-align:center}
         .fighterCard{position:relative;width:100%;height:100%;min-width:0;min-height:0;padding:0;border-radius:24px;background:transparent;border:none;box-shadow:none;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
-        .fighterCard img{max-width:185%;max-height:185%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));transition:transform .25s ease, filter .25s ease}
-        .fighterCard.attack img{transform:scale(1.06) translateX(10px)}
+        .fighterCard img{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));transition:transform .25s ease, filter .25s ease}
+        .fighterCard.attack img{transform:scale(1.03) translateX(8px)}
         .fighterCard.hit img{transform:scale(.96);filter:drop-shadow(0 0 18px rgba(255,84,112,.9))}
         .hpWrap{width:min(24vw,300px);background:rgba(11,18,28,.72);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:7px 9px;box-shadow:var(--shadow);margin-top:-18px}
         .hpLabel{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;color:rgba(255,255,255,.88);margin-bottom:6px;text-transform:uppercase}
