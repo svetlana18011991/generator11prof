@@ -1,6 +1,7 @@
 // ===== Offline asset helper =====
 if (!window.getEmbeddedAssetUrl) {
     window.getEmbeddedAssetUrl = function(name) {
+        if (name && /^data:|^blob:|^https?:/i.test(String(name))) return name;
         return (window.EMBEDDED_ASSETS && window.EMBEDDED_ASSETS[name]) ? window.EMBEDDED_ASSETS[name] : ((window.ASSETS_URL || '') + name);
     };
 }
@@ -282,6 +283,271 @@ function generatePresentation3() {
 
     let hiddenTheories = window.currentGeneratedTasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory)}</div>`).join('');
     generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, "Презентация_Урока_Стиль3.html", 's2.png', 's1.png', '#9c27b0');
+}
+
+
+
+// ==========================================
+// 4-Й РЕЖИМ: РЕДАКТОР СВОЕГО СТИЛЯ ПРЕЗЕНТАЦИИ
+// ==========================================
+window.customPresentationEditorState = window.customPresentationEditorState || {
+    startBg: '',
+    slideBgs: [],
+    plateImg: ''
+};
+
+function escapePresAttr(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function customPresReadFiles(input, multiple, callback) {
+    const files = Array.from(input.files || []);
+    if (!files.length) { callback(multiple ? [] : ''); return; }
+    let results = [];
+    let left = files.length;
+    files.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            results[idx] = e.target.result;
+            left--;
+            if (left === 0) callback(multiple ? results.filter(Boolean) : (results[0] || ''));
+        };
+        reader.onerror = () => {
+            left--;
+            if (left === 0) callback(multiple ? results.filter(Boolean) : (results[0] || ''));
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function getCustomPresAuthorLine() {
+    let teacherName = document.getElementById('teacher-name') ? document.getElementById('teacher-name').value.trim() : '';
+    let authorLine = '';
+    const signatureToggle = document.getElementById('toggle-signature');
+    if (signatureToggle && signatureToggle.checked && teacherName) {
+        let gender = document.getElementById('teacher-gender') ? document.getElementById('teacher-gender').value : 'female';
+        let verb = (gender === 'male') ? 'подготовил' : 'подготовила';
+        authorLine = `Вариант ${verb}: ${teacherName}`;
+    }
+    return authorLine;
+}
+
+function getCustomPresSetting(id, fallback) {
+    const el = document.getElementById(id);
+    if (!el) return fallback;
+    if (el.type === 'checkbox') return el.checked;
+    return el.value;
+}
+
+function getCustomPresAccent() {
+    return getCustomPresSetting('custom-pres-accent', '#ff8c00') || '#ff8c00';
+}
+
+function makeCustomPresPlateHtml(taskNum, accentColor) {
+    const showPlate = !!getCustomPresSetting('custom-pres-show-plate', true);
+    const plateImg = window.customPresentationEditorState.plateImg || '';
+    if (!showPlate) {
+        return `<div style="position:absolute; top:8%; left:50%; transform:translateX(-50%); z-index:35; font-family:'Caveat', cursive; font-size:42px; color:#fff; text-shadow:0 0 10px ${accentColor}, 0 0 18px ${accentColor};">Задание ${taskNum}</div>`;
+    }
+    if (plateImg) {
+        return `<div style="position:absolute; top:5%; left:50%; transform:translateX(-50%); z-index:35; width:220px; height:120px; background:url('${plateImg}') center/contain no-repeat; display:flex; align-items:center; justify-content:center; box-sizing:border-box;"><div style="font-family:'Caveat', cursive; font-size:34px; color:#222; text-shadow:0 1px 1px rgba(255,255,255,.7);">Задание ${taskNum}</div></div>`;
+    }
+    return `<div style="position:absolute; top:7%; left:50%; transform:translateX(-50%); z-index:35; min-width:190px; padding:15px 28px; border-radius:20px; background:rgba(255,255,255,.92); border:2px solid ${accentColor}; box-shadow:0 8px 22px rgba(0,0,0,.18); text-align:center;"><div style="font-family:'Caveat', cursive; font-size:34px; color:#222;">Задание ${taskNum}</div></div>`;
+}
+
+function makeCustomPresentationTaskSlide(t, i, settings) {
+    const taskSide = settings.taskSide === 'left' ? 'left' : 'right';
+    const draftSide = taskSide === 'left' ? 'right' : 'left';
+    const taskPos = taskSide === 'left' ? 'left: 5%; right: auto;' : 'right: 5%; left: auto;';
+    const draftPos = draftSide === 'left' ? 'left: 5%; right: auto;' : 'right: 5%; left: auto;';
+    const bg = settings.slideBgs.length ? settings.slideBgs[i % settings.slideBgs.length] : window.getEmbeddedAssetUrl('p2.jpg');
+    const accent = settings.accentColor;
+    const taskHasVisual = !!(t.svg && String(t.svg).trim() !== '');
+    const draftDiagram = getPresentationDraftDiagramHtml(t);
+    const radius = settings.roundness || 18;
+    const plate = makeCustomPresPlateHtml(i + 1, accent);
+    const inputAccent = escapePresAttr(accent);
+    const showSolutions = settings.showSolutions;
+    const instantCheck = settings.instantCheck;
+    const showCorrectOnError = settings.showCorrectOnError;
+
+    return `
+        <div class="slide task-slide" style="background-image: url('${bg}')">
+            ${plate}
+            <div class="task-right-side ${taskHasVisual ? 'task-card-visual' : 'task-card-text-only'}" style="position: absolute; ${taskPos} top: 15%; bottom: 15%; width: 50%; background: rgba(255,255,255,0.95); padding: 20px 30px; border-radius: ${radius}px; box-shadow: 0 0 25px ${accent}, inset 0 0 15px ${accent}; border: 2px solid ${accent}; overflow: hidden; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;" onclick="event.stopPropagation();">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                    ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
+                    <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
+                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
+                        <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid ${accent}; text-align: center; outline: none; color: ${accent};">
+                        <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
+                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${String(t.answer).replace(/'/g, "\\'")}', this, ${showCorrectOnError})" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
+                        ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
+                        <button class="pres-btn" onclick="submitTask(${i}, '${String(t.answer).replace(/'/g, "\\'")}')" data-correct="${escapePresAttr(t.answer)}" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: ${accent}; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.16);">ОК</button>
+                        <button class="btn-settings" style="background: #fff; color: ${accent}; border: 1px solid ${accent}; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
+                    </div>
+                    <div id="pres-status-${i}" class="pres-status" style="margin-top: 10px; min-height: 28px; font-size: 18px; font-weight: bold; text-align: center;"></div>
+                </div>
+            </div>
+
+            <div id="draw-wrapper-pres-${i}" style="display:none; position: absolute; ${draftPos} top: 15%; width: 40%; height: 70%; background: rgba(255,255,255,0.95); border: 2px solid ${accent}; border-radius: ${radius}px; padding: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.16); box-sizing: border-box; z-index: 20;" onclick="event.stopPropagation();">
+                <div style="display: flex; flex-wrap: nowrap; gap: 10px; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,.72); padding: 8px 15px; border-radius: 12px; border: 1px solid ${accent}; color: #333; overflow:hidden;">
+                    <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
+                    <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                    <button onclick="window.undoCanvas && window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить">↶</button>
+                    <button onclick="window.redoCanvas && window.redoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Повторить">↷</button>
+                    <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid ${accent}; border-radius: 8px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: ${accent}; font-weight: 500; min-width:120px;">
+                        <option value="" disabled selected hidden>🔺 Фигуры</option><option value="line">📏 Прямая</option><option value="vector">↗️ Вектор</option><option value="circle">⭕ Окружность</option><option value="triangle">🔺 Треугольник</option><option value="cylinder">🛢️ Цилиндр</option><option value="cone">🍦 Конус</option><option value="sphere">🔮 Сфера</option>
+                    </select>
+                    <input type="color" id="color-pres-${i}" value="${inputAccent}" style="cursor:pointer; height: 30px; width: 35px; border: none; background: transparent; padding: 0; flex:0 0 auto;">
+                    <input type="range" id="size-pres-${i}" min="1" max="15" value="3" style="cursor:pointer; width: 80px; flex:0 0 auto;">
+                    <button onclick="window.setTool('pres-${i}', 'eraser')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Ластик">🧽</button>
+                    <div style="flex-grow:1; min-width:8px;"></div>
+                    <button onclick="window.clearCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
+                    <input type="hidden" id="tool-pres-${i}" value="pen">
+                </div>
+                <div class="pres-canvas-box" style="position: relative; background-color: #fff; background-size: 20px 20px; background-image: linear-gradient(to right, rgba(0,0,0,.10) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.10) 1px, transparent 1px); border: 2px solid ${accent}; border-radius: 12px; overflow: hidden; height: calc(100% - 60px); min-height: 250px;">
+                    ${draftDiagram}
+                    <canvas id="canvas-pres-${i}" style="position:relative; z-index:2; display:block; width:100%; height:100%; touch-action: none; cursor: crosshair;"></canvas>
+                </div>
+            </div>
+            <div class="pres-footer" style="position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555;">Шкатулка математических интерактивов</div>
+        </div>
+    `;
+}
+
+function generateCustomPresentationFromEditor() {
+    const tasks = window.currentGeneratedTasks || [];
+    if (!tasks.length) { alert('Сначала сгенерируйте вариант.'); return; }
+    const accentColor = getCustomPresAccent();
+    const settings = {
+        accentColor,
+        taskSide: getCustomPresSetting('custom-pres-task-side', 'right'),
+        slideBgs: window.customPresentationEditorState.slideBgs || [],
+        showSolutions: document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true,
+        instantCheck: document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false,
+        showCorrectOnError: getShowCorrectOnErrorSetting(),
+        roundness: parseInt(getCustomPresSetting('custom-pres-radius', '18'), 10) || 18
+    };
+    const fallbackStart = window.getEmbeddedAssetUrl('p1.jpg');
+    const fallbackMain = settings.slideBgs.length ? settings.slideBgs[0] : window.getEmbeddedAssetUrl('p2.jpg');
+    const startBg = window.customPresentationEditorState.startBg || fallbackStart;
+    const topicsList = (window.selectedBlockTitles || []).map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
+    const authorLine = getCustomPresAuthorLine();
+    const taskSlides = tasks.map((t, i) => makeCustomPresentationTaskSlide(t, i, settings)).join('');
+    const hiddenTheories = tasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory || '')}</div>`).join('');
+    generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, 'Презентация_Урока_Свой_стиль.html', startBg, fallbackMain, accentColor);
+    const modal = document.getElementById('custom-pres-editor-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function updateCustomPresentationPreview() {
+    const preview = document.getElementById('custom-pres-preview');
+    if (!preview) return;
+    const accent = getCustomPresAccent();
+    const taskSide = getCustomPresSetting('custom-pres-task-side', 'right');
+    const bg = (window.customPresentationEditorState.slideBgs && window.customPresentationEditorState.slideBgs[0]) || window.customPresentationEditorState.startBg || window.getEmbeddedAssetUrl('p2.jpg');
+    const taskLeft = taskSide === 'left';
+    const showPlate = !!getCustomPresSetting('custom-pres-show-plate', true);
+    const plateImg = window.customPresentationEditorState.plateImg;
+    preview.style.backgroundImage = `url('${bg}')`;
+    preview.innerHTML = `
+        ${showPlate ? `<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);min-width:120px;height:54px;border-radius:16px;border:2px solid ${accent};background:${plateImg ? `url('${plateImg}') center/contain no-repeat` : 'rgba(255,255,255,.9)'};display:flex;align-items:center;justify-content:center;font-family:Caveat,cursive;font-size:22px;color:#222;">Задание 1</div>` : `<div style="position:absolute;top:18px;left:50%;transform:translateX(-50%);font-family:Caveat,cursive;font-size:28px;color:white;text-shadow:0 0 10px ${accent};">Задание 1</div>`}
+        <div style="position:absolute;${taskLeft ? 'left:5%;' : 'right:5%;'}top:20%;width:47%;height:58%;border:2px solid ${accent};border-radius:18px;background:rgba(255,255,255,.94);box-shadow:0 0 18px ${accent};display:flex;align-items:center;justify-content:center;text-align:center;color:#333;font-weight:700;padding:12px;box-sizing:border-box;">Карточка задания</div>
+        <div style="position:absolute;${taskLeft ? 'right:5%;' : 'left:5%;'}top:20%;width:38%;height:58%;border:2px solid ${accent};border-radius:18px;background:rgba(255,255,255,.94);box-shadow:0 0 18px rgba(0,0,0,.15);padding:10px;box-sizing:border-box;">
+            <div style="height:34px;border:1px solid ${accent};border-radius:10px;background:rgba(255,255,255,.65);display:flex;align-items:center;gap:8px;padding:0 8px;color:#222;">👆 🖊️ ↶ ↷ 🔺 🧽 🗑️</div>
+            <div style="margin-top:8px;height:calc(100% - 44px);border:1px solid ${accent};border-radius:10px;background-size:16px 16px;background-image:linear-gradient(to right,rgba(0,0,0,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.12) 1px,transparent 1px);"></div>
+        </div>`;
+}
+
+function buildCustomPresentationEditorModal() {
+    if (document.getElementById('custom-pres-editor-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'custom-pres-editor-modal';
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:none; position:fixed; inset:0; z-index:1200; background:rgba(0,0,0,.82); align-items:center; justify-content:center; backdrop-filter:blur(5px);';
+    modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
+    modal.innerHTML = `
+        <div style="width:min(1180px, calc(100vw - 32px)); max-height:92vh; overflow:hidden; background:#1e1e1e; color:#eee; border:2px solid #ff8c00; border-radius:18px; box-shadow:0 20px 60px rgba(0,0,0,.45); display:flex; flex-direction:column;" onclick="event.stopPropagation();">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #333;">
+                <h2 style="margin:0;color:#ff8c00;">Свой стиль презентации</h2>
+                <button style="background:none;border:none;color:#aaa;font-size:32px;cursor:pointer;line-height:1;" onclick="document.getElementById('custom-pres-editor-modal').style.display='none'">×</button>
+            </div>
+            <div style="display:grid; grid-template-columns: 360px 1fr; gap:18px; padding:18px; min-height:0; overflow:auto;">
+                <div style="background:#252525;border:1px solid #3a3a3a;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px;">
+                    <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Цвет акцента
+                        <input id="custom-pres-accent" type="color" value="#ff8c00" style="height:38px;width:70px;" onchange="updateCustomPresentationPreview()">
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Фон стартового экрана
+                        <input id="custom-pres-start-bg" type="file" accept="image/*" onchange="customPresReadFiles(this,false,function(v){window.customPresentationEditorState.startBg=v; updateCustomPresentationPreview();})">
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Фоны слайдов с заданиями, можно несколько
+                        <input id="custom-pres-slide-bgs" type="file" accept="image/*" multiple onchange="customPresReadFiles(this,true,function(v){window.customPresentationEditorState.slideBgs=v; document.getElementById('custom-pres-bg-count').textContent='Загружено: '+v.length; updateCustomPresentationPreview();})">
+                        <span id="custom-pres-bg-count" style="font-size:12px;color:#aaa;font-weight:normal;">Загружено: 0</span>
+                        <span style="font-size:12px;color:#aaa;font-weight:normal;">Если загрузить 4 картинки на 15 заданий, они будут идти циклом.</span>
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Где расположить задание
+                        <select id="custom-pres-task-side" onchange="updateCustomPresentationPreview()" style="padding:9px;border-radius:8px;background:#111;color:#ff8c00;border:1px solid #555;">
+                            <option value="right">Справа, черновик слева</option>
+                            <option value="left">Слева, черновик справа</option>
+                        </select>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;font-weight:bold;color:#ffb15c;">
+                        <input id="custom-pres-show-plate" type="checkbox" checked onchange="updateCustomPresentationPreview()"> Подложка под номер задания
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Картинка подложки номера, необязательно
+                        <input id="custom-pres-plate-img" type="file" accept="image/*" onchange="customPresReadFiles(this,false,function(v){window.customPresentationEditorState.plateImg=v; updateCustomPresentationPreview();})">
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:6px;font-weight:bold;color:#ffb15c;">Скругление карточек
+                        <input id="custom-pres-radius" type="range" min="6" max="30" value="18" onchange="updateCustomPresentationPreview()">
+                    </label>
+                    <button onclick="generateCustomPresentationFromEditor()" style="margin-top:6px;background:#ff8c00;color:#121212;border:none;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:bold;cursor:pointer;">Скачать презентацию</button>
+                </div>
+                <div style="background:#252525;border:1px solid #3a3a3a;border-radius:14px;padding:16px;min-height:520px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                        <h3 style="margin:0;color:#ff8c00;">Предпросмотр</h3>
+                        <span style="color:#aaa;font-size:13px;">пример одного слайда</span>
+                    </div>
+                    <div id="custom-pres-preview" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#f4f7f6 center/cover no-repeat;box-shadow:0 10px 30px rgba(0,0,0,.28);"></div>
+                </div>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+}
+
+function openCustomPresentationEditor() {
+    buildCustomPresentationEditorModal();
+    const modal = document.getElementById('custom-pres-editor-modal');
+    if (modal) modal.style.display = 'flex';
+    updateCustomPresentationPreview();
+}
+
+function injectCustomPresentationCard() {
+    const presModal = document.getElementById('pres-modal');
+    if (!presModal || document.getElementById('custom-pres-style-card')) return;
+    const box = presModal.querySelector('.modal-box');
+    if (!box) return;
+    const cancelBtn = Array.from(box.querySelectorAll('button')).find(b => (b.textContent || '').trim() === 'Отмена');
+    const card = document.createElement('div');
+    card.id = 'custom-pres-style-card';
+    card.className = 'pres-preview-card';
+    card.style.borderColor = '#00bcd4';
+    card.style.cursor = 'pointer';
+    card.onclick = function(e) { e.stopPropagation(); openCustomPresentationEditor(); };
+    card.innerHTML = `
+        <div class="pres-thumb" style="border-color:#00bcd4;background:linear-gradient(135deg,#fff,#e0f7fa,#fff3e0);display:flex;align-items:center;justify-content:center;color:#00acc1;font-size:34px;font-weight:bold;">⚙️</div>
+        <div><div style="font-weight:bold;color:#00bcd4;font-size:1.2em;">Свой стиль</div><div style="font-size:0.85em;color:#bbb;">Редактор фонов, сторон и подложки</div></div>`;
+    if (cancelBtn) box.insertBefore(card, cancelBtn); else box.appendChild(card);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectCustomPresentationCard);
+} else {
+    injectCustomPresentationCard();
 }
 
 // ==========================================
