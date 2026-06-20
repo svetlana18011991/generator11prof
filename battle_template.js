@@ -9,145 +9,416 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
     <style>
         :root{
-            --bg1:#10051f; --bg2:#061a2c; --accent:#ff8c00; --cyan:#5ee7ff;
-            --good:#57ff9a; --bad:#ff5470; --text:rgba(255,255,255,.94);
-            --panel:rgba(18,22,36,.82); --stroke:rgba(255,255,255,.16);
-            --shadow:0 20px 70px rgba(0,0,0,.42);
+            --accent:#ff8c00;
+            --accent2:#4fc3ff;
+            --text:#ffffff;
+            --panel:rgba(255,255,255,.93);
+            --shadow:0 18px 45px rgba(0,0,0,.35);
+            --good:#57ff9a;
+            --bad:#ff5470;
         }
         *{box-sizing:border-box}
-        html,body{height:100%;margin:0;overflow:hidden;background:#050713;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;}
-        body{background:
-            radial-gradient(circle at 18% 18%, rgba(255,140,0,.24), transparent 30%),
-            radial-gradient(circle at 82% 16%, rgba(94,231,255,.20), transparent 32%),
-            radial-gradient(circle at 50% 95%, rgba(156,39,176,.22), transparent 34%),
-            linear-gradient(130deg,var(--bg1),var(--bg2));}
-        #arena{position:relative;width:100vw;height:100vh;overflow:hidden;}
-        #arena::before{content:"";position:absolute;inset:-40px;background-image:
-            linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
-            background-size:38px 38px;transform:perspective(600px) rotateX(62deg) translateY(150px);transform-origin:center bottom;opacity:.55;}
-        #arenaTitle{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:5;text-align:center;}
-        #arenaTitle .main{font-weight:1000;letter-spacing:2px;font-size:clamp(24px,3.4vw,46px);text-transform:uppercase;text-shadow:0 0 12px var(--accent),0 0 30px rgba(255,140,0,.45);}
-        #arenaTitle .sub{font-family:Caveat,cursive;font-size:clamp(20px,2vw,30px);color:rgba(255,255,255,.78);}
-        #hud{position:absolute;left:18px;right:18px;top:18px;z-index:6;display:flex;align-items:center;gap:12px;pointer-events:none;}
-        .pill{background:rgba(10,13,24,.68);border:1px solid var(--stroke);border-radius:999px;padding:10px 14px;box-shadow:var(--shadow);backdrop-filter:blur(10px);font-weight:800;white-space:nowrap;}
-        #timerPill{margin-left:auto;color:#fff;border-color:rgba(255,140,0,.48)}
-        #lives{letter-spacing:3px;color:#ff5470;text-shadow:0 0 12px rgba(255,84,112,.55)}
-        #fighters{position:absolute;left:4%;right:4%;top:18%;height:30%;z-index:2;display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none;}
-        .fighter{width:min(28vw,330px);min-height:190px;border-radius:28px;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid var(--stroke);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
-        .fighter::after{content:"";position:absolute;inset:auto 16px 12px;height:14px;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(4px)}
-        .avatar{font-size:clamp(82px,11vw,150px);filter:drop-shadow(0 14px 22px rgba(0,0,0,.45));transition:transform .22s ease;z-index:1;}
-        .fighter.attack .avatar{transform:translateX(24px) scale(1.08) rotate(-3deg)}
-        .fighter.hit .avatar{transform:translateX(-18px) rotate(7deg);filter:drop-shadow(0 0 18px var(--bad));}
-        #bossCard{border-color:rgba(255,84,112,.38)}
-        #bossCard .avatar{filter:drop-shadow(0 0 24px rgba(255,84,112,.55)) drop-shadow(0 14px 22px rgba(0,0,0,.45));}
-        #vs{font-size:clamp(30px,5vw,70px);font-weight:1000;color:#fff;text-shadow:0 0 14px var(--accent),0 0 28px var(--bad);align-self:center;}
-        .nameplate{position:absolute;left:14px;right:14px;top:12px;display:flex;justify-content:space-between;gap:10px;z-index:2;color:rgba(255,255,255,.84);font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;}
-        .hpbar{position:absolute;left:14px;right:14px;bottom:14px;height:14px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.16);border-radius:999px;overflow:hidden;z-index:2;}
-        .hpfill{height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,var(--good),#f8ff62);transition:width .35s ease;}
+        html,body{height:100%;margin:0;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#091018;color:var(--text)}
+        body{background:#091018}
+        #arena{position:relative;width:100vw;height:100vh;overflow:hidden;background:url('arena.png') center/cover no-repeat}
+        #arena::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,.28), rgba(0,0,0,.36));pointer-events:none}
+        #titleWrap{position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:6;text-align:center}
+        #titleWrap .main{font-size:clamp(30px,4vw,54px);font-weight:1000;letter-spacing:1px;text-transform:uppercase;text-shadow:0 0 18px rgba(255,140,0,.85), 0 0 36px rgba(255,140,0,.45)}
+        #titleWrap .sub{margin-top:3px;font-family:'Caveat',cursive;font-size:clamp(22px,2vw,34px);color:rgba(255,255,255,.9)}
+        #hud{position:absolute;top:22px;left:20px;right:20px;z-index:7;display:flex;align-items:center;gap:12px;pointer-events:none}
+        .pill{background:rgba(11,18,28,.72);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(10px);padding:10px 14px;border-radius:999px;box-shadow:var(--shadow);font-weight:800;white-space:nowrap}
+        #timerPill{margin-left:auto}
+        #heartText{letter-spacing:4px;color:#ff6985;text-shadow:0 0 14px rgba(255,84,112,.55)}
+        #scene{position:absolute;inset:0;z-index:2}
+        .fighterZone{position:absolute;top:20%;width:min(24vw,280px);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:3}
+        #heroZone{left:5%}
+        #bossZone{right:5%}
+        .fighterName{padding:8px 16px;border-radius:999px;background:rgba(11,18,28,.7);border:1px solid rgba(255,255,255,.16);font-size:15px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;box-shadow:var(--shadow);text-align:center}
+        .fighterCard{position:relative;width:min(24vw,280px);height:min(38vh,360px);min-width:200px;min-height:250px;padding:14px;border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .fighterCard img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 12px 16px rgba(0,0,0,.45));transition:transform .25s ease, filter .25s ease}
+        .fighterCard.attack img{transform:scale(1.06) translateX(10px)}
+        .fighterCard.hit img{transform:scale(.96);filter:drop-shadow(0 0 18px rgba(255,84,112,.9))}
+        .hpWrap{width:min(24vw,280px);background:rgba(11,18,28,.72);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:7px 9px;box-shadow:var(--shadow)}
+        .hpLabel{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;color:rgba(255,255,255,.88);margin-bottom:6px;text-transform:uppercase}
+        .hpBar{position:relative;height:16px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden;border:1px solid rgba(255,255,255,.15)}
+        .hpBar::after{content:"";position:absolute;inset:0;background-repeat:repeat-x;background-size:var(--segment-size, 20px) 100%;background-image:linear-gradient(to right, transparent calc(100% - 1px), rgba(255,255,255,.18) calc(100% - 1px));pointer-events:none;opacity:.9}
+        .hpFill{height:100%;width:100%;transition:width .45s ease;border-radius:999px}
+        #heroHpFill{background:linear-gradient(90deg,#69f0ae,#d4ff62)}
         #bossHpFill{background:linear-gradient(90deg,#ff5470,#ff8c00)}
-        #questionLayer{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);width:min(860px,calc(100vw - 28px));max-height:49vh;z-index:7;background:rgba(255,255,255,.94);color:#202335;border:2px solid var(--accent);border-radius:22px;box-shadow:0 0 24px rgba(255,140,0,.34), var(--shadow);padding:18px;display:none;flex-direction:column;}
-        #qTop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;color:#333;}
-        #qTitle{font-weight:1000;color:#e65100;}
-        #qProgress{font-weight:800;color:#666;}
-        #q{font-size:clamp(15px,2.1vh,20px);line-height:1.28;overflow:auto;padding:6px 10px;max-height:27vh;text-align:center;}
-        #q img,#q svg{display:block;max-width:100% !important;width:auto !important;height:auto !important;max-height:min(28vh,300px) !important;object-fit:contain !important;margin:0 auto 12px !important;}
-        #answerRow{display:flex;gap:10px;margin-top:12px;align-items:center;justify-content:center;flex-wrap:wrap;}
-        #ansInput{width:min(260px,100%);font-size:18px;padding:12px 16px;border-radius:14px;border:2px solid #d8d8d8;outline:none;text-align:center;}
-        #submitBtn,#nextBtn{border:none;border-radius:14px;padding:12px 18px;font-size:17px;font-weight:1000;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.16);}
-        #submitBtn{background:var(--accent);color:#fff;}
-        #nextBtn{display:none;background:#26334f;color:#fff;}
-        #msg{min-height:26px;margin-top:8px;text-align:center;font-weight:900;}
-        #start{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.42);backdrop-filter:blur(8px);padding:18px;}
-        #startCard{width:min(980px,100%);background:rgba(18,22,36,.86);border:1px solid var(--stroke);border-radius:26px;box-shadow:var(--shadow);padding:24px;}
-        #startCard h1{margin:0;text-align:center;font-size:clamp(30px,5vw,58px);text-transform:uppercase;text-shadow:0 0 18px var(--accent);}
-        #startCard p{text-align:center;color:rgba(255,255,255,.78);font-size:17px;line-height:1.45;margin:10px auto 18px;max-width:780px;}
-        #chars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0;}
-        .charCard{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.14);border-radius:20px;padding:16px;cursor:pointer;text-align:center;transition:.15s;}
-        .charCard:hover,.charCard.selected{border-color:var(--accent);box-shadow:0 0 18px rgba(255,140,0,.25);transform:translateY(-2px);}
-        .charIcon{font-size:70px;line-height:1;}.charName{font-weight:1000;margin-top:8px}.charDesc{font-size:13px;color:rgba(255,255,255,.66);margin-top:4px;}
-        #playBtn,#restartBtn{display:block;margin:18px auto 0;border:0;border-radius:16px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:14px 22px;font-size:19px;font-weight:1000;cursor:pointer;box-shadow:0 14px 26px rgba(255,84,112,.22);}
-        #finish{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.54);backdrop-filter:blur(8px);padding:18px;}
-        #finishCard{width:min(760px,100%);background:rgba(18,22,36,.90);border:1px solid var(--stroke);border-radius:26px;box-shadow:var(--shadow);padding:28px;text-align:center;}
-        #finishTitle{font-size:clamp(30px,5vw,54px);font-weight:1000;margin-bottom:8px;}.stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}.stat{background:rgba(255,255,255,.08);border:1px solid var(--stroke);border-radius:16px;padding:12px 16px;min-width:150px}.stat b{font-size:24px}.stat div{font-size:12px;color:rgba(255,255,255,.66);margin-top:4px}
-        .flash{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .25s}.flash.good{background:radial-gradient(circle at 28% 35%,rgba(87,255,154,.35),transparent 34%)}.flash.bad{background:radial-gradient(circle at 72% 35%,rgba(255,84,112,.32),transparent 34%)}.flash.show{opacity:1}
-        @media(max-width:780px){#fighters{top:13%;height:25%}.fighter{min-height:130px}.avatar{font-size:72px}#chars{grid-template-columns:1fr}#questionLayer{max-height:55vh}.pill{padding:8px 10px;font-size:13px}}
+        #centerControls{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
+        #startBattleBtn{border:none;border-radius:18px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:16px 28px;font-size:22px;font-weight:1000;cursor:pointer;box-shadow:0 18px 28px rgba(0,0,0,.28), 0 0 20px rgba(255,140,0,.38)}
+        #startBattleBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+        #questionPanel{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(820px,calc(100vw - 26px));max-height:min(68vh,760px);background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:18px 18px 16px;z-index:9;overflow:hidden}
+        #questionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+        #questionHead .badge{background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:999px;padding:8px 14px;font-weight:900}
+        #questionHead .prog{font-weight:900;color:#666}
+        #q{font-size:clamp(16px,2.15vh,20px);line-height:1.32;max-height:40vh;overflow:auto;padding:8px 10px 8px;text-align:center;color:#222}
+        #q img,#q svg{display:block;max-width:100% !important;width:auto !important;height:auto !important;max-height:min(28vh,280px) !important;object-fit:contain !important;margin:0 auto 12px auto !important}
+        #answerRow{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
+        #ansInput{width:min(240px,100%);font-size:18px;padding:12px 16px;border-radius:14px;border:2px solid #ddd;outline:none;text-align:center}
+        #attackBtn,#nextBtn{border:none;border-radius:14px;padding:12px 18px;font-size:17px;font-weight:1000;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.16)}
+        #attackBtn{background:var(--accent);color:#fff}
+        #nextBtn{display:none;background:#26334f;color:#fff}
+        #msg{margin-top:10px;min-height:24px;text-align:center;font-weight:900}
+        #projectile{display:none;position:fixed;z-index:14;width:84px;height:84px;pointer-events:none;transform:translate(-50%,-50%);object-fit:contain;filter:drop-shadow(0 0 12px rgba(255,255,255,.45)) drop-shadow(0 0 22px rgba(255,140,0,.45))}
+        #explosion{display:none;position:fixed;z-index:15;width:26px;height:26px;border-radius:999px;pointer-events:none;transform:translate(-50%,-50%);background:radial-gradient(circle, rgba(255,255,255,.98) 0%, rgba(255,214,64,.95) 26%, rgba(255,140,0,.88) 46%, rgba(255,84,112,.34) 68%, rgba(255,84,112,0) 100%);box-shadow:0 0 20px rgba(255,255,255,.8),0 0 44px rgba(255,140,0,.7);animation:boom .45s ease-out forwards}
+        @keyframes boom{0%{opacity:1;transform:translate(-50%,-50%) scale(.2)}55%{opacity:1;transform:translate(-50%,-50%) scale(3.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(5.4)}}
+        #startOverlay{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.48);backdrop-filter:blur(7px);padding:16px}
+        #startCard{width:min(980px,100%);background:rgba(11,18,28,.86);border:1px solid rgba(255,255,255,.14);border-radius:28px;box-shadow:var(--shadow);padding:22px}
+        #startCard h1{margin:0 0 8px;text-align:center;font-size:clamp(32px,4.8vw,54px);text-transform:uppercase;text-shadow:0 0 18px rgba(255,140,0,.85)}
+        #startCard p{margin:0 auto 18px;max-width:840px;text-align:center;color:rgba(255,255,255,.84);font-size:16px;line-height:1.45}
+        #chars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+        .charCard{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.12);border-radius:22px;padding:14px;cursor:pointer;text-align:center;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:10px}
+        .charCard:hover,.charCard.selected{border-color:var(--accent);box-shadow:0 0 16px rgba(255,140,0,.28);transform:translateY(-2px)}
+        .charThumb{width:min(16vw,140px);height:min(18vw,170px);min-width:90px;min-height:110px;display:flex;align-items:center;justify-content:center}
+        .charThumb img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.42))}
+        .charName{font-weight:1000;font-size:18px}
+        .charDesc{font-size:13px;color:rgba(255,255,255,.68)}
+        #enterArenaBtn,#restartBtn{display:block;margin:18px auto 0;border:none;border-radius:16px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:14px 24px;font-size:18px;font-weight:1000;cursor:pointer;box-shadow:0 14px 26px rgba(255,84,112,.24)}
+        #finishOverlay{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.56);backdrop-filter:blur(8px);padding:16px}
+        #finishCard{width:min(760px,100%);background:rgba(11,18,28,.92);border:1px solid rgba(255,255,255,.15);border-radius:28px;box-shadow:var(--shadow);padding:28px;text-align:center}
+        #finishTitle{font-size:clamp(32px,4.8vw,54px);font-weight:1000;margin-bottom:8px;text-shadow:0 0 16px rgba(255,140,0,.55)}
+        #finishText{font-size:17px;line-height:1.45;color:rgba(255,255,255,.86)}
+        .stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+        .stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px 16px;min-width:150px}
+        .stat b{font-size:24px}.stat div{font-size:12px;color:rgba(255,255,255,.68);margin-top:4px}
+        @media (max-width:980px){
+            .fighterZone{width:min(29vw,250px)}
+            .fighterCard{min-width:170px;min-height:210px;height:min(32vh,300px)}
+            .hpWrap{width:min(29vw,250px)}
+        }
+        @media (max-width:760px){
+            #hud{top:14px;left:12px;right:12px;gap:8px;flex-wrap:wrap}
+            .pill{font-size:13px;padding:8px 10px}
+            #timerPill{margin-left:0}
+            #titleWrap{top:58px}
+            .fighterZone{top:16%;width:38vw}
+            #heroZone{left:4%}#bossZone{right:4%}
+            .fighterCard{width:38vw;height:23vh;min-width:130px;min-height:170px;padding:8px}
+            .hpWrap{width:38vw}
+            #chars{grid-template-columns:1fr}
+            #questionPanel{top:58%;max-height:58vh}
+            #q{max-height:30vh}
+        }
     </style>
 </head>
 <body>
 <div id="arena">
-    <div id="arenaTitle"><div class="main">Арена ЕГЭ</div><div class="sub">Баттл с воплощением экзамена</div></div>
-    <div id="hud"><div class="pill">Жизни: <span id="lives">♥♥♥♥♥</span></div><div class="pill">Урон: <span id="score">0</span></div><div class="pill" id="timerPill">⏱ <span id="timer">00:00</span></div></div>
-    <div class="flash" id="flash"></div>
-    <div id="fighters">
-        <div class="fighter" id="heroCard"><div class="nameplate"><span id="heroName">Герой</span><span>5 жизней</span></div><div class="avatar" id="heroAvatar">🧑‍🎓</div><div class="hpbar"><div class="hpfill" id="heroHpFill"></div></div></div>
-        <div id="vs">VS</div>
-        <div class="fighter" id="bossCard"><div class="nameplate"><span>Страж КИМов</span><span id="bossHpText">100%</span></div><div class="avatar">👹📄</div><div class="hpbar"><div class="hpfill" id="bossHpFill"></div></div></div>
+    <div id="titleWrap"><div class="main">Арена ЕГЭ</div><div class="sub">Баттл с воплощением экзамена</div></div>
+    <div id="hud">
+        <div class="pill">Жизни: <span id="heartText">♥♥♥♥♥</span></div>
+        <div class="pill">Босс: <span id="bossRemainText">100%</span></div>
+        <div class="pill" id="timerPill">⏱ <span id="timer">00:00</span></div>
     </div>
-    <div id="questionLayer"><div id="qTop"><div id="qTitle">Раунд 1</div><div id="qProgress">1 / 10</div></div><div id="q"></div><div id="answerRow"><input id="ansInput" autocomplete="off" placeholder="Ответ..."><button id="submitBtn">Атаковать</button><button id="nextBtn">Следующий раунд →</button></div><div id="msg"></div></div>
-    <div id="start"><div id="startCard"><h1>Баттл ЕГЭ</h1><p id="instructionText">Выбери персонажа и выйди на Арену ЕГЭ. Твой противник — Страж КИМов, живое воплощение экзамена. У тебя 5 жизней на всю игру: правильный ответ наносит урон, ошибка отнимает жизнь.</p><div id="chars"><div class="charCard selected" data-avatar="🧑‍🎓" data-name="Академик"><div class="charIcon">🧑‍🎓</div><div class="charName">Академик</div><div class="charDesc">спокойный и точный</div></div><div class="charCard" data-avatar="👩‍🔬" data-name="Формула"><div class="charIcon">👩‍🔬</div><div class="charName">Формула</div><div class="charDesc">быстрая и внимательная</div></div><div class="charCard" data-avatar="🤖" data-name="Нейтрино"><div class="charIcon">🤖</div><div class="charName">Нейтрино</div><div class="charDesc">нейтральный аватар-логик</div></div></div><button id="playBtn">▶ Начать баттл</button></div></div>
-    <div id="finish"><div id="finishCard"><div id="finishTitle">Победа!</div><div id="finishText"></div><div class="stats"><div class="stat"><b id="stCorrect">0</b><div>верных атак</div></div><div class="stat"><b id="stWrong">0</b><div>потеряно жизней</div></div><div class="stat"><b id="stScore">0</b><div>урон по ЕГЭ</div></div></div><button id="restartBtn">↻ Сыграть ещё раз</button></div></div>
+
+    <div id="scene">
+        <div class="fighterZone" id="heroZone">
+            <div class="fighterName" id="heroDisplayName">Игрок</div>
+            <div class="fighterCard" id="heroCard"><img id="heroImg" src="pers1.png" alt="Игрок"></div>
+            <div class="hpWrap">
+                <div class="hpLabel"><span>Линия жизни</span><span id="heroHpText">100%</span></div>
+                <div class="hpBar" id="heroHpBar"><div class="hpFill" id="heroHpFill"></div></div>
+            </div>
+        </div>
+
+        <div class="fighterZone" id="bossZone">
+            <div class="fighterName">Страж КИМов</div>
+            <div class="fighterCard" id="bossCard"><img id="bossImg" src="pers4.png" alt="Страж КИМов"></div>
+            <div class="hpWrap">
+                <div class="hpLabel"><span>Линия жизни</span><span id="bossHpText">100%</span></div>
+                <div class="hpBar" id="bossHpBar"><div class="hpFill" id="bossHpFill"></div></div>
+            </div>
+        </div>
+
+        <div id="centerControls">
+            <button id="startBattleBtn" type="button">▶ Начать</button>
+        </div>
+
+        <div id="questionPanel">
+            <div id="questionHead">
+                <div class="badge" id="questionBadge">Задание 1</div>
+                <div class="prog" id="questionProgress">1 / 10</div>
+            </div>
+            <div id="q"></div>
+            <div id="answerRow">
+                <input id="ansInput" type="text" autocomplete="off" placeholder="Ответ...">
+                <button id="attackBtn" type="button">Атаковать</button>
+                <button id="nextBtn" type="button">Следующее задание →</button>
+            </div>
+            <div id="msg"></div>
+        </div>
+    </div>
+
+    <img id="projectile" alt="Заряд">
+    <div id="explosion"></div>
+
+    <div id="startOverlay">
+        <div id="startCard">
+            <h1>Баттл ЕГЭ</h1>
+            <p id="instructionText">Выбери персонажа и выйди на арену. Слева будет твой герой, справа — Страж КИМов. У тебя 5 жизней. Правильный ответ отправляет заряд в босса, неправильный — даёт боссу ударить по тебе. Побеждает тот, у кого к концу баттла линия жизни длиннее.</p>
+            <div id="chars">
+                <div class="charCard selected" data-name="Альтаир" data-src="pers1.png" data-desc="смелый и собранный">
+                    <div class="charThumb"><img src="pers1.png" alt="Персонаж 1"></div>
+                    <div class="charName">Альтаир</div>
+                    <div class="charDesc">мужской персонаж</div>
+                </div>
+                <div class="charCard" data-name="Вега" data-src="pers2.png" data-desc="быстрая и внимательная">
+                    <div class="charThumb"><img src="pers2.png" alt="Персонаж 2"></div>
+                    <div class="charName">Вега</div>
+                    <div class="charDesc">женский персонаж</div>
+                </div>
+                <div class="charCard" data-name="Квант" data-src="pers3.png" data-desc="спокойный логик">
+                    <div class="charThumb"><img src="pers3.png" alt="Персонаж 3"></div>
+                    <div class="charName">Квант</div>
+                    <div class="charDesc">нейтральный персонаж</div>
+                </div>
+            </div>
+            <button id="enterArenaBtn" type="button">Выйти на арену</button>
+        </div>
+    </div>
+
+    <div id="finishOverlay">
+        <div id="finishCard">
+            <div id="finishTitle">Баттл завершён</div>
+            <div id="finishText"></div>
+            <div class="stats">
+                <div class="stat"><b id="stCorrect">0</b><div>правильных ответов</div></div>
+                <div class="stat"><b id="stWrong">0</b><div>неверных ответов</div></div>
+                <div class="stat"><b id="stHero">0%</b><div>жизни героя</div></div>
+                <div class="stat"><b id="stBoss">0%</b><div>жизни босса</div></div>
+            </div>
+            <button id="restartBtn" type="button">↻ Сыграть ещё раз</button>
+        </div>
+    </div>
 </div>
+
 <script>
 /*__CONFIG_DATA__*/
 (function(){
     const cfg = window.__BATTLE_CFG__ || {};
     const questions = Array.isArray(cfg.questions) ? cfg.questions : [];
-    const total = questions.length;
+    const total = questions.length || 1;
     const maxLives = Number(cfg.lives || 5);
-    let lives = maxLives, idx = 0, correct = 0, wrong = 0, selected = {avatar:'🧑‍🎓', name:'Академик'};
-    let startedAt = Date.now(), timerInt = null, locked = false;
     const $ = id => document.getElementById(id);
+    let selectedHero = { name:'Альтаир', src:'pers1.png' };
+    let currentIndex = 0;
+    let heroLives = maxLives;
+    let bossHits = 0;
+    let wrong = 0;
+    let correct = 0;
+    let timerInt = null;
+    let startedAt = null;
+    let locked = false;
+
     function norm(v){ return String(v == null ? '' : v).trim().replace(',', '.').toLowerCase(); }
-    function fmt(sec){ sec=Math.max(0,Math.floor(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); }
-    function setLives(){ $('lives').textContent = '♥'.repeat(Math.max(0,lives)) + '♡'.repeat(Math.max(0,maxLives-lives)); $('heroHpFill').style.width = Math.max(0,(lives/maxLives)*100)+'%'; }
-    function setBoss(){ const hp = total ? Math.max(0, 100 - (correct/total)*100) : 0; $('bossHpFill').style.width = hp+'%'; $('bossHpText').textContent = Math.round(hp)+'%'; $('score').textContent = String(correct*100); }
-    function flash(cls){ const f=$('flash'); f.className='flash '+cls+' show'; setTimeout(()=>f.className='flash '+cls,220); }
-    function pulse(id, cls){ const el=$(id); el.classList.add(cls); setTimeout(()=>el.classList.remove(cls),260); }
+    function fmt(sec){ sec = Math.max(0, Math.floor(sec)); return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0'); }
+    function heroPct(){ return Math.max(0, (heroLives / maxLives) * 100); }
+    function bossPct(){ return Math.max(0, ((total - bossHits) / total) * 100); }
+
+    function updateHeroUi(){
+        $('heartText').textContent = '♥'.repeat(Math.max(0, heroLives)) + '♡'.repeat(Math.max(0, maxLives - heroLives));
+        $('heroHpFill').style.width = heroPct() + '%';
+        $('heroHpText').textContent = Math.round(heroPct()) + '%';
+        $('heroHpBar').style.setProperty('--segment-size', (100 / Math.max(1, maxLives)) + '%');
+    }
+    function updateBossUi(){
+        $('bossHpFill').style.width = bossPct() + '%';
+        $('bossHpText').textContent = Math.round(bossPct()) + '%';
+        $('bossRemainText').textContent = Math.round(bossPct()) + '%';
+        $('bossHpBar').style.setProperty('--segment-size', (100 / Math.max(1, total)) + '%');
+    }
+    function applySelectedHero(){
+        $('heroImg').src = selectedHero.src;
+        $('heroDisplayName').textContent = selectedHero.name;
+    }
     function typeset(){ if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([$('q')]).catch(()=>{}); }
+    function setMessage(text, color){ $('msg').textContent = text || ''; $('msg').style.color = color || '#333'; }
+
     function showQuestion(){
-        if(idx >= total || lives <= 0){ finish(); return; }
+        if(currentIndex >= questions.length || heroLives <= 0 || bossHits >= total){ finishBattle(); return; }
         locked = false;
-        const q = questions[idx] || {};
-        $('questionLayer').style.display='flex';
-        $('qTitle').textContent = 'Раунд ' + (idx+1);
-        $('qProgress').textContent = (idx+1) + ' / ' + total;
+        const q = questions[currentIndex] || {};
+        $('questionPanel').style.display = 'block';
+        $('questionBadge').textContent = 'Задание ' + (currentIndex + 1);
+        $('questionProgress').textContent = (currentIndex + 1) + ' / ' + questions.length;
         $('q').innerHTML = q.prompt || '';
-        $('ansInput').value=''; $('ansInput').readOnly=false; $('ansInput').focus();
-        $('msg').textContent=''; $('msg').style.color=''; $('submitBtn').style.display='inline-block'; $('nextBtn').style.display='none';
+        $('ansInput').value = '';
+        $('ansInput').readOnly = false;
+        $('attackBtn').style.display = 'inline-block';
+        $('nextBtn').style.display = 'none';
+        setMessage('');
         typeset();
+        setTimeout(()=>$('ansInput').focus(), 50);
     }
-    function submit(){
+
+    function centerOf(el){
+        const r = el.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+
+    function animateShot(kind, done){
+        const projectile = $('projectile');
+        const explosion = $('explosion');
+        const fromEl = kind === 'good' ? $('heroCard') : $('bossCard');
+        const toEl = kind === 'good' ? $('bossCard') : $('heroCard');
+        const from = centerOf(fromEl);
+        const to = centerOf(toEl);
+        projectile.src = kind === 'good' ? 'z2.png' : 'z1.png';
+        projectile.style.transition = 'none';
+        projectile.style.display = 'block';
+        projectile.style.left = from.x + 'px';
+        projectile.style.top = from.y + 'px';
+        projectile.style.opacity = '1';
+        projectile.style.width = '84px';
+        projectile.style.height = '84px';
+        projectile.style.transform = 'translate(-50%,-50%) scale(0.8)';
+        explosion.style.display = 'none';
+        void projectile.offsetWidth;
+        requestAnimationFrame(()=>{
+            projectile.style.transition = 'left .5s ease-in, top .5s ease-in, transform .5s ease-in, opacity .5s ease-in';
+            projectile.style.left = to.x + 'px';
+            projectile.style.top = to.y + 'px';
+            projectile.style.transform = 'translate(-50%,-50%) scale(1.18)';
+        });
+        const targetCard = kind === 'good' ? $('bossCard') : $('heroCard');
+        targetCard.classList.add(kind === 'good' ? 'hit' : 'hit');
+        setTimeout(()=>{
+            projectile.style.display = 'none';
+            targetCard.classList.remove('hit');
+            explosion.style.left = to.x + 'px';
+            explosion.style.top = to.y + 'px';
+            explosion.style.display = 'block';
+            setTimeout(()=>{ explosion.style.display = 'none'; if(typeof done === 'function') done(); }, 420);
+        }, 520);
+    }
+
+    function resolveAttack(){
         if(locked) return;
-        const q = questions[idx] || {};
-        const accepted = (q.accepts || []).map(norm);
-        const val = norm($('ansInput').value);
-        if(!val) return;
-        locked = true; $('ansInput').readOnly=true; $('submitBtn').style.display='none'; $('nextBtn').style.display='inline-block';
-        if(accepted.includes(val)){
-            correct++; $('msg').textContent='✅ Точная атака! Страж КИМов теряет силу.'; $('msg').style.color='#159957';
-            pulse('heroCard','attack'); flash('good'); setBoss();
+        const raw = $('ansInput').value;
+        if(!String(raw).trim()) return;
+        locked = true;
+        $('attackBtn').disabled = true;
+        $('ansInput').readOnly = true;
+        const q = questions[currentIndex] || {};
+        const answers = (q.accepts || []).map(norm);
+        const isCorrect = answers.includes(norm(raw));
+        if(isCorrect){
+            correct++;
+            bossHits++;
+            setMessage('✅ Отличный удар! Босс получает урон.', '#17834a');
+            $('heroCard').classList.add('attack');
+            setTimeout(()=>$('heroCard').classList.remove('attack'), 260);
+            updateBossUi();
+            animateShot('good', afterResolution);
         } else {
-            wrong++; lives--; $('msg').textContent = cfg.showCorrectOnError ? ('❌ Удар Стража! Верный ответ: ' + ((q.accepts||[])[0] ?? '')) : '❌ Удар Стража! Минус одна жизнь.'; $('msg').style.color='#c62828';
-            pulse('heroCard','hit'); flash('bad'); setLives();
+            wrong++;
+            heroLives = Math.max(0, heroLives - 1);
+            let txt = '❌ Босс контратакует!';
+            if(cfg.showCorrectOnError){ txt += ' Верный ответ: ' + ((q.accepts || [])[0] ?? ''); }
+            setMessage(txt, '#c62828');
+            $('bossCard').classList.add('attack');
+            setTimeout(()=>$('bossCard').classList.remove('attack'), 260);
+            updateHeroUi();
+            animateShot('bad', afterResolution);
         }
-        if(lives <= 0 || idx >= total-1){ $('nextBtn').textContent='Завершить баттл'; }
     }
-    function next(){ idx++; showQuestion(); }
-    function finish(){
+
+    function afterResolution(){
+        $('attackBtn').disabled = false;
+        $('attackBtn').style.display = 'none';
+        $('nextBtn').style.display = 'inline-block';
+        if(heroLives <= 0 || bossHits >= total || currentIndex >= questions.length - 1){
+            $('nextBtn').textContent = 'Завершить баттл';
+        } else {
+            $('nextBtn').textContent = 'Следующее задание →';
+        }
+    }
+
+    function nextStep(){
+        currentIndex++;
+        if(currentIndex >= questions.length || heroLives <= 0 || bossHits >= total){ finishBattle(); return; }
+        showQuestion();
+    }
+
+    function finishBattle(){
         if(timerInt) clearInterval(timerInt);
-        $('questionLayer').style.display='none'; $('finish').style.display='flex'; setBoss(); setLives();
-        const won = lives > 0 && correct === total;
-        const partial = lives > 0 && correct > 0;
-        $('finishTitle').textContent = won ? 'ЕГЭ повержен!' : (partial ? 'Баттл завершён' : 'Страж КИМов победил');
-        $('finishText').innerHTML = won ? 'Ты прошёл арену без поражения босса. Отличная работа!' : 'Верных ответов: <b>'+correct+'</b> из <b>'+total+'</b>. Осталось жизней: <b>'+lives+'</b>.';
-        $('stCorrect').textContent=correct; $('stWrong').textContent=wrong; $('stScore').textContent=correct*100;
+        $('questionPanel').style.display = 'none';
+        const heroRemain = heroPct();
+        const bossRemain = bossPct();
+        let title = 'Баттл завершён';
+        let text = 'Сражение окончено.';
+        if(heroLives <= 0 && bossHits >= total){
+            title = 'Ничья!';
+            text = 'Оба соперника потеряли все силы одновременно.';
+        } else if(heroLives <= 0){
+            title = 'Победил Страж КИМов';
+            text = 'Жизни героя закончились раньше. Попробуйте ещё раз!';
+        } else if(bossHits >= total){
+            title = 'Победа!';
+            text = 'Вы полностью обнулили линию жизни босса.';
+        } else if(heroRemain > bossRemain){
+            title = 'Победа!';
+            text = 'У героя осталась более длинная линия жизни. Арена ЕГЭ пройдена!';
+        } else if(heroRemain < bossRemain){
+            title = 'Победил Страж КИМов';
+            text = 'У босса осталась более длинная линия жизни. Есть шанс на реванш!';
+        } else {
+            title = 'Ничья!';
+            text = 'Линии жизни оказались равны. Очень напряжённый баттл!';
+        }
+        $('finishTitle').textContent = title;
+        $('finishText').textContent = text;
+        $('stCorrect').textContent = String(correct);
+        $('stWrong').textContent = String(wrong);
+        $('stHero').textContent = Math.round(heroRemain) + '%';
+        $('stBoss').textContent = Math.round(bossRemain) + '%';
+        $('finishOverlay').style.display = 'flex';
     }
-    document.querySelectorAll('.charCard').forEach(card=>card.addEventListener('click',()=>{document.querySelectorAll('.charCard').forEach(c=>c.classList.remove('selected')); card.classList.add('selected'); selected={avatar:card.dataset.avatar,name:card.dataset.name};}));
-    $('playBtn').addEventListener('click',()=>{ $('start').style.display='none'; $('heroAvatar').textContent=selected.avatar; $('heroName').textContent=selected.name; lives=maxLives; idx=0; correct=0; wrong=0; startedAt=Date.now(); setLives(); setBoss(); showQuestion(); timerInt=setInterval(()=>$('timer').textContent=fmt((Date.now()-startedAt)/1000),1000); });
-    $('submitBtn').addEventListener('click',submit); $('nextBtn').addEventListener('click',next); $('ansInput').addEventListener('keydown',e=>{ if(e.key==='Enter') submit(); }); $('restartBtn').addEventListener('click',()=>location.reload());
+
+    function enterArena(){
+        $('startOverlay').style.display = 'none';
+        $('centerControls').style.display = 'flex';
+        applySelectedHero();
+        updateHeroUi();
+        updateBossUi();
+    }
+
+    function startBattle(){
+        $('startBattleBtn').style.display = 'none';
+        startedAt = Date.now();
+        $('timer').textContent = '00:00';
+        if(timerInt) clearInterval(timerInt);
+        timerInt = setInterval(()=>{ $('timer').textContent = fmt((Date.now() - startedAt)/1000); }, 1000);
+        currentIndex = 0;
+        heroLives = maxLives;
+        bossHits = 0;
+        wrong = 0;
+        correct = 0;
+        updateHeroUi();
+        updateBossUi();
+        showQuestion();
+    }
+
+    document.querySelectorAll('.charCard').forEach(card=>{
+        card.addEventListener('click', ()=>{
+            document.querySelectorAll('.charCard').forEach(c=>c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedHero = { name: card.dataset.name || 'Игрок', src: card.dataset.src || 'pers1.png' };
+            applySelectedHero();
+        });
+    });
+
+    $('enterArenaBtn').addEventListener('click', enterArena);
+    $('startBattleBtn').addEventListener('click', startBattle);
+    $('attackBtn').addEventListener('click', resolveAttack);
+    $('nextBtn').addEventListener('click', nextStep);
+    $('ansInput').addEventListener('keydown', e=>{ if(e.key === 'Enter' && $('questionPanel').style.display !== 'none' && $('attackBtn').style.display !== 'none'){ resolveAttack(); } });
+    $('restartBtn').addEventListener('click', ()=> location.reload());
+
     if(cfg.instruction){ $('instructionText').textContent = cfg.instruction; }
-    setLives(); setBoss();
+    applySelectedHero();
+    updateHeroUi();
+    updateBossUi();
 })();
 <\/script>
 </body>
