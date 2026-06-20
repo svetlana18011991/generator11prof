@@ -30,11 +30,11 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #timerPill{margin-left:auto}
         #heartText{letter-spacing:4px;color:#ff6985;text-shadow:0 0 14px rgba(255,84,112,.55)}
         #scene{position:absolute;inset:0;z-index:2}
-        .fighterZone{position:absolute;top:auto;bottom:18%;width:min(34vw,520px);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:3}
-        #heroZone{left:3%}
-        #bossZone{right:3%}
+        .fighterZone{position:absolute;top:0;bottom:auto;display:flex;flex-direction:column;align-items:center;gap:10px;z-index:3}
+        #heroZone{left:-0.91%;top:20.16%;width:33.14vw}
+        #bossZone{left:58.5%;top:6.81%;width:43.3vw}
         .fighterName{padding:8px 16px;border-radius:999px;background:rgba(11,18,28,.7);border:1px solid rgba(255,255,255,.16);font-size:15px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;box-shadow:var(--shadow);text-align:center}
-        .fighterCard{position:relative;width:min(34vw,520px);height:min(54vh,560px);min-width:300px;min-height:390px;padding:0;border-radius:24px;background:transparent;border:none;box-shadow:none;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
+        .fighterCard{position:relative;width:100%;height:100%;min-width:0;min-height:0;padding:0;border-radius:24px;background:transparent;border:none;box-shadow:none;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
         .fighterCard img{max-width:185%;max-height:185%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));transition:transform .25s ease, filter .25s ease}
         .fighterCard.attack img{transform:scale(1.06) translateX(10px)}
         .fighterCard.hit img{transform:scale(.96);filter:drop-shadow(0 0 18px rgba(255,84,112,.9))}
@@ -45,6 +45,12 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         .hpFill{height:100%;width:100%;transition:width .45s ease;border-radius:999px}
         #heroHpFill{background:linear-gradient(90deg,#69f0ae,#d4ff62)}
         #bossHpFill{background:linear-gradient(90deg,#ff5470,#ff8c00)}
+        
+        #heroCard{width:33.14vw;height:73.08vh}
+        #bossCard{width:43.3vw;height:90.92vh}
+        #heroZone .hpWrap{width:min(24vw,300px);margin-top:-18px}
+        #bossZone .hpWrap{width:min(24vw,300px);margin-top:-18px}
+
         #centerControls{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
         #startBattleBtn{border:none;border-radius:18px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:16px 28px;font-size:22px;font-weight:1000;cursor:pointer;box-shadow:0 18px 28px rgba(0,0,0,.28), 0 0 20px rgba(255,140,0,.38)}
         #startBattleBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
@@ -91,12 +97,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             #hud{top:14px;left:12px;right:12px;gap:8px;flex-wrap:wrap}
             .pill{font-size:13px;padding:8px 10px}
             #timerPill{margin-left:0}
-            #titleWrap{top:58px}
-            .fighterZone{bottom:16%;width:40vw}
-            #heroZone{left:4%}#bossZone{right:4%}
-            .fighterCard{width:40vw;height:30vh;min-width:150px;min-height:210px;padding:0}
-            .hpWrap{width:38vw;margin-top:-10px}
-            #chars{grid-template-columns:1fr}
             #questionPanel{top:58%;max-height:58vh}
             #q{max-height:30vh}
         }
