@@ -53,7 +53,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
     #draftBtn{ width:40px; height:40px; border-radius:12px; border:1px solid rgba(255,204,128,.95); background:#fff3e0; color:#e65100; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 25px rgba(0,0,0,.20); }
     #draftBtn:hover{ background:#ffe0b2; transform:translateY(-1px); }
     #draftBtn.active{ background:#ff8c00; color:#fff; border-color:#ff8c00; }
-    #drawPanel{ display:none; position:absolute; right:18px; top:82px; bottom:24px; width:min(645px, calc(100% - 36px)); background:rgba(255,255,255,0.95); border:2px solid #ff8c00; border-radius:15px; padding:20px; box-shadow:0 0 25px rgba(0,0,0,0.2); box-sizing:border-box; z-index:6; }
+    #drawPanel{ display:none; position:absolute; right:18px; top:82px; bottom:24px; width:min(430px, calc(100% - 36px)); background:rgba(255,255,255,0.95); border:2px solid #ff8c00; border-radius:15px; padding:20px; box-shadow:0 0 25px rgba(0,0,0,0.2); box-sizing:border-box; z-index:6; }
     #drawPanel.open{ display:flex; flex-direction:column; gap:10px; }
     #drawTools{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:0; background:#e3f2fd; padding:8px 15px; border-radius:8px; border:1px solid #bbdefb; color:#333; box-sizing:border-box; }
     #drawTools button{ background:none; border:none; cursor:pointer; font-size:20px; padding:2px 4px; border-radius:6px; line-height:1.2; }
@@ -65,8 +65,8 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
     #drawClose{ margin-left:auto; background:#fff3e0 !important; color:#e65100; border:1px solid #ffcc80 !important; width:30px; height:30px; border-radius:8px; font-size:20px !important; line-height:1; }
     #drawCanvasWrap{ flex:1; min-height:250px; background-color:#fff; background-size:20px 20px; background-image:linear-gradient(to right, #d2e3f2 1px, transparent 1px), linear-gradient(to bottom, #d2e3f2 1px, transparent 1px); border:2px solid #bbdefb; border-radius:8px; overflow:hidden; }
     #canvas-tower{ display:block; width:100%; height:100%; touch-action:none; cursor:crosshair; }
-    #overlay.draft-open #card{ margin-right:685px; }
-    @media (max-width: 1180px){ #overlay.draft-open #card{ margin-right:0; } #drawPanel{ left:12px; right:12px; top:auto; height:63vh; bottom:12px; width:auto; padding:14px; } #overlay.draft-open #card{ max-height:48vh; } }
+    #overlay.draft-open #card{ margin-right:470px; }
+    @media (max-width: 1180px){ #overlay.draft-open #card{ margin-right:0; } #drawPanel{ left:12px; right:12px; top:auto; height:42vh; bottom:12px; width:auto; padding:14px; } #overlay.draft-open #card{ max-height:48vh; } }
     </style>
 </head>
 <body data-mode="game" class="gameOnly">
@@ -75,7 +75,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             <canvas id="c"></canvas>
             <div id="hud"><div class="pill" id="leftPill">Башня: <b id="heightTxt">0</b><span style="opacity:.5">|</span>Осталось: <b id="remainNum">9</b></div><div id="progressWrap">Прогресс<div id="bar"><div></div></div><span id="pct">0%</span></div><div class="pill" id="scorePill">Счёт: <b id="scoreNum">0</b></div></div>
             <button id="nextBtn" disabled>Далее →</button>
-            <div id="overlay" role="dialog" aria-modal="true"><div id="card"><div id="cardHeader"><div><div id="title">Вопрос</div><div id="q">...</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div style="display:flex; align-items:center; gap:10px;"><button id="draftBtn" type="button" title="Открыть черновик">✏️</button><div id="badge">1 / 9</div></div></div></div><div id="answers"></div><div id="inputRow"><input id="ansInput" type="text" placeholder="Введите ответ..." autocomplete="off" /><button id="submit">ОК</button></div><div id="msg"></div><div id="hint">Верно → блок опускается и становится этажом (+100). Неверно → обугливание, взрыв и исчезает.</div></div><div id="drawPanel" onclick="event.stopPropagation();"><div id="drawTools"><button type="button" onclick="window.setTool('tower', 'pointer')" title="Указатель (Перетаскивание)">👆</button><button type="button" onclick="window.setTool('tower', 'pen')" title="Карандаш">🖊️</button><select id="tool-select-tower" onchange="window.setTool('tower', this.value)"><option value="" disabled selected hidden>🔺 Фигуры</option><option value="line">📏 Прямая</option><option value="vector">↗️ Вектор</option><option value="circle">⭕ Окружность</option><option value="triangle">🔺 Треугольник</option><option value="cylinder">🛢️ Цилиндр</option><option value="cone">🍦 Конус</option><option value="sphere">🔮 Сфера</option></select><input type="color" id="color-tower" value="#003399" title="Цвет"><input type="range" id="size-tower" min="1" max="15" value="3" title="Толщина линии"><button type="button" onclick="window.setTool('tower', 'eraser')" title="Ластик">🧽</button><div style="flex-grow:1;"></div><button type="button" id="undo-tower" onclick="window.undoCanvas('tower')" title="Отменить действие (Ctrl+Z)">↶</button><button type="button" id="redo-tower" onclick="window.redoCanvas('tower')" title="Повторить действие (Ctrl+Y)">↷</button><button type="button" onclick="window.clearCanvas('tower')" title="Очистить всё">🗑️</button><button id="drawClose" type="button" title="Закрыть">×</button><input type="hidden" id="tool-tower" value="pen"></div><div id="drawCanvasWrap"><canvas id="canvas-tower"></canvas></div></div></div>
+            <div id="overlay" role="dialog" aria-modal="true"><div id="card"><div id="cardHeader"><div><div id="title">Вопрос</div><div id="q">...</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div style="display:flex; align-items:center; gap:10px;"><button id="draftBtn" type="button" title="Открыть черновик">✏️</button><div id="badge">1 / 9</div></div></div></div><div id="answers"></div><div id="inputRow"><input id="ansInput" type="text" placeholder="Введите ответ..." autocomplete="off" /><button id="submit">ОК</button></div><div id="msg"></div><div id="hint">Верно → блок опускается и становится этажом (+100). Неверно → обугливание, взрыв и исчезает.</div></div><div id="drawPanel" onclick="event.stopPropagation();"><div id="drawTools"><button type="button" onclick="window.setTool('tower', 'pointer')" title="Указатель (Перетаскивание)">👆</button><button type="button" onclick="window.setTool('tower', 'pen')" title="Карандаш">🖊️</button><select id="tool-select-tower" onchange="window.setTool('tower', this.value)"><option value="" disabled selected hidden>🔺 Фигуры</option><option value="line">📏 Прямая</option><option value="vector">↗️ Вектор</option><option value="circle">⭕ Окружность</option><option value="triangle">🔺 Треугольник</option><option value="cylinder">🛢️ Цилиндр</option><option value="cone">🍦 Конус</option><option value="sphere">🔮 Сфера</option></select><input type="color" id="color-tower" value="#003399" title="Цвет"><input type="range" id="size-tower" min="1" max="15" value="3" title="Толщина линии"><button type="button" onclick="window.setTool('tower', 'eraser')" title="Ластик">🧽</button><div style="flex-grow:1;"></div><button type="button" onclick="window.clearCanvas('tower')" title="Очистить всё">🗑️</button><button id="drawClose" type="button" title="Закрыть">×</button><input type="hidden" id="tool-tower" value="pen"></div><div id="drawCanvasWrap"><canvas id="canvas-tower"></canvas></div></div></div>
             <div id="start"><div id="startCard"><h1>Башня знаний</h1><p></p><button id="play">▶ Начать</button><div id="err" style="display:none;"></div></div></div>
             <div id="finish"><div id="finishCard"><div id="finishTitle">Отлично!</div><div id="finishText">Заработано <b id="finishScore">0</b> баллов из 900</div><div id="finishCustomText" style="color:var(--text); margin-bottom:14px; font-size:16px; line-height:1.4; display:none;"></div><div id="stats"><div class="stat"><b id="stCorrect">0</b><div>правильных ответов</div></div><div class="stat"><b id="stWrong">0</b><div>неправильных ответов</div></div><div class="stat"><b id="stHeight">0</b><div>блоков в башне</div></div></div><button id="restart">↻ Сыграть ещё раз</button></div></div>
         </div>
@@ -167,19 +167,6 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             let action = null;
             let dragStartX = 0, dragStartY = 0, dragStartDist = 1, initialScale = 1, dragStartAngle = 0, initialAngle = 0;
             let isDrawing = false;
-            let undoStack = [], redoStack = [], backgroundImg = null, backgroundReady = false;
-            const HISTORY_LIMIT = 80;
-            function cloneObjects(){ return JSON.parse(JSON.stringify(objects)); }
-            function setUndoRedoButtons(){ let u=document.getElementById('undo-'+id), r=document.getElementById('redo-'+id); if(u){u.disabled=undoStack.length===0;u.style.opacity=u.disabled?'0.35':'1';} if(r){r.disabled=redoStack.length===0;r.style.opacity=r.disabled?'0.35':'1';} }
-            function saveState(){ undoStack.push(cloneObjects()); if(undoStack.length>HISTORY_LIMIT) undoStack.shift(); redoStack.length=0; setUndoRedoButtons(); }
-            function restoreState(st){ objects.length=0; st.forEach(o=>objects.push(o)); draggingObj=null; currentObj=null; action=null; renderAll(); setUndoRedoButtons(); }
-            function undoLocal(){ if(!undoStack.length) return; redoStack.push(cloneObjects()); restoreState(undoStack.pop()); }
-            function redoLocal(){ if(!redoStack.length) return; undoStack.push(cloneObjects()); restoreState(redoStack.pop()); }
-            function clearLocal(){ if(!objects.length) return; saveState(); objects.length=0; renderAll(); setUndoRedoButtons(); }
-            function decodeBgValue(v){ try{return decodeURIComponent(v||'');}catch(e){return v||'';} }
-            function extractBgSrc(html){ if(!html) return ''; let tmp=document.createElement('div'); tmp.innerHTML=html; let img=tmp.querySelector('img'); if(img&&img.src) return img.src; let svg=tmp.querySelector('svg'); if(svg) return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(svg)); return ''; }
-            function loadBackgroundFromCanvas(){ let raw=canvas.getAttribute('data-bg')||(canvas.dataset?canvas.dataset.bg:'')||''; let src=extractBgSrc(decodeBgValue(raw)); backgroundImg=null; backgroundReady=false; if(!src){renderAll(); return;} let img=new Image(); img.onload=()=>{backgroundImg=img;backgroundReady=true;renderAll();}; img.onerror=()=>{backgroundImg=null;backgroundReady=false;renderAll();}; img.src=src; }
-            function drawBackgroundDraft(){ if(!backgroundImg||!backgroundReady) return; let pad=12; let maxW=Math.max(220, canvas.width*0.55), maxH=Math.max(160, canvas.height*0.86); let sc=Math.min(maxW/backgroundImg.naturalWidth,maxH/backgroundImg.naturalHeight,1.25); let w=backgroundImg.naturalWidth*sc,h=backgroundImg.naturalHeight*sc,x=pad,y=pad; ctx.save(); ctx.globalAlpha=.92; ctx.fillStyle='rgba(255,255,255,.88)'; ctx.strokeStyle='rgba(0,51,153,.18)'; ctx.lineWidth=1; ctx.fillRect(x-6,y-6,w+12,h+12); ctx.strokeRect(x-6,y-6,w+12,h+12); ctx.drawImage(backgroundImg,x,y,w,h); ctx.restore(); }
 
             window.mainCanvases[id] = { initialized: true, canvas, ctx, objects, renderAll: () => renderAll(), resize: () => resizeCanvasPreserve() };
 
@@ -200,7 +187,6 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 else if (hadSize) { ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(old, 0, 0, canvas.width, canvas.height); ctx.restore(); }
             }
             resizeCanvasPreserve();
-            loadBackgroundFromCanvas();
 
             function getRawBounds(obj) {
                 let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -288,7 +274,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 ctx.restore();
             }
             function getLocalPos(p, obj) { let cx = obj.cx || 0, cy = obj.cy || 0; let tx = (obj.x || 0) + cx, ty = (obj.y || 0) + cy; let nx = p.x - tx, ny = p.y - ty; let angle = -(obj.angle || 0); let rx = nx * Math.cos(angle) - ny * Math.sin(angle); let ry = nx * Math.sin(angle) + ny * Math.cos(angle); let scale = obj.scale || 1; return {x: (rx / scale) + cx, y: (ry / scale) + cy}; }
-            function renderAll() { const rect = canvas.getBoundingClientRect(); ctx.clearRect(0, 0, rect.width || canvas.width, rect.height || canvas.height); drawBackgroundDraft(); objects.forEach(obj => drawObj(ctx, obj, draggingObj === obj)); if (currentObj) drawObj(ctx, currentObj, false); }
+            function renderAll() { const rect = canvas.getBoundingClientRect(); ctx.clearRect(0, 0, rect.width || canvas.width, rect.height || canvas.height); objects.forEach(obj => drawObj(ctx, obj, draggingObj === obj)); if (currentObj) drawObj(ctx, currentObj, false); }
             function getPos(e) { const rect = canvas.getBoundingClientRect(); let x = e.clientX, y = e.clientY; if (e.touches && e.touches.length > 0) { x = e.touches[0].clientX; y = e.touches[0].clientY; } return { x: x - rect.left, y: y - rect.top }; }
             function addFreePoint(obj, p) {
                 if (!obj.points) obj.points = [];
@@ -320,7 +306,6 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                         if (!hitHandle && lp.x >= b.minX - 5 && lp.x <= b.maxX + 5 && lp.y >= b.minY - 5 && lp.y <= b.maxY + 5) { action = 'move'; dragStartX = p.x; dragStartY = p.y; hitHandle = true; }
                     }
                     if (!hitHandle) { draggingObj = null; action = null; for (let i = objects.length - 1; i >= 0; i--) { if (objects[i].tool === 'eraser') continue; let lp = getLocalPos(p, objects[i]); let b = getRawBounds(objects[i]); if (lp.x >= b.minX && lp.x <= b.maxX && lp.y >= b.minY && lp.y <= b.maxY) { draggingObj = objects[i]; action = 'move'; dragStartX = p.x; dragStartY = p.y; break; } } }
-                    if (draggingObj && action) saveState();
                     renderAll();
                 } else {
                     currentObj = { tool: tool, color: color, size: size, x: 0, y: 0, scale: 1, angle: 0 };
@@ -348,7 +333,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 if (!isDrawing) return; isDrawing = false;
                 if (currentObj) {
                     if (currentObj.tool === 'pen' || currentObj.tool === 'eraser' || Math.hypot((currentObj.ex||0)-(currentObj.sx||0), (currentObj.ey||0)-(currentObj.sy||0)) > 3) {
-                        saveState(); let b = getRawBounds(currentObj); currentObj.cx = (b.minX + b.maxX)/2; currentObj.cy = (b.minY + b.maxY)/2; objects.push(currentObj);
+                        let b = getRawBounds(currentObj); currentObj.cx = (b.minX + b.maxX)/2; currentObj.cy = (b.minY + b.maxY)/2; objects.push(currentObj);
                     }
                     currentObj = null;
                 }
@@ -359,13 +344,11 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             canvas.addEventListener('pointerup', endDraw);
             canvas.addEventListener('pointercancel', endDraw);
             window.addEventListener('resize', () => { if (drawPanel && drawPanel.classList.contains('open')) resizeCanvasPreserve(); });
-            window.mainCanvases[id] = { canvas, ctx, objects, renderAll, undo: undoLocal, redo: redoLocal, clear: clearLocal, reloadBackground: loadBackgroundFromCanvas };
-            setUndoRedoButtons();
         };
-        window.clearCanvas = function(id) { let cnv = window.mainCanvases[id]; if (cnv && cnv.clear) cnv.clear(); };
-        window.undoCanvas = function(id) { let cnv = window.mainCanvases[id]; if (cnv && cnv.undo) cnv.undo(); };
-        window.redoCanvas = function(id) { let cnv = window.mainCanvases[id]; if (cnv && cnv.redo) cnv.redo(); };
-        if (!window.__draftUndoHotkeysBound) { window.__draftUndoHotkeysBound = true; document.addEventListener('keydown', function(e){ let tag=(e.target&&e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||(e.target&&e.target.isContentEditable)) return; if(!drawPanel || !drawPanel.classList.contains('open')) return; if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'){ e.preventDefault(); window.undoCanvas('tower'); } if((e.ctrlKey||e.metaKey)&&(e.key.toLowerCase()==='y'||(e.shiftKey&&e.key.toLowerCase()==='z'))){ e.preventDefault(); window.redoCanvas('tower'); } }); }
+        window.clearCanvas = function(id) {
+            let cnv = window.mainCanvases[id];
+            if (cnv && cnv.objects) { const rect = cnv.canvas.getBoundingClientRect(); cnv.objects.length = 0; cnv.ctx.clearRect(0, 0, rect.width || cnv.canvas.width, rect.height || cnv.canvas.height); }
+        };
         window.setTool = function(id, tool) {
             const input = document.getElementById('tool-' + id);
             if(input) input.value = tool;
@@ -387,6 +370,9 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         window.setTool('tower', 'pen');
 
         function normalizeAnswer(s){ return String(s||"").trim().toLowerCase(); }
+        function escapeHtml(s){ return String(s ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch] || ch)); }
+        function shouldShowCorrectAnswer(){ return !!(window.__CFG?.showCorrectOnError || window.__CFG?.showCorrect || window.__CFG?.settings?.showCorrectOnError); }
+        function getCorrectAnswerText(q){ const acc = (q && q.accepts && q.accepts.length) ? q.accepts : [q?.answer]; return String(acc[0] ?? "").trim(); }
 
         function normalizeQuestionMedia(root){
             if(!root) return;
@@ -413,8 +399,72 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
                 svg.style.overflow = 'visible';
             });
         }
-        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); const towerBgEl = qEl.querySelector('img,svg'); const towerCanvas = document.getElementById('canvas-tower'); if (towerCanvas) { towerCanvas.setAttribute('data-bg', towerBgEl ? encodeURIComponent(towerBgEl.outerHTML) : ''); if (window.mainCanvases && window.mainCanvases.tower && window.mainCanvases.tower.reloadBackground) window.mainCanvases.tower.reloadBackground(); } window.clearCanvas('tower'); if(drawPanel){ drawPanel.classList.remove('open'); overlay.classList.remove('draft-open'); } if(draftBtn) draftBtn.classList.remove('active'); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); setTimeout(()=>MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}), 350); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
-        function checkAnswer(userValue){ if (state.answered) return; state.answered = true; const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; let ok=false; const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue); const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer]; ok = acc.map(normalizeAnswer).includes(valStr); const waitingBlock = state.current; if(ok){ state.correct++; msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100)."; playGood(); state.dropping = false; setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(state.current) state.dropping = true; else setNextEnabled(true); }, 220); } else { state.wrong++; msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается и исчезает."; state.dropping = false; const scorchDur = 0.35; let elapsed = 0; function scorchStep(){ if(!state.current || state.current !== waitingBlock) return; elapsed += 1/60; state.current.char = Math.min(1, elapsed / scorchDur); if(Math.random() < 0.25){ state.smokes.push({ x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15), y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10), vx: (Math.random()*2-1)*40, vy: -80 - Math.random()*80, life:0.6+Math.random()*0.4, age:0, rad: 14+Math.random()*18 }); } if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); } } requestAnimationFrame(scorchStep); setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); } state.current = null; setNextEnabled(true); }, 520); } state.blockIndex++; }
+        function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); window.clearCanvas('tower'); if(drawPanel){ drawPanel.classList.remove('open'); overlay.classList.remove('draft-open'); } if(draftBtn) draftBtn.classList.remove('active'); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); setTimeout(()=>MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}), 350); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
+        function checkAnswer(userValue){
+            if (state.answered) return;
+            state.answered = true;
+            const qi = state.questionIndex;
+            const q = QUESTIONS[(QUESTIONS.length ? (qi % QUESTIONS.length) : 0)];
+            let ok = false;
+            const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue);
+            const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer];
+            ok = acc.map(normalizeAnswer).includes(valStr);
+            const waitingBlock = state.current;
+
+            if(ok){
+                state.correct++;
+                msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100).";
+                playGood();
+                state.dropping = false;
+                setTimeout(()=>{
+                    hideOverlayAnimated();
+                    state.waitingAnswer = false;
+                    if(state.current) state.dropping = true;
+                    else setNextEnabled(true);
+                }, 220);
+            } else {
+                state.wrong++;
+                const showCorrect = shouldShowCorrectAnswer();
+                const correctAnswer = getCorrectAnswerText(q);
+                msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается и исчезает."
+                    + (showCorrect && correctAnswer
+                        ? "<div style='margin-top:8px; padding:8px 10px; border-radius:10px; background:rgba(120,190,255,.14); border:1px solid rgba(120,190,255,.28); color:rgba(255,255,255,.95);'><span style='color:rgba(255,255,255,.72);'>Верный ответ:</span> <b style='color:var(--good);'>" + escapeHtml(correctAnswer) + "</b></div>"
+                        : "");
+                if(showCorrect && correctAnswer && window.__CFG?.useLatex && window.MathJax && window.MathJax.typesetPromise){
+                    setTimeout(()=>MathJax.typesetPromise([msgEl]).catch(()=>{}), 0);
+                }
+                state.dropping = false;
+                const scorchDur = 0.35;
+                let elapsed = 0;
+                function scorchStep(){
+                    if(!state.current || state.current !== waitingBlock) return;
+                    elapsed += 1/60;
+                    state.current.char = Math.min(1, elapsed / scorchDur);
+                    if(Math.random() < 0.25){
+                        state.smokes.push({
+                            x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15),
+                            y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10),
+                            vx: (Math.random()*2-1)*40,
+                            vy: -80 - Math.random()*80,
+                            life:0.6+Math.random()*0.4,
+                            age:0,
+                            rad: 14+Math.random()*18
+                        });
+                    }
+                    if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); }
+                }
+                requestAnimationFrame(scorchStep);
+                const wrongDelay = (showCorrect && correctAnswer) ? 2200 : 520;
+                setTimeout(()=>{
+                    hideOverlayAnimated();
+                    state.waitingAnswer = false;
+                    if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); }
+                    state.current = null;
+                    setNextEnabled(true);
+                }, wrongDelay);
+            }
+            state.blockIndex++;
+        }
         ansInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") checkAnswer(ansInput.value); }); document.addEventListener("keydown",(e)=>{ if(overlay.style.display==="flex" && e.key==="Enter"){ checkAnswer(ansInput.value); } }); nextBtn.addEventListener("click", ()=>{ if(nextBtn.disabled) return; state.questionIndex++; if(state.questionIndex >= 9){ finishGame(); return; } spawnBlock(); });
 
         let __assetsPromise = null;
