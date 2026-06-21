@@ -56,7 +56,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #centerControls{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
         #startBattleBtn{border:none;border-radius:18px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:16px 28px;font-size:22px;font-weight:1000;cursor:pointer;box-shadow:0 18px 28px rgba(0,0,0,.28), 0 0 20px rgba(255,140,0,.38)}
         #startBattleBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
-        #questionPanel{display:none;position:absolute;left:45%;top:52%;transform:translate(-50%,-50%);width:min(660px,calc(100vw - 26px));max-height:82vh;background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:16px 16px 14px;z-index:9;overflow:hidden}
+        #questionPanel{display:none;position:absolute;left:45.7%;top:52%;transform:translate(-50%,-50%);width:min(630px,calc(100vw - 26px));max-height:82vh;background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:16px 16px 14px;z-index:9;overflow:hidden}
         #questionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
         #questionHead .badge{background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:999px;padding:8px 14px;font-weight:900}
         #questionHead .prog{font-weight:900;color:#666}
@@ -87,7 +87,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #questionPanel.draft-open{display:none!important;}
         #draftBtnBattle{border:1px solid var(--accent);border-radius:14px;padding:10px 13px;font-size:20px;background:#fff;color:var(--accent);cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.14)}
         #draftBtnBattle.active{background:var(--accent);color:#fff}
-        #drawPanel{display:none;position:absolute;left:45%;top:52%;transform:translate(-50%,-50%);width:min(660px,calc(100vw - 26px));height:82vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-radius:22px;padding:12px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
+        #drawPanel{display:none;position:absolute;left:45.7%;top:52%;transform:translate(-50%,-50%);width:min(630px,calc(100vw - 26px));height:82vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-radius:22px;padding:12px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
         #drawPanel.open{display:flex;flex-direction:column;gap:10px}
         #drawTools{display:flex;flex-wrap:nowrap;gap:7px;align-items:center;background:#e3f2fd;padding:7px 9px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden;min-height:44px}
         #drawTools button{background:none;border:none;cursor:pointer;font-size:18px;padding:1px 3px;border-radius:6px;line-height:1.2}
@@ -207,6 +207,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
                 <button type="button" id="clearBattle" title="Очистить">🗑️</button>
                 <button id="drawClose" type="button" title="Закрыть">×</button>
             </div>
+            <div id="draftTaskStatement"></div>
             <div id="drawCanvasWrap">
                 <div id="draftDiagram"></div>
                 <canvas id="canvas-battle"></canvas>
@@ -329,6 +330,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         $('questionBadge').textContent = 'Задание ' + (currentIndex + 1);
         $('questionProgress').textContent = (currentIndex + 1) + ' / ' + questions.length;
         $('q').innerHTML = String(q.prompt || '').replace(/\s+([.,!?;:])/g, '$1');
+        syncDraftTaskStatement();
         syncDraftDiagram();
         $('ansInput').value = '';
         $('ansInput').readOnly = false;
@@ -715,6 +717,22 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         draftState.snapshot = null;
     }
 
+
+    function syncDraftTaskStatement(){
+        const box = $('draftTaskStatement');
+        const qEl = $('q');
+        if(!box || !qEl){ return; }
+        box.innerHTML = '';
+        const clone = qEl.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+        clone.classList.add('draft-condition-text');
+        clone.innerHTML = clone.innerHTML.replace(/\s+([.,!?;:])/g, '$1');
+        box.appendChild(clone);
+        box.style.display = 'block';
+        if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([box]).catch(()=>{});
+    }
+
     function syncDraftDiagram(){
         const box = $('draftDiagram');
         if(!box) return;
@@ -742,6 +760,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         qPanel.classList.toggle('draft-open', open);
         if(btn) btn.classList.toggle('active', open);
         if(open){
+            syncDraftTaskStatement();
             syncDraftDiagram();
             setTimeout(()=>{ resizeDraftCanvas(); fitQuestionPanel(); if(draftState.undo.length === 0) saveDraftState(); }, 60);
         }
