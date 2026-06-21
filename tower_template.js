@@ -125,55 +125,15 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
 
         function buildTopBottomProfiles(imageData, w, h){ const d = imageData.data; const top = new Array(w).fill(h); const bottom = new Array(w).fill(-1); for(let x=0;x<w;x++){ for(let y=0;y<h;y++){ if(d[(y*w + x)*4 + 3] >= PROFILE_ALPHA_MIN){ top[x]=y; break; } } for(let y=h-1;y>=0;y--){ if(d[(y*w + x)*4 + 3] >= PROFILE_ALPHA_MIN){ bottom[x]=y; break; } } if(bottom[x] < 0){ bottom[x] = h-1; } if(top[x] >= h){ top[x] = 0; } } return { top, bottom }; }
         function trimAndCentroidAndProfiles(img){
-            const fallback = () => Promise.resolve({ img, w: img.width, h: img.height, cx: img.width/2, cy: img.height/2, top:null, bottom:null });
-            try{
-                const c=document.createElement("canvas");
-                c.width=img.naturalWidth || img.width;
-                c.height=img.naturalHeight || img.height;
-                const g=c.getContext("2d", {willReadFrequently: true});
-                g.drawImage(img,0,0);
-                const im=g.getImageData(0,0,c.width,c.height);
-                const d=im.data;
-                let minX=c.width, minY=c.height, maxX=-1, maxY=-1;
-                let sumA=0, sumX=0, sumY=0;
-                for(let y=0;y<c.height;y++){
-                    for(let x=0;x<c.width;x++){
-                        const a = d[(y*c.width + x)*4 + 3];
-                        if(a >= TRIM_ALPHA_MIN){
-                            if(x<minX) minX=x;
-                            if(y<minY) minY=y;
-                            if(x>maxX) maxX=x;
-                            if(y>maxY) maxY=y;
-                        }
-                        if(a >= CENTROID_ALPHA_MIN){
-                            sumA += a;
-                            sumX += x*a;
-                            sumY += y*a;
-                        }
-                    }
-                }
-                if(maxX<0 || maxY<0) return fallback();
-                const w = (maxX-minX+1);
-                const h = (maxY-minY+1);
-                const outC=document.createElement("canvas");
-                outC.width=w;
-                outC.height=h;
-                const og=outC.getContext("2d", {willReadFrequently: true});
-                og.drawImage(c, minX, minY, w, h, 0, 0, w, h);
-                const cropped = og.getImageData(0,0,w,h);
-                const { top, bottom } = buildTopBottomProfiles(cropped, w, h);
-                let cx=w/2, cy=h/2;
-                if(sumA>0){
-                    cx = (sumX/sumA) - minX;
-                    cy = (sumY/sumA) - minY;
-                }
-                return Promise.resolve({ img: outC, w, h, cx, cy, top, bottom });
-            }catch(e){
-                // Если игра открыта локально или картинки пришли с другого origin,
-                // браузер может запретить чтение пикселей canvas. В этом случае
-                // башня продолжает работать без обрезки/профиля блока.
-                return fallback();
-            }
+            return Promise.resolve({
+                img,
+                w: img.naturalWidth || img.width || 220,
+                h: img.naturalHeight || img.height || 160,
+                cx: (img.naturalWidth || img.width || 220) / 2,
+                cy: (img.naturalHeight || img.height || 160) / 2,
+                top: null,
+                bottom: null
+            });
         }
 
         const state = { running:false, bg:null, blocks:[], towerScale:1, tower:[], current:null, particles:[], smokes:[], rings:[], sparks:[], flash:0, cameraShake:0, cameraX:0, cameraY:0, towerOffsetY:0, towerOffsetV:0, questionIndex:0, waitingAnswer:false, dropping:false, blockIndex:0, readyForNext:false, finished:false, score:0, scoreFloats:[], correct:0, wrong:0, landingBounce: null, answered: false };
@@ -539,9 +499,13 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             ensureAudio(); if(audioCtx && audioCtx.state==="suspended"){ try{ await audioCtx.resume(); }catch(e){} }
             const { bg, blocks, missing } = await doPreload();
             
-            if(missing.length){
-                errBox.style.display="block"; errBox.innerHTML = "<b>Ошибка:</b> Не удалось загрузить картинки!<br>Пожалуйста, проверьте файл tower_template.js";
+            if(missing.length && !blocks.length){
+                errBox.style.display="block";
+                errBox.innerHTML = "<b>Ошибка:</b> Не удалось загрузить картинки блоков.<br>Проверьте, что tower_template.js лежит рядом с игрой.";
                 return false;
+            }
+            if(missing.length && blocks.length){
+                console.warn("Часть картинок не загрузилась, но игра продолжит работу:", missing);
             }
             
             Object.assign(state, { running:false, bg:null, blocks:[], towerScale:1, tower:[], current:null, particles:[], smokes:[], rings:[], sparks:[], flash:0, cameraShake:0, cameraX:0, cameraY:0, towerOffsetY:0, towerOffsetV:0, questionIndex:0, waitingAnswer:false, dropping:false, blockIndex:0, readyForNext:false, finished:false, score:0, scoreFloats:[], correct:0, wrong:0, landingBounce:null, answered:false });
@@ -556,10 +520,22 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         }
 
         playBtn.addEventListener("click", async ()=>{
-            const origText = playBtn.innerHTML; playBtn.innerHTML = "⏳ Загрузка..."; playBtn.style.opacity = "0.7"; playBtn.style.pointerEvents = "none";
-            const ok = await startGame();
-            if(ok) { startLayer.style.display="none"; }
-            playBtn.innerHTML = origText; playBtn.style.opacity = "1"; playBtn.style.pointerEvents = "auto";
+            const origText = playBtn.innerHTML;
+            playBtn.innerHTML = "⏳ Загрузка...";
+            playBtn.style.opacity = "0.7";
+            playBtn.style.pointerEvents = "none";
+            try{
+                const ok = await startGame();
+                if(ok) { startLayer.style.display="none"; }
+            }catch(e){
+                console.error(e);
+                errBox.style.display="block";
+                errBox.innerHTML = "<b>Ошибка запуска:</b> " + (e && e.message ? e.message : String(e));
+            }finally{
+                playBtn.innerHTML = origText;
+                playBtn.style.opacity = "1";
+                playBtn.style.pointerEvents = "auto";
+            }
         });
         
         if(window.__EMBEDDED_CFG__) { window.__CFG = window.__EMBEDDED_CFG__; if(document.readyState === "complete") { startGame(); } else { window.addEventListener("load", startGame); } }
