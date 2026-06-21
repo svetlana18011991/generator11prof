@@ -56,7 +56,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #centerControls{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
         #startBattleBtn{border:none;border-radius:18px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:16px 28px;font-size:22px;font-weight:1000;cursor:pointer;box-shadow:0 18px 28px rgba(0,0,0,.28), 0 0 20px rgba(255,140,0,.38)}
         #startBattleBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
-        #questionPanel{display:none;position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:min(820px,calc(100vw - 26px));max-height:82vh;background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:16px 16px 14px;z-index:9;overflow:hidden}
+        #questionPanel{display:none;position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:min(760px,calc(100vw - 26px));max-height:82vh;background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:16px 16px 14px;z-index:9;overflow:hidden}
         #questionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
         #questionHead .badge{background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:999px;padding:8px 14px;font-weight:900}
         #questionHead .prog{font-weight:900;color:#666}
@@ -84,10 +84,10 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         .charDesc{font-size:13px;color:rgba(255,255,255,.68)}
         #enterArenaBtn,#restartBtn{display:block;margin:18px auto 0;border:none;border-radius:16px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:14px 24px;font-size:18px;font-weight:1000;cursor:pointer;box-shadow:0 14px 26px rgba(255,84,112,.24)}
         
-        #questionPanel.draft-open{left:4%;top:52%;transform:translateY(-50%);width:46%;max-height:82vh;border-top-right-radius:0;border-bottom-right-radius:0;}
+        #questionPanel.draft-open{display:none!important;}
         #draftBtnBattle{border:1px solid var(--accent);border-radius:14px;padding:10px 13px;font-size:20px;background:#fff;color:var(--accent);cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.14)}
         #draftBtnBattle.active{background:var(--accent);color:#fff}
-        #drawPanel{display:none;position:absolute;left:50%;top:11%;width:46%;height:82vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-left:0;border-radius:0 18px 18px 0;padding:12px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
+        #drawPanel{display:none;position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:min(760px,calc(100vw - 26px));height:82vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-radius:22px;padding:12px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
         #drawPanel.open{display:flex;flex-direction:column;gap:10px}
         #drawTools{display:flex;flex-wrap:nowrap;gap:7px;align-items:center;background:#e3f2fd;padding:7px 9px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden;min-height:44px}
         #drawTools button{background:none;border:none;cursor:pointer;font-size:18px;padding:1px 3px;border-radius:6px;line-height:1.2}
@@ -97,15 +97,27 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #drawTools input[type="color"]{cursor:pointer;height:28px;width:32px;border:none;background:transparent;padding:0;flex:0 0 auto}
         #drawTools input[type="range"]{cursor:pointer;width:70px;flex:0 0 auto}
         #drawClose{margin-left:auto;background:#fff3e0 !important;color:#e65100;border:1px solid #ffcc80 !important;width:28px;height:28px;border-radius:8px;font-size:19px !important;line-height:1}
-        #drawCanvasWrap{position:relative;flex:1;min-height:360px;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
-        #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:62%;overflow:visible}
-        #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:46vh;width:auto!important;height:auto!important;object-fit:contain!important}
+        #drawCanvasWrap{position:relative;flex:1;min-height:420px;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
+        #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:68%;overflow:visible}
+        #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:52vh;width:auto!important;height:auto!important;object-fit:contain!important}
         #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
         @media(max-width:1120px){
-            #questionPanel.draft-open{left:50%;width:min(760px,calc(100vw - 26px));top:38%;max-height:50vh;border-radius:18px}
-            #drawPanel{left:3%;right:3%;top:auto;bottom:2%;width:auto;height:46vh;border:2px solid var(--accent);border-radius:18px}
+            #questionPanel.draft-open{display:none!important}
+            #drawPanel{left:50%;right:auto;top:54%;bottom:auto;transform:translate(-50%,-50%);width:min(92vw,760px);height:76vh;border:2px solid var(--accent);border-radius:18px}
             #drawTools{flex-wrap:wrap}
         }
+
+        
+        @keyframes idleHero{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-7px) rotate(.8deg)}}
+        @keyframes idleBoss{0%,100%{transform:translateY(0) rotate(.4deg)}50%{transform:translateY(-6px) rotate(-.8deg)}}
+        @keyframes blueBurn{0%{filter:drop-shadow(0 18px 22px rgba(0,0,0,.55))}25%{filter:drop-shadow(0 0 16px #6ff) drop-shadow(0 0 34px #00b7ff) brightness(1.4)}50%{filter:drop-shadow(0 0 26px #00e5ff) drop-shadow(0 0 54px #1677ff) brightness(1.9) saturate(1.5)}100%{filter:drop-shadow(0 18px 22px rgba(0,0,0,.55))}}
+        #heroCard img{animation:idleHero 3.2s ease-in-out infinite}
+        #bossCard img{animation:idleBoss 3.6s ease-in-out infinite}
+        #heroCard.attack img,#bossCard.attack img,#heroCard.hit img,#bossCard.hit img{animation:none}
+        #heroCard.burn img{animation:blueBurn .75s ease-out 1}
+        #battleCaption{display:none;position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);z-index:13;min-width:min(520px,calc(100vw - 48px));padding:18px 24px;border-radius:22px;background:rgba(10,14,22,.84);border:2px solid var(--accent);box-shadow:0 0 26px rgba(255,140,0,.42),var(--shadow);text-align:center;font-size:clamp(22px,3vw,40px);font-weight:1000;color:#fff;text-shadow:0 0 16px rgba(255,255,255,.65);pointer-events:none}
+        #battleCaption.good{border-color:#57ff9a;box-shadow:0 0 26px rgba(87,255,154,.45),var(--shadow)}
+        #battleCaption.bad{border-color:#4fc3ff;box-shadow:0 0 30px rgba(79,195,255,.58),var(--shadow)}
 
         #finishOverlay{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.56);backdrop-filter:blur(8px);padding:16px}
         #finishCard{width:min(760px,100%);background:rgba(11,18,28,.92);border:1px solid rgba(255,255,255,.15);border-radius:28px;box-shadow:var(--shadow);padding:28px;text-align:center}
@@ -202,6 +214,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         </div>
     </div>
 
+    <div id="battleCaption"></div>
     <img id="projectile" alt="Заряд">
     <div id="explosion"></div>
 
@@ -356,10 +369,12 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             projectile.style.transform = 'translate(-50%,-50%) scale(1.18)';
         });
         const targetCard = kind === 'good' ? $('bossCard') : $('heroCard');
-        targetCard.classList.add(kind === 'good' ? 'hit' : 'hit');
+        targetCard.classList.add('hit');
+        if(kind !== 'good') targetCard.classList.add('burn');
         setTimeout(()=>{
             projectile.style.display = 'none';
             targetCard.classList.remove('hit');
+            targetCard.classList.remove('burn');
             explosion.style.left = to.x + 'px';
             explosion.style.top = to.y + 'px';
             explosion.style.display = 'block';
@@ -381,6 +396,9 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             correct++;
             bossHits++;
             setMessage('✅ Отличный удар! Босс получает урон.', '#17834a');
+            hidePanelsForBattle();
+            showBattleCaption('Точная атака!', 'good');
+            playHitSound('good');
             $('heroCard').classList.add('attack');
             setTimeout(()=>$('heroCard').classList.remove('attack'), 260);
             updateBossUi();
@@ -391,6 +409,9 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             let txt = '❌ Босс контратакует!';
             if(cfg.showCorrectOnError){ txt += ' Верный ответ: ' + ((q.accepts || [])[0] ?? ''); }
             setMessage(txt, '#c62828');
+            hidePanelsForBattle();
+            showBattleCaption('Контрудар Стража!', 'bad');
+            playHitSound('bad');
             $('bossCard').classList.add('attack');
             setTimeout(()=>$('bossCard').classList.remove('attack'), 260);
             updateHeroUi();
@@ -400,6 +421,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
 
     function afterResolution(){
         $('attackBtn').disabled = false;
+        returnAfterBattle();
         $('attackBtn').style.display = 'none';
         $('nextBtn').style.display = 'inline-block';
         if(heroLives <= 0 || bossHits >= total || currentIndex >= questions.length - 1){
@@ -474,6 +496,78 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         showQuestion();
     }
 
+
+
+    // --- Звуки и кат-сцена атаки ---
+    let audioCtx = null;
+    function getAudio(){
+        try{
+            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }catch(e){ return null; }
+    }
+
+    function playHitSound(kind){
+        const ctx = getAudio();
+        if(!ctx) return;
+        const now = ctx.currentTime;
+        const master = ctx.createGain();
+        master.connect(ctx.destination);
+        master.gain.setValueAtTime(0.0001, now);
+        master.gain.exponentialRampToValueAtTime(kind === 'good' ? 0.22 : 0.18, now + 0.015);
+        master.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+
+        const osc = ctx.createOscillator();
+        osc.type = kind === 'good' ? 'sawtooth' : 'square';
+        osc.frequency.setValueAtTime(kind === 'good' ? 520 : 190, now);
+        osc.frequency.exponentialRampToValueAtTime(kind === 'good' ? 110 : 62, now + 0.28);
+        osc.connect(master);
+        osc.start(now);
+        osc.stop(now + 0.4);
+
+        const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.22, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * (1 - i/data.length);
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = kind === 'good' ? 'highpass' : 'lowpass';
+        filter.frequency.value = kind === 'good' ? 850 : 420;
+        noise.connect(filter);
+        filter.connect(master);
+        noise.start(now + 0.02);
+        noise.stop(now + 0.26);
+    }
+
+    function hidePanelsForBattle(){
+        const qPanel = $('questionPanel');
+        const dPanel = $('drawPanel');
+        const dBtn = $('draftBtnBattle');
+        if(qPanel) qPanel.style.display = 'none';
+        if(dPanel) dPanel.classList.remove('open');
+        if(qPanel) qPanel.classList.remove('draft-open');
+        if(dBtn) dBtn.classList.remove('active');
+    }
+
+    function showBattleCaption(text, kind){
+        const cap = $('battleCaption');
+        if(!cap) return;
+        cap.textContent = text;
+        cap.className = kind || '';
+        cap.style.display = 'block';
+    }
+
+    function hideBattleCaption(){
+        const cap = $('battleCaption');
+        if(cap) cap.style.display = 'none';
+    }
+
+    function returnAfterBattle(){
+        hideBattleCaption();
+        $('questionPanel').style.display = 'block';
+        fitQuestionPanel();
+    }
 
     // --- Черновик для Баттла ЕГЭ ---
     const draftState = { canvas:null, ctx:null, drawing:false, tool:'pen', startX:0, startY:0, snapshot:null, undo:[], redo:[] };
@@ -683,7 +777,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     });
 
     $('enterArenaBtn').addEventListener('click', enterArena);
-    $('startBattleBtn').addEventListener('click', startBattle);
+    $('startBattleBtn').addEventListener('click', function(){ getAudio(); startBattle(); });
     $('attackBtn').addEventListener('click', resolveAttack);
     $('nextBtn').addEventListener('click', nextStep);
     $('ansInput').addEventListener('keydown', e=>{ if(e.key === 'Enter' && $('questionPanel').style.display !== 'none' && $('attackBtn').style.display !== 'none'){ resolveAttack(); } });
