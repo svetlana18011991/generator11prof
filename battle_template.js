@@ -87,9 +87,9 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #questionPanel.draft-open{display:none!important;}
         #draftBtnBattle{border:1px solid var(--accent);border-radius:14px;padding:10px 13px;font-size:20px;background:#fff;color:var(--accent);cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.14)}
         #draftBtnBattle.active{background:var(--accent);color:#fff}
-        #drawPanel{display:none;position:absolute;left:45.7%;top:52%;transform:translate(-50%,-50%);width:min(630px,calc(100vw - 26px));height:82vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-radius:22px;padding:12px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
+        #drawPanel{display:none;position:absolute;left:45.7%;top:52%;transform:translate(-50%,-50%);width:min(630px,calc(100vw - 26px));height:82vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-radius:22px;padding:10px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
         #drawPanel.open{display:flex;flex-direction:column;gap:10px}
-        #drawTools{display:flex;flex-wrap:nowrap;gap:7px;align-items:center;background:#e3f2fd;padding:7px 9px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden;min-height:44px}
+        #drawTools{display:flex;flex-wrap:nowrap;gap:7px;align-items:center;background:#e3f2fd;padding:6px 8px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden;min-height:40px;flex:0 0 auto}
         #drawTools button{background:none;border:none;cursor:pointer;font-size:18px;padding:1px 3px;border-radius:6px;line-height:1.2}
         #drawTools button:hover{background:rgba(255,255,255,.75)}
         #drawTools button.active{background:#fff3e0;box-shadow:0 0 0 1px #ffcc80 inset}
@@ -97,14 +97,14 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #drawTools input[type="color"]{cursor:pointer;height:28px;width:32px;border:none;background:transparent;padding:0;flex:0 0 auto}
         #drawTools input[type="range"]{cursor:pointer;width:70px;flex:0 0 auto}
         #drawClose{margin-left:auto;background:#fff3e0 !important;color:#e65100;border:1px solid #ffcc80 !important;width:28px;height:28px;border-radius:8px;font-size:19px !important;line-height:1}
-        #drawCanvasWrap{position:relative;flex:1;min-height:420px;background-color:#fff;border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
+        #drawCanvasWrap{position:relative;flex:1 1 auto;min-height:0;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
         #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:68%;overflow:visible}
         #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:52vh;width:auto!important;height:auto!important;object-fit:contain!important}
-        #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;background-color:transparent;background-size:20px 20px;background-image:linear-gradient(to right,rgba(180,205,230,.95) 1px,transparent 1px),linear-gradient(to bottom,rgba(180,205,230,.95) 1px,transparent 1px)}
+        #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;background:transparent}
         @media(max-width:1120px){
             #questionPanel.draft-open{display:none!important}
             #drawPanel{left:50%;right:auto;top:54%;bottom:auto;transform:translate(-50%,-50%);width:min(92vw,660px);height:76vh;border:2px solid var(--accent);border-radius:18px}
-            #drawTools{flex-wrap:wrap}
+            #drawTools{display:flex;flex-wrap:nowrap;gap:7px;align-items:center;background:#e3f2fd;padding:6px 8px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden;min-height:40px;flex:0 0 auto}
         }
 
         
@@ -856,9 +856,18 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             wrap.style.display = 'block';
             wrap.style.width = 'fit-content';
             wrap.style.maxWidth = '100%';
-            wrap.style.margin = '0 auto 6px auto';
+            wrap.style.maxHeight = '18vh';
+            wrap.style.margin = '0 auto 5px auto';
+            wrap.style.overflow = 'hidden';
             fig.parentNode.insertBefore(wrap, fig);
             wrap.appendChild(fig);
+
+            fig.style.maxWidth = '100%';
+            fig.style.maxHeight = '17vh';
+            fig.style.width = 'auto';
+            fig.style.height = 'auto';
+            fig.style.objectFit = 'contain';
+            fig.style.margin = '0 auto';
 
             const annot = document.createElement('canvas');
             annot.id = 'draftFigureAnnot';
@@ -887,6 +896,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
                     saveDraftState();
                     draftState.activeSurface = 'main';
                 }
+                resizeDraftCanvas();
             });
         };
 
