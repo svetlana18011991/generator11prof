@@ -73,6 +73,14 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         @keyframes boom{0%{opacity:1;transform:translate(-50%,-50%) scale(.2)}55%{opacity:1;transform:translate(-50%,-50%) scale(3.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(5.4)}}
         #startOverlay{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.48);backdrop-filter:blur(7px);padding:16px}
         #startCard{width:min(980px,100%);background:rgba(11,18,28,.86);border:1px solid rgba(255,255,255,.14);border-radius:28px;box-shadow:var(--shadow);padding:22px}
+
+        #nameStep{display:block}
+        #charStep{display:none}
+        #teamNameInput{display:block;width:min(420px,100%);margin:16px auto 8px;padding:14px 18px;border-radius:16px;border:2px solid rgba(255,140,0,.75);background:rgba(255,255,255,.96);color:#111;font-size:20px;text-align:center;outline:none;box-shadow:0 0 18px rgba(255,140,0,.18)}
+        #teamNameInput:focus{box-shadow:0 0 22px rgba(255,140,0,.44);border-color:#ff8c00}
+        #nameNextBtn{display:block;margin:14px auto 0;border:none;border-radius:16px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:14px 24px;font-size:18px;font-weight:1000;cursor:pointer;box-shadow:0 14px 26px rgba(255,84,112,.24)}
+        .chosenNameInCard{font-size:18px;font-weight:1000;color:#fff;text-shadow:0 0 12px rgba(255,140,0,.65);margin-top:2px;min-height:24px}
+
         #startCard h1{margin:0 0 8px;text-align:center;font-size:clamp(32px,4.8vw,54px);text-transform:uppercase;text-shadow:0 0 18px rgba(255,140,0,.85)}
         #startCard p{margin:0 auto 18px;max-width:840px;text-align:center;color:rgba(255,255,255,.84);font-size:16px;line-height:1.45}
         #chars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -220,23 +228,35 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
 
     <div id="startOverlay">
         <div id="startCard">
-            <h1>Баттл ЕГЭ</h1>
-            <p id="instructionText">Выбери персонажа и выйди на арену. Слева будет твой герой, справа — Страж КИМов. У тебя 5 жизней. Правильный ответ отправляет заряд в босса, неправильный — даёт боссу ударить по тебе. Побеждает тот, у кого к концу баттла линия жизни длиннее.</p>
-            <div id="chars">
-                <div class="charCard selected" data-name="Альтаир" data-src="pers1.png" data-desc="смелый и собранный">
-                    <div class="charThumb"><img src="pers1.png" alt="Персонаж 1"></div>
-                    <div class="charName">Альтаир</div>
-                </div>
-                <div class="charCard" data-name="Вега" data-src="pers2.png" data-desc="быстрая и внимательная">
-                    <div class="charThumb"><img src="pers2.png" alt="Персонаж 2"></div>
-                    <div class="charName">Вега</div>
-                </div>
-                <div class="charCard" data-name="Квант" data-src="pers3.png" data-desc="спокойный логик">
-                    <div class="charThumb"><img src="pers3.png" alt="Персонаж 3"></div>
-                    <div class="charName">Квант</div>
-                </div>
+            <div id="nameStep">
+                <h1>Баттл ЕГЭ</h1>
+                <p id="instructionText">Сначала введите имя команды или игрока. Потом выберите персонажа и выходите на арену.</p>
+                <input id="teamNameInput" type="text" maxlength="24" autocomplete="off" placeholder="Имя команды или игрока">
+                <button id="nameNextBtn" type="button">Далее →</button>
             </div>
-            <button id="enterArenaBtn" type="button">Выйти на арену</button>
+
+            <div id="charStep">
+                <h1>Выберите персонажа</h1>
+                <p>Это имя будет подписано у выбранного персонажа на арене.</p>
+                <div id="chars">
+                    <div class="charCard selected" data-name="Альтаир" data-src="pers1.png" data-desc="смелый и собранный">
+                        <div class="charThumb"><img src="pers1.png" alt="Персонаж 1"></div>
+                        <div class="chosenNameInCard">Игрок</div>
+                        <div class="charName">Альтаир</div>
+                    </div>
+                    <div class="charCard" data-name="Вега" data-src="pers2.png" data-desc="быстрая и внимательная">
+                        <div class="charThumb"><img src="pers2.png" alt="Персонаж 2"></div>
+                        <div class="chosenNameInCard">Игрок</div>
+                        <div class="charName">Вега</div>
+                    </div>
+                    <div class="charCard" data-name="Квант" data-src="pers3.png" data-desc="спокойный логик">
+                        <div class="charThumb"><img src="pers3.png" alt="Персонаж 3"></div>
+                        <div class="chosenNameInCard">Игрок</div>
+                        <div class="charName">Квант</div>
+                    </div>
+                </div>
+                <button id="enterArenaBtn" type="button">Выйти на арену</button>
+            </div>
         </div>
     </div>
 
@@ -263,6 +283,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     const total = questions.length || 1;
     const maxLives = Number(cfg.lives || 5);
     const $ = id => document.getElementById(id);
+    let playerName = 'Игрок';
     let selectedHero = { name:'Альтаир', src:'pers1.png' };
     let currentIndex = 0;
     let heroLives = maxLives;
@@ -292,7 +313,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
     function applySelectedHero(){
         $('heroImg').src = selectedHero.src;
-        $('heroDisplayName').textContent = selectedHero.name;
+        $('heroDisplayName').textContent = playerName || selectedHero.name;
     }
     function typeset(){ if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([$('q')]).catch(()=>{}); }
     function setMessage(text, color){ $('msg').textContent = text || ''; $('msg').style.color = color || '#333'; }
@@ -473,6 +494,25 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         $('stHero').textContent = Math.round(heroRemain) + '%';
         $('stBoss').textContent = Math.round(bossRemain) + '%';
         $('finishOverlay').style.display = 'flex';
+    }
+
+
+    function cleanPlayerName(value){
+        return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 24) || 'Игрок';
+    }
+
+    function updateChoiceNames(){
+        document.querySelectorAll('.chosenNameInCard').forEach(el => {
+            el.textContent = playerName;
+        });
+    }
+
+    function goToCharacterChoice(){
+        playerName = cleanPlayerName($('teamNameInput') ? $('teamNameInput').value : '');
+        updateChoiceNames();
+        $('nameStep').style.display = 'none';
+        $('charStep').style.display = 'block';
+        applySelectedHero();
     }
 
     function enterArena(){
@@ -964,6 +1004,8 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         });
     });
 
+    $('nameNextBtn').addEventListener('click', goToCharacterChoice);
+    $('teamNameInput').addEventListener('keydown', e=>{ if(e.key === 'Enter') goToCharacterChoice(); });
     $('enterArenaBtn').addEventListener('click', enterArena);
     $('startBattleBtn').addEventListener('click', function(){ getAudio(); startBattle(); });
     $('attackBtn').addEventListener('click', resolveAttack);
@@ -973,6 +1015,8 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
 
     initDraft();
     if(cfg.instruction){ $('instructionText').textContent = cfg.instruction; }
+    updateChoiceNames();
+    setTimeout(()=> $('teamNameInput')?.focus(), 60);
     applySelectedHero();
     updateHeroUi();
     updateBossUi();
