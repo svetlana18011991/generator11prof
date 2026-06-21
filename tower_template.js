@@ -370,13 +370,9 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         window.setTool('tower', 'pen');
 
         function normalizeAnswer(s){ return String(s||"").trim().toLowerCase(); }
-        function escapeHtml(s){ return String(s ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch] || ch)); }
+        function escapeHtml(s){ return String(s ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\\\"":"&quot;","'":"&#39;"}[ch] || ch)); }
         function shouldShowCorrectAnswer(){ return !!(window.__CFG && (window.__CFG.showCorrectOnError || window.__CFG.showCorrect || (window.__CFG.settings && window.__CFG.settings.showCorrectOnError))); }
-        function getCorrectAnswerText(q){
-            const acc = (q && q.accepts && q.accepts.length) ? q.accepts : [q && q.answer];
-            return String(acc[0] ?? "").trim();
-        }
-
+        function getCorrectAnswerText(q){ const acc = (q && q.accepts && q.accepts.length) ? q.accepts : [q && q.answer]; return String(acc[0] ?? "").trim(); }
 
         function normalizeQuestionMedia(root){
             if(!root) return;
@@ -404,26 +400,49 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             });
         }
         function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); window.clearCanvas('tower'); if(drawPanel){ drawPanel.classList.remove('open'); overlay.classList.remove('draft-open'); } if(draftBtn) draftBtn.classList.remove('active'); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); setTimeout(()=>MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}), 350); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
-        function checkAnswer(userValue){ if (state.answered) return; state.answered = true; const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; let ok=false; const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue); const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer]; ok = acc.map(normalizeAnswer).includes(valStr); const waitingBlock = state.current; if(ok){ state.correct++; msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100)."; playGood(); state.dropping = false; setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(state.current) state.dropping = true; else setNextEnabled(true); }, 220); } else { state.wrong++; const showCorrect = shouldShowCorrectAnswer();
+        function checkAnswer(userValue){ if (state.answered) return; state.answered = true; const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; let ok=false; const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue); const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer]; ok = acc.map(normalizeAnswer).includes(valStr); const waitingBlock = state.current; if(ok){ state.correct++; msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100)."; playGood(); state.dropping = false; setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(state.current) state.dropping = true; else setNextEnabled(true); }, 220); } else { state.wrong++;
+                const showCorrect = shouldShowCorrectAnswer();
                 const correctAnswer = getCorrectAnswerText(q);
                 msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается и исчезает."
-                    + (showCorrect && correctAnswer
-                        ? "<div style='margin-top:8px; padding:8px 10px; border-radius:10px; background:rgba(120,190,255,.14); border:1px solid rgba(120,190,255,.28); color:rgba(255,255,255,.95);'><span style='color:rgba(255,255,255,.72);'>Верный ответ:</span> <b style='color:var(--good);'>" + escapeHtml(correctAnswer) + "</b></div>"
-                        : "");
-                if(showCorrect && correctAnswer && window.__CFG && window.__CFG.useLatex && window.MathJax && window.MathJax.typesetPromise){
-                    setTimeout(()=>MathJax.typesetPromise([msgEl]).catch(()=>{}), 0);
-                }
-                state.dropping = false; const scorchDur = 0.35; let elapsed = 0; function scorchStep(){ if(!state.current || state.current !== waitingBlock) return; elapsed += 1/60; state.current.char = Math.min(1, elapsed / scorchDur); if(Math.random() < 0.25){ state.smokes.push({ x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15), y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10), vx: (Math.random()*2-1)*40, vy: -80 - Math.random()*80, life:0.6+Math.random()*0.4, age:0, rad: 14+Math.random()*18 }); } if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); } } requestAnimationFrame(scorchStep); setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); } state.current = null; setNextEnabled(true); }, 520); } state.blockIndex++; }
+                    + (showCorrect && correctAnswer ? "<div style='margin-top:8px; padding:8px 10px; border-radius:10px; background:rgba(120,190,255,.14); border:1px solid rgba(120,190,255,.28); color:rgba(255,255,255,.95);'><span style='color:rgba(255,255,255,.72);'>Верный ответ:</span> <b style='color:var(--good);'>" + escapeHtml(correctAnswer) + "</b></div>" : "");
+                if(showCorrect && correctAnswer && window.__CFG && window.__CFG.useLatex && window.MathJax && window.MathJax.typesetPromise){ setTimeout(()=>MathJax.typesetPromise([msgEl]).catch(()=>{}), 0); }
+                state.dropping = false; const scorchDur = 0.35; let elapsed = 0; function scorchStep(){ if(!state.current || state.current !== waitingBlock) return; elapsed += 1/60; state.current.char = Math.min(1, elapsed / scorchDur); if(Math.random() < 0.25){ state.smokes.push({ x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15), y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10), vx: (Math.random()*2-1)*40, vy: -80 - Math.random()*80, life:0.6+Math.random()*0.4, age:0, rad: 14+Math.random()*18 }); } if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); } } requestAnimationFrame(scorchStep); setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); } state.current = null; setNextEnabled(true); }, (shouldShowCorrectAnswer() && getCorrectAnswerText(q)) ? 2200 : 520); } state.blockIndex++; }
         ansInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") checkAnswer(ansInput.value); }); document.addEventListener("keydown",(e)=>{ if(overlay.style.display==="flex" && e.key==="Enter"){ checkAnswer(ansInput.value); } }); nextBtn.addEventListener("click", ()=>{ if(nextBtn.disabled) return; state.questionIndex++; if(state.questionIndex >= 9){ finishGame(); return; } spawnBlock(); });
+
+
+        function createFallbackBlock(idx){
+            const cnv = document.createElement("canvas");
+            cnv.width = 220; cnv.height = 120;
+            const g = cnv.getContext("2d");
+            const colors = ["#4FC3F7","#81C784","#FFD54F","#FF8A65","#BA68C8","#4DB6AC","#F06292","#A1887F","#90A4AE"];
+            g.fillStyle = colors[idx % colors.length];
+            g.strokeStyle = "rgba(255,255,255,.85)";
+            g.lineWidth = 6;
+            g.beginPath();
+            if(g.roundRect) g.roundRect(8,8,204,104,18); else g.rect(8,8,204,104);
+            g.fill(); g.stroke();
+            g.fillStyle = "rgba(0,0,0,.45)";
+            g.font = "bold 34px system-ui";
+            g.textAlign = "center";
+            g.textBaseline = "middle";
+            g.fillText(String(idx+1),110,62);
+            return { file:"fallback"+idx, img:cnv, w:cnv.width, h:cnv.height, cx:cnv.width/2, cy:cnv.height/2, top:null, bottom:null };
+        }
+        function withTimeout(promise, ms, label){
+            return new Promise((resolve, reject)=>{
+                const t = setTimeout(()=>reject(new Error("timeout: " + label)), ms);
+                promise.then(v=>{ clearTimeout(t); resolve(v); }, e=>{ clearTimeout(t); reject(e); });
+            });
+        }
 
         let __assetsPromise = null;
         function doPreload() {
             if (__assetsPromise) return __assetsPromise;
             __assetsPromise = (async () => {
                 const missing = []; let bg = null;
-                try { bg = await loadImage(window.__CFG.bgDataUrl || "1.png"); } catch { missing.push("1.png"); }
+                try { bg = await withTimeout(loadImage(window.__CFG.bgDataUrl || "1.png"), 6000, "1.png"); } catch(e) { console.warn(e); missing.push("1.png"); }
                 const blockPromises = BLOCK_FILES.map(async f => {
-                    try { const raw = await loadImage(f); const t = await trimAndCentroidAndProfiles(raw); return { file:f, img:t.img, w:t.w, h:t.h, cx:t.cx, cy:t.cy, top:t.top, bottom:t.bottom }; } catch (e) { missing.push(f); return null; }
+                    try { const raw = await withTimeout(loadImage(f), 6000, f); const t = await trimAndCentroidAndProfiles(raw); return { file:f, img:t.img, w:t.w, h:t.h, cx:t.cx, cy:t.cy, top:t.top, bottom:t.bottom }; } catch (e) { console.warn(e); missing.push(f); return createFallbackBlock(BLOCK_FILES.indexOf(f)); }
                 });
                 const loadedBlocks = await Promise.all(blockPromises); const blocks = []; for(const b of loadedBlocks) { if (b) blocks.push(b); }
                 return { bg, blocks, missing };
@@ -439,8 +458,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             const { bg, blocks, missing } = await doPreload();
             
             if(missing.length){
-                errBox.style.display="block"; errBox.innerHTML = "<b>Ошибка:</b> Не удалось загрузить картинки!<br>Пожалуйста, проверьте файл tower_template.js";
-                return false;
+                console.warn("Часть картинок не загрузилась, включены резервные блоки:", missing);
             }
             
             Object.assign(state, { running:false, bg:null, blocks:[], towerScale:1, tower:[], current:null, particles:[], smokes:[], rings:[], sparks:[], flash:0, cameraShake:0, cameraX:0, cameraY:0, towerOffsetY:0, towerOffsetV:0, questionIndex:0, waitingAnswer:false, dropping:false, blockIndex:0, readyForNext:false, finished:false, score:0, scoreFloats:[], correct:0, wrong:0, landingBounce:null, answered:false });
@@ -455,13 +473,27 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         }
 
         playBtn.addEventListener("click", async ()=>{
-            const origText = playBtn.innerHTML; playBtn.innerHTML = "⏳ Загрузка..."; playBtn.style.opacity = "0.7"; playBtn.style.pointerEvents = "none";
-            const ok = await startGame();
-            if(ok) { startLayer.style.display="none"; }
-            playBtn.innerHTML = origText; playBtn.style.opacity = "1"; playBtn.style.pointerEvents = "auto";
+            const origText = playBtn.innerHTML;
+            playBtn.innerHTML = "⏳ Загрузка...";
+            playBtn.style.opacity = "0.7";
+            playBtn.style.pointerEvents = "none";
+            if(errBox){ errBox.style.display="none"; errBox.innerHTML=""; }
+            try{
+                const ok = await startGame();
+                if(ok) { startLayer.style.display="none"; }
+            }catch(e){
+                console.error("Tower start error:", e);
+                if(errBox){
+                    errBox.style.display="block";
+                    errBox.innerHTML = "<b>Ошибка запуска:</b> " + (e && e.message ? e.message : String(e));
+                }
+            }finally{
+                playBtn.innerHTML = origText;
+                playBtn.style.opacity = "1";
+                playBtn.style.pointerEvents = "auto";
+            }
         });
-        
-        if(window.__EMBEDDED_CFG__) { window.__CFG = window.__EMBEDDED_CFG__; if(document.readyState === "complete") { startGame(); } else { window.addEventListener("load", startGame); } }
+        if(window.__EMBEDDED_CFG__) { window.__CFG = window.__EMBEDDED_CFG__; }
     </script>
 </body>
 </html>
