@@ -97,10 +97,10 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #drawTools input[type="color"]{cursor:pointer;height:28px;width:32px;border:none;background:transparent;padding:0;flex:0 0 auto}
         #drawTools input[type="range"]{cursor:pointer;width:70px;flex:0 0 auto}
         #drawClose{margin-left:auto;background:#fff3e0 !important;color:#e65100;border:1px solid #ffcc80 !important;width:28px;height:28px;border-radius:8px;font-size:19px !important;line-height:1}
-        #drawCanvasWrap{position:relative;flex:1;min-height:420px;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
+        #drawCanvasWrap{position:relative;flex:1;min-height:420px;background-color:#fff;border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
         #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:68%;overflow:visible}
         #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:52vh;width:auto!important;height:auto!important;object-fit:contain!important}
-        #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+        #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;background-color:transparent;background-size:20px 20px;background-image:linear-gradient(to right,rgba(180,205,230,.95) 1px,transparent 1px),linear-gradient(to bottom,rgba(180,205,230,.95) 1px,transparent 1px)}
         @media(max-width:1120px){
             #questionPanel.draft-open{display:none!important}
             #drawPanel{left:50%;right:auto;top:54%;bottom:auto;transform:translate(-50%,-50%);width:min(92vw,660px);height:76vh;border:2px solid var(--accent);border-radius:18px}
@@ -652,6 +652,19 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         return draftState.activeSurface === 'figure' ? draftState.figureRedo : draftState.redo;
     }
 
+
+    function bindFigureCanvasEvents(){
+        const figCanvas = $('draftFigureAnnot');
+        if(figCanvas && !figCanvas.dataset.bound){
+            figCanvas.addEventListener('pointerdown', beginDraft);
+            figCanvas.addEventListener('pointermove', drawDraft);
+            figCanvas.addEventListener('pointerup', endDraft);
+            figCanvas.addEventListener('pointercancel', endDraft);
+            figCanvas.addEventListener('pointerleave', endDraft);
+            figCanvas.dataset.bound = '1';
+        }
+    }
+
     function resizeFigureCanvas(){
         const canvas = $('draftFigureAnnot');
         if(!canvas) return;
@@ -828,6 +841,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         const qEl = $('q');
         if(!box || !qEl){ return; }
         box.innerHTML = '';
+
         const clone = qEl.cloneNode(true);
         clone.removeAttribute('id');
         clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
@@ -838,27 +852,49 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         if(fig){
             const wrap = document.createElement('div');
             wrap.className = 'draft-figure-wrap';
+            wrap.style.position = 'relative';
+            wrap.style.display = 'block';
+            wrap.style.width = 'fit-content';
+            wrap.style.maxWidth = '100%';
+            wrap.style.margin = '0 auto 6px auto';
             fig.parentNode.insertBefore(wrap, fig);
             wrap.appendChild(fig);
+
             const annot = document.createElement('canvas');
             annot.id = 'draftFigureAnnot';
             annot.title = 'Можно делать пометки на чертеже';
+            annot.style.position = 'absolute';
+            annot.style.left = '0';
+            annot.style.top = '0';
+            annot.style.width = '100%';
+            annot.style.height = '100%';
+            annot.style.zIndex = '5';
+            annot.style.pointerEvents = 'auto';
+            annot.style.touchAction = 'none';
+            annot.style.cursor = 'crosshair';
             wrap.appendChild(annot);
         }
 
         box.appendChild(clone);
         box.style.display = 'block';
 
-        requestAnimationFrame(()=>{
-            resizeFigureCanvas();
-            if(draftState.figureUndo.length === 0 && draftState.figureCanvas){
-                draftState.activeSurface = 'figure';
-                saveDraftState();
-                draftState.activeSurface = 'main';
-            }
-        });
+        const afterRender = ()=>{
+            requestAnimationFrame(()=>{
+                resizeFigureCanvas();
+                bindFigureCanvasEvents();
+                if(draftState.figureUndo.length === 0 && draftState.figureCanvas){
+                    draftState.activeSurface = 'figure';
+                    saveDraftState();
+                    draftState.activeSurface = 'main';
+                }
+            });
+        };
 
-        if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([box]).catch(()=>{});
+        if(window.MathJax && MathJax.typesetPromise){
+            MathJax.typesetPromise([box]).then(afterRender).catch(afterRender);
+        } else {
+            afterRender();
+        }
     }
 
     function syncDraftDiagram(){
@@ -880,16 +916,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             syncDraftDiagram();
             setTimeout(()=>{
                 resizeDraftCanvas();
-                resizeFigureCanvas();
-                const figCanvas = $('draftFigureAnnot');
-                if(figCanvas && !figCanvas.dataset.bound){
-                    figCanvas.addEventListener('pointerdown', beginDraft);
-                    figCanvas.addEventListener('pointermove', drawDraft);
-                    figCanvas.addEventListener('pointerup', endDraft);
-                    figCanvas.addEventListener('pointercancel', endDraft);
-                    figCanvas.addEventListener('pointerleave', endDraft);
-                    figCanvas.dataset.bound = '1';
-                }
                 fitQuestionPanel();
                 if(draftState.undo.length === 0){
                     draftState.activeSurface = 'main';
