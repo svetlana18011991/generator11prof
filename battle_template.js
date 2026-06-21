@@ -329,6 +329,8 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         $('questionBadge').textContent = 'Задание ' + (currentIndex + 1);
         $('questionProgress').textContent = (currentIndex + 1) + ' / ' + questions.length;
         $('q').innerHTML = String(q.prompt || '').replace(/\s+([.,!?;:])/g, '$1');
+        draftState.figureUndo = [];
+        draftState.figureRedo = [];
         syncDraftTaskStatement();
         syncDraftDiagram();
         $('ansInput').value = '';
@@ -634,7 +636,41 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     // --- Черновик для Баттла ЕГЭ ---
-    const draftState = { canvas:null, ctx:null, drawing:false, tool:'pen', startX:0, startY:0, snapshot:null, undo:[], redo:[] };
+    const draftState = { canvas:null, ctx:null, figureCanvas:null, figureCtx:null, activeSurface:'main', drawing:false, tool:'pen', startX:0, startY:0, snapshot:null, undo:[], redo:[], figureUndo:[], figureRedo:[] };
+
+
+    function getActiveCanvas(){
+        return draftState.activeSurface === 'figure' ? draftState.figureCanvas : draftState.canvas;
+    }
+    function getActiveCtx(){
+        return draftState.activeSurface === 'figure' ? draftState.figureCtx : draftState.ctx;
+    }
+    function getUndoStack(){
+        return draftState.activeSurface === 'figure' ? draftState.figureUndo : draftState.undo;
+    }
+    function getRedoStack(){
+        return draftState.activeSurface === 'figure' ? draftState.figureRedo : draftState.redo;
+    }
+
+    function resizeFigureCanvas(){
+        const canvas = $('draftFigureAnnot');
+        if(!canvas) return;
+        const wrap = canvas.parentElement;
+        const rect = wrap.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        if(rect.width <= 0 || rect.height <= 0) return;
+        const old = document.createElement('canvas');
+        old.width = canvas.width; old.height = canvas.height;
+        const oldCtx = old.getContext('2d');
+        if(canvas.width && canvas.height) oldCtx.drawImage(canvas,0,0);
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        if(old.width && old.height) ctx.drawImage(old,0,0,old.width/dpr,old.height/dpr);
+        draftState.figureCanvas = canvas;
+        draftState.figureCtx = ctx;
+    }
 
     function resizeDraftCanvas(){
         const canvas = $('canvas-battle');
@@ -656,17 +692,19 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function saveDraftState(){
-        const c = draftState.canvas;
+        const c = getActiveCanvas();
+        const undoStack = getUndoStack();
+        const redoStack = getRedoStack();
         if(!c) return;
         try{
-            draftState.undo.push(c.toDataURL());
-            if(draftState.undo.length > 30) draftState.undo.shift();
-            draftState.redo = [];
+            undoStack.push(c.toDataURL());
+            if(undoStack.length > 30) undoStack.shift();
+            redoStack.length = 0;
         }catch(e){}
     }
 
     function restoreDraftState(data){
-        const c = draftState.canvas, ctx = draftState.ctx;
+        const c = getActiveCanvas(), ctx = getActiveCtx();
         if(!c || !ctx || !data) return;
         const img = new Image();
         img.onload = function(){
@@ -680,28 +718,29 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function undoDraft(){
-        const c = draftState.canvas;
-        if(!c || draftState.undo.length <= 1) return;
-        const cur = draftState.undo.pop();
-        draftState.redo.push(cur);
-        restoreDraftState(draftState.undo[draftState.undo.length - 1]);
+        const c = getActiveCanvas(), undoStack = getUndoStack(), redoStack = getRedoStack();
+        if(!c || undoStack.length <= 1) return;
+        const cur = undoStack.pop();
+        redoStack.push(cur);
+        restoreDraftState(undoStack[undoStack.length - 1]);
     }
 
     function redoDraft(){
-        if(!draftState.redo.length) return;
-        const data = draftState.redo.pop();
-        draftState.undo.push(data);
+        const undoStack = getUndoStack(), redoStack = getRedoStack();
+        if(!redoStack.length) return;
+        const data = redoStack.pop();
+        undoStack.push(data);
         restoreDraftState(data);
     }
 
     function clearDraft(){
-        if(!draftState.ctx || !draftState.canvas) return;
+        const ctx = getActiveCtx(), c = getActiveCanvas();
+        if(!ctx || !c) return;
         saveDraftState();
-        const c = draftState.canvas;
-        draftState.ctx.save();
-        draftState.ctx.setTransform(1,0,0,1,0,0);
-        draftState.ctx.clearRect(0,0,c.width,c.height);
-        draftState.ctx.restore();
+        ctx.save();
+        ctx.setTransform(1,0,0,1,0,0);
+        ctx.clearRect(0,0,c.width,c.height);
+        ctx.restore();
     }
 
     function setDraftTool(tool){
@@ -710,29 +749,33 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function posOnCanvas(e){
-        const r = draftState.canvas.getBoundingClientRect();
+        const canvas = e.currentTarget || getActiveCanvas();
+        const r = canvas.getBoundingClientRect();
         return {x:e.clientX-r.left, y:e.clientY-r.top};
     }
 
     function beginDraft(e){
-        if(!draftState.ctx || draftState.tool === 'pointer') return;
+        const target = e.currentTarget;
+        draftState.activeSurface = target && target.id === 'draftFigureAnnot' ? 'figure' : 'main';
+        const ctx = getActiveCtx(), canvas = getActiveCanvas();
+        if(!ctx || !canvas || draftState.tool === 'pointer') return;
         e.preventDefault();
         const p = posOnCanvas(e);
         draftState.drawing = true;
         draftState.startX = p.x; draftState.startY = p.y;
-        draftState.snapshot = draftState.ctx.getImageData(0,0,draftState.canvas.width,draftState.canvas.height);
+        draftState.snapshot = ctx.getImageData(0,0,canvas.width,canvas.height);
         if(draftState.tool === 'pen' || draftState.tool === 'eraser'){
             saveDraftState();
-            draftState.ctx.beginPath();
-            draftState.ctx.moveTo(p.x,p.y);
+            ctx.beginPath();
+            ctx.moveTo(p.x,p.y);
         }
     }
 
     function drawDraft(e){
-        if(!draftState.drawing || !draftState.ctx) return;
+        const ctx = getActiveCtx();
+        if(!draftState.drawing || !ctx) return;
         e.preventDefault();
         const p = posOnCanvas(e);
-        const ctx = draftState.ctx;
         const color = $('color-battle') ? $('color-battle').value : '#003399';
         const size = $('size-battle') ? Number($('size-battle').value || 3) : 3;
         ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -790,8 +833,31 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
         clone.classList.add('draft-condition-text');
         clone.innerHTML = clone.innerHTML.replace(/\s+([.,!?;:])/g, '$1');
+
+        const fig = clone.querySelector('svg,img,picture,canvas');
+        if(fig){
+            const wrap = document.createElement('div');
+            wrap.className = 'draft-figure-wrap';
+            fig.parentNode.insertBefore(wrap, fig);
+            wrap.appendChild(fig);
+            const annot = document.createElement('canvas');
+            annot.id = 'draftFigureAnnot';
+            annot.title = 'Можно делать пометки на чертеже';
+            wrap.appendChild(annot);
+        }
+
         box.appendChild(clone);
         box.style.display = 'block';
+
+        requestAnimationFrame(()=>{
+            resizeFigureCanvas();
+            if(draftState.figureUndo.length === 0 && draftState.figureCanvas){
+                draftState.activeSurface = 'figure';
+                saveDraftState();
+                draftState.activeSurface = 'main';
+            }
+        });
+
         if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([box]).catch(()=>{});
     }
 
@@ -812,7 +878,24 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         if(open){
             syncDraftTaskStatement();
             syncDraftDiagram();
-            setTimeout(()=>{ resizeDraftCanvas(); fitQuestionPanel(); if(draftState.undo.length === 0) saveDraftState(); }, 60);
+            setTimeout(()=>{
+                resizeDraftCanvas();
+                resizeFigureCanvas();
+                const figCanvas = $('draftFigureAnnot');
+                if(figCanvas && !figCanvas.dataset.bound){
+                    figCanvas.addEventListener('pointerdown', beginDraft);
+                    figCanvas.addEventListener('pointermove', drawDraft);
+                    figCanvas.addEventListener('pointerup', endDraft);
+                    figCanvas.addEventListener('pointercancel', endDraft);
+                    figCanvas.addEventListener('pointerleave', endDraft);
+                    figCanvas.dataset.bound = '1';
+                }
+                fitQuestionPanel();
+                if(draftState.undo.length === 0){
+                    draftState.activeSurface = 'main';
+                    saveDraftState();
+                }
+            }, 60);
         }
     }
 
@@ -833,7 +916,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         $('redoBattle')?.addEventListener('click', redoDraft);
         $('tool-select-battle')?.addEventListener('change', e => setDraftTool(e.target.value));
         document.querySelectorAll('#drawTools [data-tool-btn]').forEach(b => b.addEventListener('click', () => setDraftTool(b.dataset.toolBtn)));
-        window.addEventListener('resize', resizeDraftCanvas);
+        window.addEventListener('resize', ()=>{ resizeDraftCanvas(); resizeFigureCanvas(); });
     }
 
     document.querySelectorAll('.charCard').forEach(card=>{
