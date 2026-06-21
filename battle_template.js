@@ -209,7 +209,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             </div>
             <div id="draftTaskStatement"></div>
             <div id="drawCanvasWrap">
-                <div id="draftDiagram"></div>
                 <canvas id="canvas-battle"></canvas>
             </div>
         </div>
@@ -514,32 +513,95 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         const ctx = getAudio();
         if(!ctx) return;
         const now = ctx.currentTime;
-        const master = ctx.createGain();
-        master.connect(ctx.destination);
-        master.gain.setValueAtTime(0.0001, now);
-        master.gain.exponentialRampToValueAtTime(kind === 'good' ? 0.22 : 0.18, now + 0.015);
-        master.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
 
-        const osc = ctx.createOscillator();
-        osc.type = kind === 'good' ? 'sawtooth' : 'square';
-        osc.frequency.setValueAtTime(kind === 'good' ? 520 : 190, now);
-        osc.frequency.exponentialRampToValueAtTime(kind === 'good' ? 110 : 62, now + 0.28);
-        osc.connect(master);
-        osc.start(now);
-        osc.stop(now + 0.4);
+        if(kind === 'good'){
+            // Попадание героя: высокий лазерный заряд + яркий щелчок
+            const master = ctx.createGain();
+            master.connect(ctx.destination);
+            master.gain.setValueAtTime(0.0001, now);
+            master.gain.exponentialRampToValueAtTime(0.20, now + 0.012);
+            master.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
 
-        const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.22, ctx.sampleRate);
-        const data = noiseBuffer.getChannelData(0);
-        for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * (1 - i/data.length);
-        const noise = ctx.createBufferSource();
-        noise.buffer = noiseBuffer;
-        const filter = ctx.createBiquadFilter();
-        filter.type = kind === 'good' ? 'highpass' : 'lowpass';
-        filter.frequency.value = kind === 'good' ? 850 : 420;
-        noise.connect(filter);
-        filter.connect(master);
-        noise.start(now + 0.02);
-        noise.stop(now + 0.26);
+            const osc1 = ctx.createOscillator();
+            osc1.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(920, now);
+            osc1.frequency.exponentialRampToValueAtTime(240, now + 0.28);
+            osc1.connect(master);
+            osc1.start(now);
+            osc1.stop(now + 0.34);
+
+            const osc2 = ctx.createOscillator();
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(1450, now + 0.03);
+            osc2.frequency.exponentialRampToValueAtTime(760, now + 0.18);
+            const gain2 = ctx.createGain();
+            gain2.gain.setValueAtTime(0.0001, now + 0.03);
+            gain2.gain.exponentialRampToValueAtTime(0.11, now + 0.05);
+            gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now + 0.03);
+            osc2.stop(now + 0.23);
+
+            const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * (1 - i/data.length);
+            const noise = ctx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 1800;
+            const ng = ctx.createGain();
+            ng.gain.setValueAtTime(0.07, now);
+            ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+            noise.connect(filter); filter.connect(ng); ng.connect(ctx.destination);
+            noise.start(now);
+            noise.stop(now + 0.13);
+        } else {
+            // Попадание босса: низкий тяжёлый удар + глухой басовый хвост
+            const master = ctx.createGain();
+            master.connect(ctx.destination);
+            master.gain.setValueAtTime(0.0001, now);
+            master.gain.exponentialRampToValueAtTime(0.26, now + 0.018);
+            master.gain.exponentialRampToValueAtTime(0.0001, now + 0.62);
+
+            const osc = ctx.createOscillator();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(95, now);
+            osc.frequency.exponentialRampToValueAtTime(38, now + 0.38);
+            osc.connect(master);
+            osc.start(now);
+            osc.stop(now + 0.62);
+
+            const boom = ctx.createOscillator();
+            boom.type = 'sine';
+            boom.frequency.setValueAtTime(54, now + 0.04);
+            boom.frequency.exponentialRampToValueAtTime(30, now + 0.48);
+            const boomGain = ctx.createGain();
+            boomGain.gain.setValueAtTime(0.0001, now + 0.04);
+            boomGain.gain.exponentialRampToValueAtTime(0.28, now + 0.07);
+            boomGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.58);
+            boom.connect(boomGain);
+            boomGain.connect(ctx.destination);
+            boom.start(now + 0.04);
+            boom.stop(now + 0.6);
+
+            const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.26, ctx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * Math.pow(1 - i/data.length, 2);
+            const noise = ctx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(260, now);
+            filter.frequency.exponentialRampToValueAtTime(90, now + 0.24);
+            const ng = ctx.createGain();
+            ng.gain.setValueAtTime(0.18, now);
+            ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+            noise.connect(filter); filter.connect(ng); ng.connect(ctx.destination);
+            noise.start(now);
+            noise.stop(now + 0.28);
+        }
     }
 
     function hidePanelsForBattle(){
@@ -734,20 +796,8 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function syncDraftDiagram(){
-        const box = $('draftDiagram');
-        if(!box) return;
-        const qEl = $('q');
-        const source = qEl ? qEl.querySelector('svg,img,picture,canvas') : null;
-        if(!source){ box.style.display='none'; box.innerHTML=''; return; }
-        box.innerHTML = '';
-        const clone = source.cloneNode(true);
-        clone.removeAttribute('id');
-        clone.style.maxWidth = '100%';
-        clone.style.maxHeight = '100%';
-        clone.style.width = 'auto';
-        clone.style.height = 'auto';
-        box.appendChild(clone);
-        box.style.display = 'block';
+        // Дубликат чертежа на клетчатом поле отключён:
+        // в черновике показываем только полное условие сверху.
     }
 
     function toggleDraft(){
