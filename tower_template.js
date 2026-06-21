@@ -124,7 +124,57 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         }
 
         function buildTopBottomProfiles(imageData, w, h){ const d = imageData.data; const top = new Array(w).fill(h); const bottom = new Array(w).fill(-1); for(let x=0;x<w;x++){ for(let y=0;y<h;y++){ if(d[(y*w + x)*4 + 3] >= PROFILE_ALPHA_MIN){ top[x]=y; break; } } for(let y=h-1;y>=0;y--){ if(d[(y*w + x)*4 + 3] >= PROFILE_ALPHA_MIN){ bottom[x]=y; break; } } if(bottom[x] < 0){ bottom[x] = h-1; } if(top[x] >= h){ top[x] = 0; } } return { top, bottom }; }
-        function trimAndCentroidAndProfiles(img){ const c=document.createElement("canvas"); c.width=img.width; c.height=img.height; const g=c.getContext("2d", {willReadFrequently: true}); g.drawImage(img,0,0); const im=g.getImageData(0,0,c.width,c.height); const d=im.data; let minX=c.width, minY=c.height, maxX=-1, maxY=-1; let sumA=0, sumX=0, sumY=0; for(let y=0;y<c.height;y++){ for(let x=0;x<c.width;x++){ const a = d[(y*c.width + x)*4 + 3]; if(a >= TRIM_ALPHA_MIN){ if(x<minX) minX=x; if(y<minY) minY=y; if(x>maxX) maxX=x; if(y>maxY) maxY=y; } if(a >= CENTROID_ALPHA_MIN){ sumA += a; sumX += x*a; sumY += y*a; } } } if(maxX<0 || maxY<0) return Promise.resolve({ img, w: img.width, h: img.height, cx: img.width/2, cy: img.height/2, top:null, bottom:null }); const w = (maxX-minX+1); const h = (maxY-minY+1); const outC=document.createElement("canvas"); outC.width=w; outC.height=h; const og=outC.getContext("2d", {willReadFrequently: true}); og.drawImage(c, minX, minY, w, h, 0, 0, w, h); const cropped = og.getImageData(0,0,w,h); const { top, bottom } = buildTopBottomProfiles(cropped, w, h); let cx=w/2, cy=h/2; if(sumA>0){ cx = (sumX/sumA) - minX; cy = (sumY/sumA) - minY; } return Promise.resolve({ img: outC, w, h, cx, cy, top, bottom }); }
+        function trimAndCentroidAndProfiles(img){
+            const fallback = () => Promise.resolve({ img, w: img.width, h: img.height, cx: img.width/2, cy: img.height/2, top:null, bottom:null });
+            try{
+                const c=document.createElement("canvas");
+                c.width=img.naturalWidth || img.width;
+                c.height=img.naturalHeight || img.height;
+                const g=c.getContext("2d", {willReadFrequently: true});
+                g.drawImage(img,0,0);
+                const im=g.getImageData(0,0,c.width,c.height);
+                const d=im.data;
+                let minX=c.width, minY=c.height, maxX=-1, maxY=-1;
+                let sumA=0, sumX=0, sumY=0;
+                for(let y=0;y<c.height;y++){
+                    for(let x=0;x<c.width;x++){
+                        const a = d[(y*c.width + x)*4 + 3];
+                        if(a >= TRIM_ALPHA_MIN){
+                            if(x<minX) minX=x;
+                            if(y<minY) minY=y;
+                            if(x>maxX) maxX=x;
+                            if(y>maxY) maxY=y;
+                        }
+                        if(a >= CENTROID_ALPHA_MIN){
+                            sumA += a;
+                            sumX += x*a;
+                            sumY += y*a;
+                        }
+                    }
+                }
+                if(maxX<0 || maxY<0) return fallback();
+                const w = (maxX-minX+1);
+                const h = (maxY-minY+1);
+                const outC=document.createElement("canvas");
+                outC.width=w;
+                outC.height=h;
+                const og=outC.getContext("2d", {willReadFrequently: true});
+                og.drawImage(c, minX, minY, w, h, 0, 0, w, h);
+                const cropped = og.getImageData(0,0,w,h);
+                const { top, bottom } = buildTopBottomProfiles(cropped, w, h);
+                let cx=w/2, cy=h/2;
+                if(sumA>0){
+                    cx = (sumX/sumA) - minX;
+                    cy = (sumY/sumA) - minY;
+                }
+                return Promise.resolve({ img: outC, w, h, cx, cy, top, bottom });
+            }catch(e){
+                // Если игра открыта локально или картинки пришли с другого origin,
+                // браузер может запретить чтение пикселей canvas. В этом случае
+                // башня продолжает работать без обрезки/профиля блока.
+                return fallback();
+            }
+        }
 
         const state = { running:false, bg:null, blocks:[], towerScale:1, tower:[], current:null, particles:[], smokes:[], rings:[], sparks:[], flash:0, cameraShake:0, cameraX:0, cameraY:0, towerOffsetY:0, towerOffsetV:0, questionIndex:0, waitingAnswer:false, dropping:false, blockIndex:0, readyForNext:false, finished:false, score:0, scoreFloats:[], correct:0, wrong:0, landingBounce: null, answered: false };
         function setNextEnabled(on){ state.readyForNext = on; nextBtn.disabled = !on; } function updateRemain(){ remainNum.textContent = String(Math.max(0, 9 - state.questionIndex)); } function groundY(){ return H - 70 + state.towerOffsetY; } function alignedXForIdx(idx){ return (W/2) - (state.blocks[idx].cx * state.towerScale); } function blockSize(idx){ return { w: state.blocks[idx].w*state.towerScale, h: state.blocks[idx].h*state.towerScale }; } function computeTowerScale(blocks){ const maxW = Math.max(...blocks.map(b => b.w)); const totalH = blocks.reduce((s,b)=>s+b.h,0); const scaleByWidth = DESIRED_TOWER_WIDTH() / maxW; const availableH = Math.max(220, H - SAFE_TOP_MARGIN - SAFE_BOTTOM_MARGIN); return Math.min(scaleByWidth, availableH / totalH); } function computeStackY(upper, lower){ const su = state.towerScale; const upperMeta = state.blocks[upper.idx]; const lowerMeta = state.blocks[lower.idx]; const overlapLeft = Math.max(upper.x, lower.x); const overlapRight = Math.min(upper.x + upper.w, lower.x + lower.w); if(overlapRight <= overlapLeft + 2) return Math.round(lower.y - upper.h); let yMaxAllowed = Infinity; for(let wx = overlapLeft; wx <= overlapRight; wx += 2){ const xu = Math.floor((wx - upper.x) / su); const xl = Math.floor((wx - lower.x) / su); if(xu < 0 || xu >= upperMeta.w || xl < 0 || xl >= lowerMeta.w) continue; const allowed = lower.y + lowerMeta.top[xl]*su - upperMeta.bottom[xu]*su; if(allowed < yMaxAllowed) yMaxAllowed = allowed; } return Math.round(yMaxAllowed) - 1; } function spawnBlock(){ if(state.finished) return; if(state.blockIndex >= 9){ finishGame(); return; } const idx = state.blockIndex; const {w,h} = blockSize(idx); state.current = { idx, w,h, x: alignedXForIdx(idx), y: -h - 30, char:0 }; state.dropping=false; state.waitingAnswer=false; state.landingBounce=null; state.answered = false; setNextEnabled(false); } function addScorePop(x,y, text){ state.scoreFloats.push({ x, y, vx: (Math.random()*2-1)*30, vy: -160 - Math.random()*60, life: 0.85, age: 0, text }); } function sparksAtSeam(x, y){ for(let i=0;i<18;i++){ const a = (-Math.PI/2) + (Math.random()*Math.PI*0.9 - Math.PI*0.45); const sp = 220 + Math.random()*360; state.sparks.push({ x: x + (Math.random()*40 - 20), y: y + (Math.random()*6 - 3), vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - (40+Math.random()*60), life: 0.45 + Math.random()*0.2, age: 0 }); } } function dustAt(x,y){ for(let i=0;i<10;i++){ const a=Math.random()*Math.PI*2; const sp=30+Math.random()*110; state.smokes.push({ x:x + (Math.random()*18-9), y:y + (Math.random()*10-5), vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - (30+Math.random()*40), life:0.55+Math.random()*0.35, age:0, rad: 10+Math.random()*14 }); } } function settleCurrentBlock(){ const b = state.current; let yFinal = (state.tower.length===0) ? Math.round(groundY() - b.h) : computeStackY(b, state.tower[state.tower.length - 1]); const yUp = Math.max(-200, yFinal - LAND_BOUNCE_UP); state.landingBounce = { fromY: yUp, toY: yFinal, age: 0, dur: LAND_BOUNCE_TIME }; b.x = Math.round(b.x); b.y = yUp; } function finalizeLand(){ try{ thudSound(); }catch(e){} const b = state.current; if(!b) return; const seamY = b.y + b.h; sparksAtSeam(W/2, seamY); state.tower.push({ x: Math.round(b.x), y: Math.round(b.y), w: b.w, h: b.h, idx: b.idx, squash:1.0, squashV:0.0 }); state.score += SCORE_PER_BLOCK; scoreNum.textContent = String(state.score); addScorePop(W/2 + 70, b.y + 30, "+" + SCORE_PER_BLOCK); dustAt(W/2, seamY); state.cameraShake = Math.max(state.cameraShake, SHAKE_ON_LAND); state.towerOffsetV -= 120; state.current = null; } function boomAt(block){ const cx = block.x + block.w/2; const cy = block.y + block.h/2; state.flash = Math.min(1, state.flash + 0.95); state.rings.push({ x:cx, y:cy, r:10, vr: 900, life:0.45, age:0 }); for(let i=0;i<44;i++){ const a=Math.random()*Math.PI*2; const sp=160+Math.random()*720; state.particles.push({ x:cx,y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-(260+Math.random()*360), life:0.55+Math.random()*0.35, age:0, r:2+Math.random()*4 }); } for(let i=0;i<14;i++){ const a=Math.random()*Math.PI*2; const sp=50+Math.random()*210; state.smokes.push({ x:cx,y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-(90+Math.random()*120), life:1.1+Math.random()*0.8, age:0, rad: 22+Math.random()*26 }); } state.cameraShake = Math.max(state.cameraShake, SHAKE_ON_BOOM); playBoom(); } function finishGame(){ state.finished = true; setNextEnabled(false); finishScoreEl.textContent = String(state.score); stCorrect.textContent = String(state.correct); stWrong.textContent = String(state.wrong); stHeight.textContent = String(state.tower.length); const fCustom = document.getElementById("finishCustomText"); if(fCustom){ const txt = window.__CFG?.feedback?.text || ""; fCustom.innerHTML = String(txt).replace(/\\\\n/g, "<br/>"); fCustom.style.display = txt.trim() ? "block" : "none"; } finishLayer.style.display="flex"; } restartBtn.addEventListener("click", ()=>{ location.reload(); }); function showOverlayAnimated(){ overlay.style.display="flex"; requestAnimationFrame(()=> overlay.classList.add("show")); } function hideOverlayAnimated(){ overlay.classList.remove("show"); setTimeout(()=>{ overlay.style.display="none"; }, 140); }
