@@ -89,6 +89,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         .charThumb{width:min(16vw,140px);height:min(18vw,170px);min-width:90px;min-height:110px;display:flex;align-items:center;justify-content:center}
         .charThumb img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.42))}
         .charName{font-weight:1000;font-size:18px}
+        #charStep .charName{display:none}
         .charDesc{font-size:13px;color:rgba(255,255,255,.68)}
         #enterArenaBtn,#restartBtn{display:block;margin:18px auto 0;border:none;border-radius:16px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:14px 24px;font-size:18px;font-weight:1000;cursor:pointer;box-shadow:0 14px 26px rgba(255,84,112,.24)}
         
@@ -242,17 +243,14 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
                     <div class="charCard selected" data-name="Альтаир" data-src="pers1.png" data-desc="смелый и собранный">
                         <div class="charThumb"><img src="pers1.png" alt="Персонаж 1"></div>
                         <div class="chosenNameInCard">Игрок</div>
-                        <div class="charName">Альтаир</div>
                     </div>
                     <div class="charCard" data-name="Вега" data-src="pers2.png" data-desc="быстрая и внимательная">
                         <div class="charThumb"><img src="pers2.png" alt="Персонаж 2"></div>
                         <div class="chosenNameInCard">Игрок</div>
-                        <div class="charName">Вега</div>
                     </div>
                     <div class="charCard" data-name="Квант" data-src="pers3.png" data-desc="спокойный логик">
                         <div class="charThumb"><img src="pers3.png" alt="Персонаж 3"></div>
                         <div class="chosenNameInCard">Игрок</div>
-                        <div class="charName">Квант</div>
                     </div>
                 </div>
                 <button id="enterArenaBtn" type="button">Выйти на арену</button>
