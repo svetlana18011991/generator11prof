@@ -56,12 +56,12 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #centerControls{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
         #startBattleBtn{border:none;border-radius:18px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:16px 28px;font-size:22px;font-weight:1000;cursor:pointer;box-shadow:0 18px 28px rgba(0,0,0,.28), 0 0 20px rgba(255,140,0,.38)}
         #startBattleBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
-        #questionPanel{display:none;position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:min(760px,calc(100vw - 26px));max-height:min(68vh,760px);background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:18px 18px 16px;z-index:9;overflow:hidden}
+        #questionPanel{display:none;position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:min(820px,calc(100vw - 26px));max-height:82vh;background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:16px 16px 14px;z-index:9;overflow:hidden}
         #questionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
         #questionHead .badge{background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:999px;padding:8px 14px;font-weight:900}
         #questionHead .prog{font-weight:900;color:#666}
-        #q{font-size:clamp(16px,2.15vh,20px);line-height:1.32;max-height:40vh;overflow:auto;padding:8px 6px 8px;text-align:center;color:#222;text-wrap:pretty;}
-        #q img,#q svg{display:block;max-width:100% !important;width:auto !important;height:auto !important;max-height:min(28vh,280px) !important;object-fit:contain !important;margin:0 auto 12px auto !important}
+        #q{font-size:clamp(15px,2vh,19px);line-height:1.28;max-height:none;overflow:visible;padding:6px 4px 6px;text-align:center;color:#222;text-wrap:pretty;}
+        #q img,#q svg{display:block;max-width:100% !important;width:auto !important;height:auto !important;max-height:min(30vh,300px) !important;object-fit:contain !important;margin:0 auto 10px auto !important}
         #answerRow{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
         #ansInput{width:min(240px,100%);font-size:18px;padding:12px 16px;border-radius:14px;border:2px solid #ddd;outline:none;text-align:center}
         #attackBtn,#nextBtn{border:none;border-radius:14px;padding:12px 18px;font-size:17px;font-weight:1000;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.16)}
@@ -84,26 +84,26 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         .charDesc{font-size:13px;color:rgba(255,255,255,.68)}
         #enterArenaBtn,#restartBtn{display:block;margin:18px auto 0;border:none;border-radius:16px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:14px 24px;font-size:18px;font-weight:1000;cursor:pointer;box-shadow:0 14px 26px rgba(255,84,112,.24)}
         
-        #questionPanel.draft-open{left:35%;width:min(620px,calc(64vw - 24px));}
+        #questionPanel.draft-open{left:4%;top:52%;transform:translateY(-50%);width:46%;max-height:82vh;border-top-right-radius:0;border-bottom-right-radius:0;}
         #draftBtnBattle{border:1px solid var(--accent);border-radius:14px;padding:10px 13px;font-size:20px;background:#fff;color:var(--accent);cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.14)}
         #draftBtnBattle.active{background:var(--accent);color:#fff}
-        #drawPanel{display:none;position:absolute;right:3%;top:28%;width:min(430px,35vw);height:58vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-radius:18px;padding:14px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
+        #drawPanel{display:none;position:absolute;left:50%;top:11%;width:46%;height:82vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-left:0;border-radius:0 18px 18px 0;padding:12px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
         #drawPanel.open{display:flex;flex-direction:column;gap:10px}
-        #drawTools{display:flex;flex-wrap:nowrap;gap:8px;align-items:center;background:#e3f2fd;padding:8px 10px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden}
-        #drawTools button{background:none;border:none;cursor:pointer;font-size:19px;padding:2px 4px;border-radius:6px;line-height:1.2}
+        #drawTools{display:flex;flex-wrap:nowrap;gap:7px;align-items:center;background:#e3f2fd;padding:7px 9px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden;min-height:44px}
+        #drawTools button{background:none;border:none;cursor:pointer;font-size:18px;padding:1px 3px;border-radius:6px;line-height:1.2}
         #drawTools button:hover{background:rgba(255,255,255,.75)}
         #drawTools button.active{background:#fff3e0;box-shadow:0 0 0 1px #ffcc80 inset}
-        #drawTools select{background:#fff;border:1px solid #90caf9;border-radius:6px;padding:4px 6px;font-size:13px;cursor:pointer;outline:none;color:#003399;font-weight:500;min-width:106px}
+        #drawTools select{background:#fff;border:1px solid #90caf9;border-radius:6px;padding:3px 5px;font-size:12px;cursor:pointer;outline:none;color:#003399;font-weight:500;min-width:96px}
         #drawTools input[type="color"]{cursor:pointer;height:28px;width:32px;border:none;background:transparent;padding:0;flex:0 0 auto}
         #drawTools input[type="range"]{cursor:pointer;width:70px;flex:0 0 auto}
         #drawClose{margin-left:auto;background:#fff3e0 !important;color:#e65100;border:1px solid #ffcc80 !important;width:28px;height:28px;border-radius:8px;font-size:19px !important;line-height:1}
-        #drawCanvasWrap{position:relative;flex:1;min-height:230px;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
-        #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:45%;overflow:hidden}
-        #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:100%;width:auto!important;height:auto!important;object-fit:contain!important}
+        #drawCanvasWrap{position:relative;flex:1;min-height:360px;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
+        #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:62%;overflow:visible}
+        #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:46vh;width:auto!important;height:auto!important;object-fit:contain!important}
         #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
         @media(max-width:1120px){
-            #questionPanel.draft-open{left:50%;width:min(760px,calc(100vw - 26px));top:41%;max-height:42vh}
-            #drawPanel{left:3%;right:3%;top:auto;bottom:2%;width:auto;height:40vh}
+            #questionPanel.draft-open{left:50%;width:min(760px,calc(100vw - 26px));top:38%;max-height:50vh;border-radius:18px}
+            #drawPanel{left:3%;right:3%;top:auto;bottom:2%;width:auto;height:46vh;border:2px solid var(--accent);border-radius:18px}
             #drawTools{flex-wrap:wrap}
         }
 
@@ -284,6 +284,30 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     function typeset(){ if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([$('q')]).catch(()=>{}); }
     function setMessage(text, color){ $('msg').textContent = text || ''; $('msg').style.color = color || '#333'; }
 
+
+    function fitQuestionPanel(){
+        const panel = $('questionPanel');
+        const qEl = $('q');
+        if(!panel || !qEl || panel.style.display === 'none') return;
+        qEl.style.fontSize = '';
+        qEl.style.lineHeight = '';
+        qEl.querySelectorAll('svg,img').forEach(el => {
+            el.style.maxHeight = '';
+        });
+        requestAnimationFrame(()=>{
+            let guard = 0;
+            while(panel.scrollHeight > panel.clientHeight && guard < 5){
+                const cur = parseFloat(getComputedStyle(qEl).fontSize) || 18;
+                qEl.style.fontSize = Math.max(13, cur - 1) + 'px';
+                qEl.style.lineHeight = '1.22';
+                qEl.querySelectorAll('svg,img').forEach(el => {
+                    el.style.maxHeight = '24vh';
+                });
+                guard++;
+            }
+        });
+    }
+
     function showQuestion(){
         if(currentIndex >= questions.length || heroLives <= 0 || bossHits >= total){ finishBattle(); return; }
         locked = false;
@@ -299,7 +323,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         $('nextBtn').style.display = 'none';
         setMessage('');
         typeset();
-        setTimeout(()=>$('ansInput').focus(), 50);
+        setTimeout(()=>{ fitQuestionPanel(); $('ansInput').focus(); }, 50);
     }
 
     function centerOf(el){
@@ -625,7 +649,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         if(btn) btn.classList.toggle('active', open);
         if(open){
             syncDraftDiagram();
-            setTimeout(()=>{ resizeDraftCanvas(); if(draftState.undo.length === 0) saveDraftState(); }, 60);
+            setTimeout(()=>{ resizeDraftCanvas(); fitQuestionPanel(); if(draftState.undo.length === 0) saveDraftState(); }, 60);
         }
     }
 
