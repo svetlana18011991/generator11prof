@@ -1,1 +1,676 @@
-const BATTLE_TEMPLATE = "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Баттл ЕГЭ</title>\n  <script>\n    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], processEscapes: true }, startup: { typeset: false } };\n  </script>\n  <script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js\"></script>\n  <style>\n    :root{\n      --orange:#ff8a00;--blue:#1fb7ff;--green:#8cff65;--red:#ff4c58;\n      --panel:rgba(255,255,255,.94);--dark:rgba(10,16,30,.88);\n      --shadow:0 18px 45px rgba(0,0,0,.35);--radius:24px;\n    }\n    *{box-sizing:border-box}\n    html,body{margin:0;width:100%;min-height:100%;font-family:Arial,\"Segoe UI\",sans-serif;color:#162033;background:#0b1223;}\n    body{overflow:auto;}\n    .game{position:relative;width:100vw;min-width:1200px;min-height:900px;height:max(900px,100vh);overflow:hidden;background:#0b1223;}\n    .arena-bg{position:absolute;inset:0;background:linear-gradient(rgba(5,8,20,.14),rgba(5,8,20,.34)),url(\"arena_ege.png\") center/cover no-repeat;transform:scale(1.015);filter:saturate(1.05) contrast(1.02);}\n    .vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at center,rgba(255,255,255,0) 35%,rgba(0,0,0,.25) 100%),linear-gradient(90deg,rgba(0,0,0,.36),transparent 25%,transparent 74%,rgba(0,0,0,.36));}\n    .top-ui{position:absolute;top:24px;left:22px;right:22px;z-index:20;display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none}\n    .top-left,.top-right{display:flex;gap:12px;align-items:center}\n    .pill{min-height:54px;padding:13px 22px;border-radius:22px;background:rgba(11,18,35,.88);border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 20px rgba(0,0,0,.35),inset 0 0 20px rgba(255,255,255,.03);color:#fff;font-weight:900;letter-spacing:.2px;text-shadow:0 2px 4px rgba(0,0,0,.4);display:flex;align-items:center;gap:8px;white-space:nowrap}\n    .hearts{color:#ff5f7c;font-size:20px;letter-spacing:2px;line-height:1}\n    .boss-name{padding:11px 24px;border:2px solid rgba(255,138,0,.85);box-shadow:0 0 18px rgba(255,138,0,.65),inset 0 0 16px rgba(255,138,0,.12),0 8px 20px rgba(0,0,0,.35);text-transform:uppercase}\n    .timer{min-width:112px;justify-content:center;font-size:18px}\n    .character{position:absolute;bottom:92px;z-index:7;pointer-events:none;display:flex;align-items:flex-end;justify-content:center}\n    .player{left:38px;width:345px;height:665px}.boss{right:32px;width:380px;height:705px}\n    .character img{max-width:100%;max-height:100%;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 18px 18px rgba(0,0,0,.42))}\n    .character .fallback{width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center;color:#fff;font-weight:900;font-size:34px;text-align:center;text-shadow:0 3px 12px #000}\n    .name-tag{position:absolute;z-index:15;padding:11px 24px;min-width:104px;border-radius:22px;text-align:center;color:white;font-weight:900;text-transform:uppercase;letter-spacing:.4px;text-shadow:0 2px 4px rgba(0,0,0,.55);background:rgba(22,22,36,.78);border:2px solid rgba(139,79,255,.9);box-shadow:0 0 22px rgba(139,79,255,.8),inset 0 0 16px rgba(139,79,255,.15)}\n    .player-name{left:172px;top:150px}.boss-title{right:176px;top:30px}\n    .health{position:absolute;z-index:20;bottom:20px;width:310px;padding:12px 14px 15px;border-radius:18px;background:rgba(9,15,28,.82);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 26px rgba(0,0,0,.35);color:#fff;font-weight:900}\n    .health.left{left:135px}.health.right{right:170px}\n    .health-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:14px;text-transform:uppercase;letter-spacing:.25px}\n    .bar{height:18px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18)}\n    .fill{height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#63ff82,#dfff69);box-shadow:0 0 18px rgba(120,255,120,.55)}\n    .fill.boss-fill{background:linear-gradient(90deg,#ff4d6d,#ff8a00);box-shadow:0 0 18px rgba(255,100,50,.55)}\n    .battle-layout{position:absolute;z-index:12;top:198px;left:370px;right:370px;bottom:118px;display:grid;grid-template-columns:minmax(420px,1.05fr) minmax(310px,.92fr);gap:16px;align-items:stretch}\n    .task-card,.draft-card{min-height:0;border-radius:var(--radius);background:var(--panel);border:2px solid rgba(255,138,0,.95);box-shadow:var(--shadow),inset 0 0 35px rgba(255,255,255,.42);backdrop-filter:blur(6px)}\n    .task-card{display:flex;flex-direction:column;padding:22px 24px;overflow:visible;height:auto}\n    .task-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex:0 0 auto}\n    .task-label{padding:10px 18px;border-radius:18px;color:#ff6500;font-weight:900;background:linear-gradient(180deg,#fff7ed,#fff0dc);border:1px solid rgba(255,138,0,.26);box-shadow:inset 0 0 15px rgba(255,138,0,.08)}\n    .task-count{font-size:18px;font-weight:900;color:#30394a}\n    .prompt-box{flex:0 0 auto;border-radius:12px;background:#fff;box-shadow:0 10px 26px rgba(0,0,0,.10);margin:0 0 18px;overflow:visible;padding:18px;text-align:center;color:#111;line-height:1.35}\n    .prompt-box img,.prompt-box svg{display:block;max-width:100%!important;height:auto!important;max-height:250px!important;margin:0 auto 12px!important}\n    .statement{margin:0 auto 18px;max-width:610px;text-align:center;font-size:17px;line-height:1.36;color:#172033;white-space:normal;overflow:visible;text-wrap:pretty}\n    .answer-row{flex:0 0 auto;display:flex;justify-content:center;gap:12px;margin-top:auto}\n    .answer{width:205px;height:54px;border:2px solid #e3e4e8;border-radius:16px;background:white;color:#1a2436;font-size:20px;text-align:center;outline:none;box-shadow:inset 0 2px 5px rgba(0,0,0,.04)}\n    .answer::placeholder{color:#7d8798}\n    .attack{height:54px;padding:0 30px;border:none;border-radius:16px;background:linear-gradient(180deg,#ff9b22,#ff7800);color:#fff;font-weight:900;font-size:19px;cursor:pointer;box-shadow:0 10px 18px rgba(255,122,0,.28),inset 0 2px 0 rgba(255,255,255,.28)}\n    .draft-card{padding:16px 16px 14px;display:flex;flex-direction:column;overflow:hidden}\n    .draft-head{flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}\n    .draft-title-wrap{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start}\n    .spark{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;color:#7c4dff;font-size:20px;background:rgba(124,77,255,.08)}\n    .draft-title{margin:0;color:#176ad8;font-size:18px;line-height:1.05;font-weight:900}.draft-subtitle{margin-top:4px;color:#9099aa;font-size:12px;font-weight:700}.dots{color:#5e6677;font-weight:900;font-size:21px;line-height:1;padding-right:2px}\n    .toolbar{flex:0 0 auto;display:flex;gap:9px;align-items:center;margin-bottom:10px}\n    .tool{width:39px;height:36px;border-radius:10px;border:1px solid #e2e8f3;background:white;display:grid;place-items:center;color:#25324a;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.05);cursor:pointer;user-select:none}.tool.active{border-color:#8bc6ff;color:#0d7de5;box-shadow:0 0 0 3px rgba(31,183,255,.13)}.tool.spacer{margin-left:auto}\n    .pad-wrap{flex:1 1 auto;min-height:300px;border-radius:12px;border:1px solid #e3edf8;background:#fff;overflow:hidden;position:relative;box-shadow:inset 0 1px 8px rgba(22,70,120,.05)}\n    #scratchCanvas{width:100%;height:100%;display:block;cursor:crosshair;background:linear-gradient(rgba(38,132,216,.085) 1px,transparent 1px),linear-gradient(90deg,rgba(38,132,216,.085) 1px,transparent 1px),linear-gradient(rgba(38,132,216,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(38,132,216,.035) 1px,transparent 1px);background-size:28px 28px,28px 28px,7px 7px,7px 7px;background-position:-1px -1px}\n    .notes{flex:0 0 auto;margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}\n    .note-label{grid-column:1/-1;color:#2376db;font-size:14px;font-weight:900;display:flex;gap:6px;align-items:center;margin-left:2px}\n    .note-input{height:42px;border:1px solid #e8edf5;border-radius:12px;background:#f8fbff;padding:0 13px;color:#667085;outline:none;min-width:0}\n    .helper{height:42px;border:1px solid #bfddff;border-radius:12px;background:#eaf5ff;color:#1571ce;font-weight:900;padding:0 13px;display:flex;align-items:center;gap:6px;white-space:nowrap}\n    .toast{position:absolute;z-index:50;left:50%;top:104px;transform:translateX(-50%);padding:13px 22px;border-radius:18px;color:#fff;background:rgba(14,20,36,.92);box-shadow:0 12px 30px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.25s opacity,.25s transform;font-weight:900}.toast.show{opacity:1;transform:translateX(-50%) translateY(6px)}\n    .projectile{position:absolute;z-index:35;width:230px;height:120px;pointer-events:none;opacity:0;filter:drop-shadow(0 0 18px rgba(60,220,255,.8))}\n    .projectile.player-shot{left:300px;top:390px;background:url(\"charge_player.png\") center/contain no-repeat;animation:playerShot .9s ease-in-out forwards}\n    .projectile.boss-shot{right:300px;top:330px;background:url(\"charge_boss.png\") center/contain no-repeat;animation:bossShot .9s ease-in-out forwards}\n    @keyframes playerShot{0%{opacity:0;transform:translate(0,0) scale(.72)}18%{opacity:1}100%{opacity:0;transform:translate(760px,-30px) scale(1.05)}}\n    @keyframes bossShot{0%{opacity:0;transform:translate(0,0) scale(.72) rotate(180deg)}18%{opacity:1}100%{opacity:0;transform:translate(-740px,35px) scale(1.05) rotate(180deg)}}\n    @media(max-width:1400px){.battle-layout{left:330px;right:335px;grid-template-columns:minmax(390px,1fr) minmax(285px,.86fr)}.player{left:24px;width:325px;height:640px}.boss{right:22px;width:355px;height:680px}.statement{font-size:16px}.health.left{left:118px}.health.right{right:135px}}\n    @media(max-height:780px){.game{min-height:820px;height:820px}.battle-layout{top:180px;bottom:98px}.prompt-box{padding:14px;margin-bottom:14px}.prompt-box img,.prompt-box svg{max-height:210px!important}.statement{font-size:15.5px;margin-bottom:14px}.answer,.attack{height:48px}.pad-wrap{min-height:250px}.character{bottom:74px}.player{height:610px}.boss{height:650px}}\n  </style>\n</head>\n<body>\n  <main class=\"game\">\n    <div class=\"arena-bg\"></div><div class=\"vignette\"></div>\n    <section class=\"top-ui\">\n      <div class=\"top-left\"><div class=\"pill\">Жизни: <span class=\"hearts\" id=\"heartBox\">♥ ♥ ♥ ♥ ♥</span></div><div class=\"pill\">Босс: <span id=\"bossPercent\">100%</span></div></div>\n      <div class=\"top-right\"><div class=\"pill boss-name\">Страж КИМов</div><div class=\"pill timer\">⏱ <span id=\"timer\">00:31</span></div></div>\n    </section>\n    <div class=\"name-tag player-name\">Квант</div>\n    <section class=\"character player\"><img src=\"cat_scholar.png\" alt=\"Квант — учёный кот\" onerror=\"this.outerHTML='<div class=&quot;fallback&quot;>КВАНТ</div>'\"></section>\n    <section class=\"character boss\"><img src=\"boss_ege_math.png\" alt=\"Страж КИМов\" onerror=\"this.outerHTML='<div class=&quot;fallback&quot;>СТРАЖ<br>КИМОВ</div>'\"></section>\n    <section class=\"battle-layout\">\n      <article class=\"task-card\">\n        <div class=\"task-top\"><div class=\"task-label\" id=\"taskLabel\">Задание 1</div><div class=\"task-count\" id=\"taskCount\">1 / 1</div></div>\n        <div class=\"prompt-box\" id=\"promptBox\"></div>\n        <p class=\"statement\" id=\"statement\"></p>\n        <div class=\"answer-row\"><input id=\"answer\" class=\"answer\" inputmode=\"decimal\" placeholder=\"Ответ...\" /><button class=\"attack\" id=\"attackBtn\">Атаковать</button></div>\n      </article>\n      <aside class=\"draft-card\">\n        <div class=\"draft-head\"><div class=\"draft-title-wrap\"><div class=\"spark\">✦</div><div><h2 class=\"draft-title\">Умный черновик</h2><div class=\"draft-subtitle\">Пиши, решай, побеждай!</div></div></div><div class=\"dots\">...</div></div>\n        <div class=\"toolbar\"><button class=\"tool active\" id=\"penTool\">✎</button><button class=\"tool\" id=\"eraserTool\">⌫</button><button class=\"tool\" id=\"textTool\">T</button><button class=\"tool\" id=\"lineTool\">⌁</button><button class=\"tool\" id=\"sqrtTool\">√x</button><button class=\"tool spacer\" id=\"undoTool\">↶</button><button class=\"tool\" id=\"clearTool\">×</button></div>\n        <div class=\"pad-wrap\"><canvas id=\"scratchCanvas\"></canvas></div>\n        <div class=\"notes\"><div class=\"note-label\">💡 Заметки</div><input class=\"note-input\" id=\"noteInput\" placeholder=\"Твои подсказки и идеи...\" /><button class=\"helper\" id=\"hintBtn\">🤖 МатематикОН</button></div>\n      </aside>\n    </section>\n    <div class=\"health left\"><div class=\"health-row\"><span>Линия жизни</span><span id=\"playerHpText\">100%</span></div><div class=\"bar\"><div class=\"fill\" id=\"playerHp\"></div></div></div>\n    <div class=\"health right\"><div class=\"health-row\"><span>Линия жизни</span><span id=\"bossHpText\">100%</span></div><div class=\"bar\"><div class=\"fill boss-fill\" id=\"bossHp\"></div></div></div>\n    <div class=\"projectile\" id=\"projectile\"></div><div class=\"toast\" id=\"toast\"></div>\n  </main>\n\n  <script>\n    /*__CONFIG_DATA__*/\n\n    const cfg = window.__EMBEDDED_CFG__ || {};\n    const questions = Array.isArray(cfg.questions) && cfg.questions.length ? cfg.questions : [{\n      prompt: '<svg viewBox=\"0 0 560 220\" style=\"width:min(92%,470px)\"><rect width=\"560\" height=\"220\" fill=\"#fff\"/><line x1=\"140\" y1=\"170\" x2=\"310\" y2=\"170\" stroke=\"#111\" stroke-width=\"3\"/><line x1=\"310\" y1=\"170\" x2=\"420\" y2=\"170\" stroke=\"#111\" stroke-width=\"3\"/><line x1=\"140\" y1=\"170\" x2=\"235\" y2=\"50\" stroke=\"#111\" stroke-width=\"3\"/><line x1=\"235\" y1=\"50\" x2=\"310\" y2=\"170\" stroke=\"#111\" stroke-width=\"3\"/><line x1=\"186\" y1=\"112\" x2=\"198\" y2=\"118\" stroke=\"#111\" stroke-width=\"3\"/><line x1=\"266\" y1=\"112\" x2=\"254\" y2=\"118\" stroke=\"#111\" stroke-width=\"3\"/><text x=\"122\" y=\"188\" font-size=\"24\" font-style=\"italic\" font-family=\"Georgia,serif\">A</text><text x=\"302\" y=\"190\" font-size=\"24\" font-style=\"italic\" font-family=\"Georgia,serif\">B</text><text x=\"228\" y=\"38\" font-size=\"24\" font-style=\"italic\" font-family=\"Georgia,serif\">C</text><text x=\"430\" y=\"188\" font-size=\"24\" font-style=\"italic\" font-family=\"Georgia,serif\">D</text></svg>В треугольнике ABC стороны AC и BC равны. Внешний угол при вершине B равен 113°. Найдите угол C.',\n      accepts:[\"46\"],\n      seconds:31\n    }];\n\n    const answer = document.getElementById(\"answer\"), attackBtn = document.getElementById(\"attackBtn\"), toast = document.getElementById(\"toast\"), projectile = document.getElementById(\"projectile\");\n    const playerHp = document.getElementById(\"playerHp\"), bossHp = document.getElementById(\"bossHp\"), playerHpText = document.getElementById(\"playerHpText\"), bossHpText = document.getElementById(\"bossHpText\"), bossPercent = document.getElementById(\"bossPercent\"), heartBox = document.getElementById(\"heartBox\");\n    const promptBox = document.getElementById(\"promptBox\"), statement = document.getElementById(\"statement\"), taskLabel = document.getElementById(\"taskLabel\"), taskCount = document.getElementById(\"taskCount\");\n    let playerHealth = 100, bossHealth = 100, lives = Number(cfg.lives || 5), current = 0, correct = 0, wrong = 0, seconds = Number(questions[0]?.seconds || 31), timerId = null;\n\n    function normalize(v){ return String(v ?? \"\").trim().replace(\",\", \".\").replace(/\\s+/g, \"\").toLowerCase(); }\n    function stripWrapper(html){\n      const tmp = document.createElement(\"div\"); tmp.innerHTML = html || \"\";\n      return tmp;\n    }\n    function splitPrompt(html){\n      const tmp = stripWrapper(html);\n      const media = [];\n      tmp.querySelectorAll(\"svg,img,canvas\").forEach(el => media.push(el.outerHTML));\n      tmp.querySelectorAll(\"svg,img,canvas\").forEach(el => el.remove());\n      const text = tmp.textContent.replace(/\\s+/g,\" \").trim();\n      return {media: media.join(\"\"), text};\n    }\n    function renderQuestion(){\n      const q = questions[current] || questions[0];\n      taskLabel.textContent = \"Задание \" + (current + 1);\n      taskCount.textContent = (current + 1) + \" / \" + questions.length;\n      const s = splitPrompt(q.prompt || q.text || \"\");\n      promptBox.innerHTML = s.media || (q.svg || \"\");\n      statement.textContent = s.text || \"Решите задание и введите ответ.\";\n      answer.value = \"\";\n      answer.focus();\n      seconds = Number(q.seconds || cfg.seconds || 31);\n      updateTimer();\n      clearInterval(timerId);\n      timerId = setInterval(() => { if(seconds > 0){ seconds--; updateTimer(); } }, 1000);\n      if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([promptBox, statement]).catch(()=>{});\n    }\n    function updateTimer(){ const m = String(Math.floor(seconds/60)).padStart(2,\"0\"), s = String(seconds%60).padStart(2,\"0\"); document.getElementById(\"timer\").textContent = m + \":\" + s; }\n    function showToast(text){ toast.textContent=text; toast.classList.add(\"show\"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>toast.classList.remove(\"show\"),1800); }\n    function updateBars(){ playerHp.style.width=playerHealth+\"%\"; bossHp.style.width=bossHealth+\"%\"; playerHpText.textContent=playerHealth+\"%\"; bossHpText.textContent=bossHealth+\"%\"; bossPercent.textContent=bossHealth+\"%\"; heartBox.textContent=Array.from({length:lives},()=> \"♥\").join(\" \"); }\n    function fire(type){ projectile.className=\"projectile\"; void projectile.offsetWidth; projectile.classList.add(type===\"player\"?\"player-shot\":\"boss-shot\"); setTimeout(()=>projectile.className=\"projectile\",950); }\n    function nextQuestion(){ if(current < questions.length - 1){ current++; renderQuestion(); } else { showToast(bossHealth <= playerHealth ? \"Баттл завершён: победа знаний!\" : \"Баттл завершён. Попробуй ещё раз!\"); clearInterval(timerId); } }\n    attackBtn.addEventListener(\"click\",()=>{ const q=questions[current]||{}; const accepts=(q.accepts||[q.answer]).map(normalize); const ok=accepts.includes(normalize(answer.value)); if(ok){ correct++; bossHealth=Math.max(0,bossHealth-Math.ceil(100/questions.length)); fire(\"player\"); showToast(\"Верно! Удар знаниями!\"); } else { wrong++; lives=Math.max(0,lives-1); playerHealth=Math.max(0,Math.round((lives/Number(cfg.lives||5))*100)); fire(\"boss\"); showToast(cfg.showCorrectOnError && accepts[0] ? \"Пока неверно. Ответ: \" + accepts[0] : \"Пока неверно. Используй черновик!\"); } updateBars(); setTimeout(nextQuestion,900); });\n    answer.addEventListener(\"keydown\",e=>{ if(e.key===\"Enter\") attackBtn.click(); });\n\n    const canvas=document.getElementById(\"scratchCanvas\"), ctx=canvas.getContext(\"2d\");\n    const tools={pen:document.getElementById(\"penTool\"),eraser:document.getElementById(\"eraserTool\"),text:document.getElementById(\"textTool\"),line:document.getElementById(\"lineTool\"),sqrt:document.getElementById(\"sqrtTool\"),undo:document.getElementById(\"undoTool\"),clear:document.getElementById(\"clearTool\")};\n    let activeTool=\"pen\", drawing=false, start=null, last=null, history=[];\n    function resizeCanvas(){ const rect=canvas.getBoundingClientRect(), ratio=window.devicePixelRatio||1; const old=document.createElement(\"canvas\"); old.width=canvas.width; old.height=canvas.height; if(canvas.width&&canvas.height) old.getContext(\"2d\").drawImage(canvas,0,0); canvas.width=Math.max(1,Math.floor(rect.width*ratio)); canvas.height=Math.max(1,Math.floor(rect.height*ratio)); ctx.setTransform(ratio,0,0,ratio,0,0); ctx.lineCap=\"round\"; ctx.lineJoin=\"round\"; if(old.width&&old.height) ctx.drawImage(old,0,0,old.width/ratio,old.height/ratio); }\n    function saveState(){ try{history.push(canvas.toDataURL()); if(history.length>20) history.shift();}catch(e){} }\n    function setTool(name){ activeTool=name; Object.entries(tools).forEach(([key,btn])=>{if(key!==\"undo\"&&key!==\"clear\") btn.classList.toggle(\"active\",key===name);}); }\n    tools.pen.onclick=()=>setTool(\"pen\"); tools.eraser.onclick=()=>setTool(\"eraser\"); tools.text.onclick=()=>setTool(\"text\"); tools.line.onclick=()=>setTool(\"line\"); tools.sqrt.onclick=()=>{setTool(\"sqrt\");showToast(\"Кликни в черновик, чтобы вставить формулу\");};\n    tools.undo.onclick=()=>{ const lastState=history.pop(); if(!lastState)return; const img=new Image(); img.onload=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.clientWidth,canvas.clientHeight);}; img.src=lastState; };\n    tools.clear.onclick=()=>{ saveState(); ctx.clearRect(0,0,canvas.width,canvas.height); };\n    function pos(e){ const rect=canvas.getBoundingClientRect(); return {x:e.clientX-rect.left,y:e.clientY-rect.top}; }\n    canvas.addEventListener(\"pointerdown\",e=>{ e.preventDefault(); canvas.setPointerCapture(e.pointerId); const p=pos(e); saveState(); if(activeTool===\"text\"){ const text=prompt(\"Что написать в черновике?\",\"∠C = ?\"); if(text){ctx.fillStyle=\"#172033\";ctx.font=\"18px Arial\";ctx.fillText(text,p.x,p.y);} return;} if(activeTool===\"sqrt\"){ctx.fillStyle=\"#172033\";ctx.font=\"20px Georgia\";ctx.fillText(\"√x   a²+b²=c²\",p.x,p.y);return;} drawing=true; start=p; last=p; });\n    canvas.addEventListener(\"pointermove\",e=>{ if(!drawing)return; const p=pos(e); if(activeTool===\"pen\"||activeTool===\"eraser\"){ ctx.globalCompositeOperation=activeTool===\"eraser\"?\"destination-out\":\"source-over\"; ctx.strokeStyle=activeTool===\"eraser\"?\"rgba(0,0,0,1)\":\"#172033\"; ctx.lineWidth=activeTool===\"eraser\"?18:3; ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.globalCompositeOperation=\"source-over\";last=p;} });\n    canvas.addEventListener(\"pointerup\",e=>{ if(!drawing)return; const p=pos(e); if(activeTool===\"line\"){ctx.strokeStyle=\"#172033\";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(start.x,start.y);ctx.lineTo(p.x,p.y);ctx.stroke();} drawing=false;start=null;last=null; });\n    document.getElementById(\"hintBtn\").onclick=()=>{ const text=\"Подсказка: сначала выпиши данные, затем найди неизвестные углы через свойства фигуры.\"; document.getElementById(\"noteInput\").value=text; ctx.fillStyle=\"#0f7a42\"; ctx.font=\"16px Arial\"; wrapCanvasText(text,18,30,canvas.clientWidth-36,22); };\n    function wrapCanvasText(text,x,y,maxWidth,lineHeight){ const words=text.split(\" \"); let line=\"\"; for(let i=0;i<words.length;i++){ const test=line+words[i]+\" \"; if(ctx.measureText(test).width>maxWidth&&i>0){ctx.fillText(line,x,y);line=words[i]+\" \";y+=lineHeight;}else line=test;} ctx.fillText(line,x,y); }\n    window.addEventListener(\"resize\",resizeCanvas); requestAnimationFrame(()=>{resizeCanvas(); renderQuestion(); updateBars();});\n  </script>\n</body>\n</html>";
+const BATTLE_TEMPLATE = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Баттл ЕГЭ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], processEscapes: true }, startup: { typeset: false } };<\/script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
+    <style>
+        :root{
+            --accent:#ff8c00;
+            --accent2:#4fc3ff;
+            --text:#ffffff;
+            --panel:rgba(255,255,255,.93);
+            --shadow:0 18px 45px rgba(0,0,0,.35);
+            --good:#57ff9a;
+            --bad:#ff5470;
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%;margin:0;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#091018;color:var(--text)}
+        body{background:#091018}
+        #arena{position:relative;width:100vw;height:100vh;overflow:hidden;background:url('arena.png') center/cover no-repeat}
+        #arena::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,.28), rgba(0,0,0,.36));pointer-events:none}
+        #titleWrap{display:none}
+        #titleWrap .main{font-size:clamp(30px,4vw,54px);font-weight:1000;letter-spacing:1px;text-transform:uppercase;text-shadow:0 0 18px rgba(255,140,0,.85), 0 0 36px rgba(255,140,0,.45)}
+        #titleWrap .sub{margin-top:3px;font-family:'Caveat',cursive;font-size:clamp(22px,2vw,34px);color:rgba(255,255,255,.9)}
+        #hud{position:absolute;top:22px;left:20px;right:20px;z-index:7;display:flex;align-items:center;gap:12px;pointer-events:none}
+        .pill{background:rgba(11,18,28,.72);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(10px);padding:10px 14px;border-radius:999px;box-shadow:var(--shadow);font-weight:800;white-space:nowrap}
+        #timerPill{margin-left:auto}
+        #heartText{letter-spacing:4px;color:#ff6985;text-shadow:0 0 14px rgba(255,84,112,.55)}
+        #scene{position:absolute;inset:0;z-index:2}
+        .fighterZone{position:absolute;top:0;bottom:auto;display:flex;flex-direction:column;align-items:center;gap:10px;z-index:3}
+        #heroZone{left:-0.91%;top:14.16%;width:33.14vw}
+        #bossZone{left:58.5%;top:0.81%;width:43.3vw}
+        .fighterName{padding:8px 16px;border-radius:999px;background:rgba(11,18,28,.72);border:2px solid var(--accent);font-size:15px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;box-shadow:0 0 12px var(--accent),0 0 24px rgba(255,140,0,.35),var(--shadow);text-align:center;text-shadow:0 0 8px rgba(255,255,255,.55)}
+        #heroZone .fighterName{border-color:#8b5cff;box-shadow:0 0 12px #8b5cff,0 0 24px rgba(139,92,255,.35),var(--shadow)}
+        #bossZone .fighterName{border-color:#ff8c00;box-shadow:0 0 12px #ff8c00,0 0 24px rgba(255,140,0,.35),var(--shadow)}
+        .fighterCard{position:relative;width:100%;height:100%;min-width:0;min-height:0;padding:0;border-radius:24px;background:transparent;border:none;box-shadow:none;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
+        .fighterCard img{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));transition:transform .25s ease, filter .25s ease}
+        .fighterCard.attack img{transform:scale(1.03) translateX(8px)}
+        .fighterCard.hit img{transform:scale(.96);filter:drop-shadow(0 0 18px rgba(255,84,112,.9))}
+        .hpWrap{width:min(24vw,300px);background:rgba(11,18,28,.72);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:7px 9px;box-shadow:var(--shadow);margin-top:-18px}
+        .hpLabel{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;color:rgba(255,255,255,.88);margin-bottom:6px;text-transform:uppercase}
+        .hpBar{position:relative;height:16px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden;border:1px solid rgba(255,255,255,.15)}
+        .hpBar::after{content:"";position:absolute;inset:0;background-repeat:repeat-x;background-size:var(--segment-size, 20px) 100%;background-image:linear-gradient(to right, transparent calc(100% - 1px), rgba(255,255,255,.18) calc(100% - 1px));pointer-events:none;opacity:.9}
+        .hpFill{height:100%;width:100%;transition:width .45s ease;border-radius:999px}
+        #heroHpFill{background:linear-gradient(90deg,#69f0ae,#d4ff62)}
+        #bossHpFill{background:linear-gradient(90deg,#ff5470,#ff8c00)}
+        
+        #heroCard{width:33.14vw;height:73.08vh}
+        #bossCard{width:43.3vw;height:90.92vh}
+        #heroZone .hpWrap{width:min(24vw,300px);position:absolute;left:50%;top:calc(73.08vh + 8px);transform:translateX(-50%);z-index:8}
+        #bossZone .hpWrap{width:min(24vw,300px);position:absolute;left:50%;top:calc(90.92vh + 8px);transform:translateX(-50%);z-index:8}
+
+        #centerControls{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);z-index:8;display:flex;flex-direction:column;align-items:center;gap:14px}
+        #startBattleBtn{border:none;border-radius:18px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:16px 28px;font-size:22px;font-weight:1000;cursor:pointer;box-shadow:0 18px 28px rgba(0,0,0,.28), 0 0 20px rgba(255,140,0,.38)}
+        #startBattleBtn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+        #questionPanel{display:none;position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:min(760px,calc(100vw - 26px));max-height:min(68vh,760px);background:var(--panel);color:#222;border-radius:24px;border:2px solid var(--accent);box-shadow:0 0 30px rgba(255,140,0,.25), var(--shadow);padding:18px 18px 16px;z-index:9;overflow:hidden}
+        #questionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+        #questionHead .badge{background:#fff3e0;border:1px solid #ffcc80;color:#e65100;border-radius:999px;padding:8px 14px;font-weight:900}
+        #questionHead .prog{font-weight:900;color:#666}
+        #q{font-size:clamp(16px,2.15vh,20px);line-height:1.32;max-height:40vh;overflow:auto;padding:8px 6px 8px;text-align:center;color:#222;text-wrap:pretty;}
+        #q img,#q svg{display:block;max-width:100% !important;width:auto !important;height:auto !important;max-height:min(28vh,280px) !important;object-fit:contain !important;margin:0 auto 12px auto !important}
+        #answerRow{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
+        #ansInput{width:min(240px,100%);font-size:18px;padding:12px 16px;border-radius:14px;border:2px solid #ddd;outline:none;text-align:center}
+        #attackBtn,#nextBtn{border:none;border-radius:14px;padding:12px 18px;font-size:17px;font-weight:1000;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.16)}
+        #attackBtn{background:var(--accent);color:#fff}
+        #nextBtn{display:none;background:#26334f;color:#fff}
+        #msg{margin-top:10px;min-height:24px;text-align:center;font-weight:900}
+        #projectile{display:none;position:fixed;z-index:14;width:84px;height:84px;pointer-events:none;transform:translate(-50%,-50%);object-fit:contain;filter:drop-shadow(0 0 12px rgba(255,255,255,.45)) drop-shadow(0 0 22px rgba(255,140,0,.45))}
+        #explosion{display:none;position:fixed;z-index:15;width:26px;height:26px;border-radius:999px;pointer-events:none;transform:translate(-50%,-50%);background:radial-gradient(circle, rgba(255,255,255,.98) 0%, rgba(255,214,64,.95) 26%, rgba(255,140,0,.88) 46%, rgba(255,84,112,.34) 68%, rgba(255,84,112,0) 100%);box-shadow:0 0 20px rgba(255,255,255,.8),0 0 44px rgba(255,140,0,.7);animation:boom .45s ease-out forwards}
+        @keyframes boom{0%{opacity:1;transform:translate(-50%,-50%) scale(.2)}55%{opacity:1;transform:translate(-50%,-50%) scale(3.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(5.4)}}
+        #startOverlay{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.48);backdrop-filter:blur(7px);padding:16px}
+        #startCard{width:min(980px,100%);background:rgba(11,18,28,.86);border:1px solid rgba(255,255,255,.14);border-radius:28px;box-shadow:var(--shadow);padding:22px}
+        #startCard h1{margin:0 0 8px;text-align:center;font-size:clamp(32px,4.8vw,54px);text-transform:uppercase;text-shadow:0 0 18px rgba(255,140,0,.85)}
+        #startCard p{margin:0 auto 18px;max-width:840px;text-align:center;color:rgba(255,255,255,.84);font-size:16px;line-height:1.45}
+        #chars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+        .charCard{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.12);border-radius:22px;padding:14px;cursor:pointer;text-align:center;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:10px}
+        .charCard:hover,.charCard.selected{border-color:var(--accent);box-shadow:0 0 16px rgba(255,140,0,.28);transform:translateY(-2px)}
+        .charThumb{width:min(16vw,140px);height:min(18vw,170px);min-width:90px;min-height:110px;display:flex;align-items:center;justify-content:center}
+        .charThumb img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.42))}
+        .charName{font-weight:1000;font-size:18px}
+        .charDesc{font-size:13px;color:rgba(255,255,255,.68)}
+        #enterArenaBtn,#restartBtn{display:block;margin:18px auto 0;border:none;border-radius:16px;background:linear-gradient(90deg,#ff8c00,#ff5470);color:#fff;padding:14px 24px;font-size:18px;font-weight:1000;cursor:pointer;box-shadow:0 14px 26px rgba(255,84,112,.24)}
+        
+        #questionPanel.draft-open{left:35%;width:min(620px,calc(64vw - 24px));}
+        #draftBtnBattle{border:1px solid var(--accent);border-radius:14px;padding:10px 13px;font-size:20px;background:#fff;color:var(--accent);cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.14)}
+        #draftBtnBattle.active{background:var(--accent);color:#fff}
+        #drawPanel{display:none;position:absolute;right:3%;top:28%;width:min(430px,35vw);height:58vh;background:rgba(255,255,255,.96);border:2px solid var(--accent);border-radius:18px;padding:14px;box-shadow:0 0 25px rgba(0,0,0,.25);box-sizing:border-box;z-index:8;color:#222}
+        #drawPanel.open{display:flex;flex-direction:column;gap:10px}
+        #drawTools{display:flex;flex-wrap:nowrap;gap:8px;align-items:center;background:#e3f2fd;padding:8px 10px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden}
+        #drawTools button{background:none;border:none;cursor:pointer;font-size:19px;padding:2px 4px;border-radius:6px;line-height:1.2}
+        #drawTools button:hover{background:rgba(255,255,255,.75)}
+        #drawTools button.active{background:#fff3e0;box-shadow:0 0 0 1px #ffcc80 inset}
+        #drawTools select{background:#fff;border:1px solid #90caf9;border-radius:6px;padding:4px 6px;font-size:13px;cursor:pointer;outline:none;color:#003399;font-weight:500;min-width:106px}
+        #drawTools input[type="color"]{cursor:pointer;height:28px;width:32px;border:none;background:transparent;padding:0;flex:0 0 auto}
+        #drawTools input[type="range"]{cursor:pointer;width:70px;flex:0 0 auto}
+        #drawClose{margin-left:auto;background:#fff3e0 !important;color:#e65100;border:1px solid #ffcc80 !important;width:28px;height:28px;border-radius:8px;font-size:19px !important;line-height:1}
+        #drawCanvasWrap{position:relative;flex:1;min-height:230px;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
+        #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:45%;overflow:hidden}
+        #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:100%;width:auto!important;height:auto!important;object-fit:contain!important}
+        #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+        @media(max-width:1120px){
+            #questionPanel.draft-open{left:50%;width:min(760px,calc(100vw - 26px));top:41%;max-height:42vh}
+            #drawPanel{left:3%;right:3%;top:auto;bottom:2%;width:auto;height:40vh}
+            #drawTools{flex-wrap:wrap}
+        }
+
+        #finishOverlay{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.56);backdrop-filter:blur(8px);padding:16px}
+        #finishCard{width:min(760px,100%);background:rgba(11,18,28,.92);border:1px solid rgba(255,255,255,.15);border-radius:28px;box-shadow:var(--shadow);padding:28px;text-align:center}
+        #finishTitle{font-size:clamp(32px,4.8vw,54px);font-weight:1000;margin-bottom:8px;text-shadow:0 0 16px rgba(255,140,0,.55)}
+        #finishText{font-size:17px;line-height:1.45;color:rgba(255,255,255,.86)}
+        .stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+        .stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px 16px;min-width:150px}
+        .stat b{font-size:24px}.stat div{font-size:12px;color:rgba(255,255,255,.68);margin-top:4px}
+        @media (max-width:980px){
+            .fighterZone{width:min(29vw,250px)}
+            .fighterCard{min-width:170px;min-height:210px;height:min(32vh,300px)}
+            .hpWrap{width:min(29vw,250px)}
+        }
+        @media (max-width:760px){
+            #hud{top:14px;left:12px;right:12px;gap:8px;flex-wrap:wrap}
+            .pill{font-size:13px;padding:8px 10px}
+            #timerPill{margin-left:0}
+            #questionPanel{top:58%;max-height:58vh;width:min(92vw,700px)}
+            #q{max-height:30vh}
+        }
+    </style>
+</head>
+<body>
+<div id="arena">
+    <div id="titleWrap"><div class="main">Арена ЕГЭ</div><div class="sub">Баттл с воплощением экзамена</div></div>
+    <div id="hud">
+        <div class="pill">Жизни: <span id="heartText">♥♥♥♥♥</span></div>
+        <div class="pill">Босс: <span id="bossRemainText">100%</span></div>
+        <div class="pill" id="timerPill">⏱ <span id="timer">00:00</span></div>
+    </div>
+
+    <div id="scene">
+        <div class="fighterZone" id="heroZone">
+            <div class="fighterName" id="heroDisplayName">Игрок</div>
+            <div class="fighterCard" id="heroCard"><img id="heroImg" src="pers1.png" alt="Игрок"></div>
+            <div class="hpWrap">
+                <div class="hpLabel"><span>Линия жизни</span><span id="heroHpText">100%</span></div>
+                <div class="hpBar" id="heroHpBar"><div class="hpFill" id="heroHpFill"></div></div>
+            </div>
+        </div>
+
+        <div class="fighterZone" id="bossZone">
+            <div class="fighterName">Страж КИМов</div>
+            <div class="fighterCard" id="bossCard"><img id="bossImg" src="pers4.png" alt="Страж КИМов"></div>
+            <div class="hpWrap">
+                <div class="hpLabel"><span>Линия жизни</span><span id="bossHpText">100%</span></div>
+                <div class="hpBar" id="bossHpBar"><div class="hpFill" id="bossHpFill"></div></div>
+            </div>
+        </div>
+
+        <div id="centerControls">
+            <button id="startBattleBtn" type="button">▶ Начать</button>
+        </div>
+
+        <div id="questionPanel">
+            <div id="questionHead">
+                <div class="badge" id="questionBadge">Задание 1</div>
+                <div class="prog" id="questionProgress">1 / 10</div>
+            </div>
+            <div id="q"></div>
+            <div id="answerRow">
+                <input id="ansInput" type="text" autocomplete="off" placeholder="Ответ...">
+                <button id="attackBtn" type="button">Атаковать</button>
+                <button id="nextBtn" type="button">Следующее задание →</button>
+                <button id="draftBtnBattle" type="button" title="Открыть черновик">✏️</button>
+            </div>
+            <div id="msg"></div>
+        </div>
+
+        <div id="drawPanel" onclick="event.stopPropagation();">
+            <div id="drawTools">
+                <button type="button" data-tool-btn="pointer" title="Указатель">👆</button>
+                <button type="button" data-tool-btn="pen" title="Карандаш">🖊️</button>
+                <button type="button" id="undoBattle" title="Отменить">↶</button>
+                <button type="button" id="redoBattle" title="Повторить">↷</button>
+                <select id="tool-select-battle">
+                    <option value="" disabled selected hidden>🔺 Фигуры</option>
+                    <option value="line">📏 Прямая</option>
+                    <option value="vector">↗️ Вектор</option>
+                    <option value="circle">⭕ Окружность</option>
+                    <option value="triangle">🔺 Треугольник</option>
+                </select>
+                <input type="color" id="color-battle" value="#003399" title="Цвет">
+                <input type="range" id="size-battle" min="1" max="15" value="3" title="Толщина">
+                <button type="button" data-tool-btn="eraser" title="Ластик">🧽</button>
+                <div style="flex-grow:1;min-width:4px"></div>
+                <button type="button" id="clearBattle" title="Очистить">🗑️</button>
+                <button id="drawClose" type="button" title="Закрыть">×</button>
+            </div>
+            <div id="drawCanvasWrap">
+                <div id="draftDiagram"></div>
+                <canvas id="canvas-battle"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <img id="projectile" alt="Заряд">
+    <div id="explosion"></div>
+
+    <div id="startOverlay">
+        <div id="startCard">
+            <h1>Баттл ЕГЭ</h1>
+            <p id="instructionText">Выбери персонажа и выйди на арену. Слева будет твой герой, справа — Страж КИМов. У тебя 5 жизней. Правильный ответ отправляет заряд в босса, неправильный — даёт боссу ударить по тебе. Побеждает тот, у кого к концу баттла линия жизни длиннее.</p>
+            <div id="chars">
+                <div class="charCard selected" data-name="Альтаир" data-src="pers1.png" data-desc="смелый и собранный">
+                    <div class="charThumb"><img src="pers1.png" alt="Персонаж 1"></div>
+                    <div class="charName">Альтаир</div>
+                </div>
+                <div class="charCard" data-name="Вега" data-src="pers2.png" data-desc="быстрая и внимательная">
+                    <div class="charThumb"><img src="pers2.png" alt="Персонаж 2"></div>
+                    <div class="charName">Вега</div>
+                </div>
+                <div class="charCard" data-name="Квант" data-src="pers3.png" data-desc="спокойный логик">
+                    <div class="charThumb"><img src="pers3.png" alt="Персонаж 3"></div>
+                    <div class="charName">Квант</div>
+                </div>
+            </div>
+            <button id="enterArenaBtn" type="button">Выйти на арену</button>
+        </div>
+    </div>
+
+    <div id="finishOverlay">
+        <div id="finishCard">
+            <div id="finishTitle">Баттл завершён</div>
+            <div id="finishText"></div>
+            <div class="stats">
+                <div class="stat"><b id="stCorrect">0</b><div>правильных ответов</div></div>
+                <div class="stat"><b id="stWrong">0</b><div>неверных ответов</div></div>
+                <div class="stat"><b id="stHero">0%</b><div>жизни героя</div></div>
+                <div class="stat"><b id="stBoss">0%</b><div>жизни босса</div></div>
+            </div>
+            <button id="restartBtn" type="button">↻ Сыграть ещё раз</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/*__CONFIG_DATA__*/
+(function(){
+    const cfg = window.__BATTLE_CFG__ || {};
+    const questions = Array.isArray(cfg.questions) ? cfg.questions : [];
+    const total = questions.length || 1;
+    const maxLives = Number(cfg.lives || 5);
+    const $ = id => document.getElementById(id);
+    let selectedHero = { name:'Альтаир', src:'pers1.png' };
+    let currentIndex = 0;
+    let heroLives = maxLives;
+    let bossHits = 0;
+    let wrong = 0;
+    let correct = 0;
+    let timerInt = null;
+    let startedAt = null;
+    let locked = false;
+
+    function norm(v){ return String(v == null ? '' : v).trim().replace(',', '.').toLowerCase(); }
+    function fmt(sec){ sec = Math.max(0, Math.floor(sec)); return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0'); }
+    function heroPct(){ return Math.max(0, (heroLives / maxLives) * 100); }
+    function bossPct(){ return Math.max(0, ((total - bossHits) / total) * 100); }
+
+    function updateHeroUi(){
+        $('heartText').textContent = '♥'.repeat(Math.max(0, heroLives)) + '♡'.repeat(Math.max(0, maxLives - heroLives));
+        $('heroHpFill').style.width = heroPct() + '%';
+        $('heroHpText').textContent = Math.round(heroPct()) + '%';
+        $('heroHpBar').style.setProperty('--segment-size', (100 / Math.max(1, maxLives)) + '%');
+    }
+    function updateBossUi(){
+        $('bossHpFill').style.width = bossPct() + '%';
+        $('bossHpText').textContent = Math.round(bossPct()) + '%';
+        $('bossRemainText').textContent = Math.round(bossPct()) + '%';
+        $('bossHpBar').style.setProperty('--segment-size', (100 / Math.max(1, total)) + '%');
+    }
+    function applySelectedHero(){
+        $('heroImg').src = selectedHero.src;
+        $('heroDisplayName').textContent = selectedHero.name;
+    }
+    function typeset(){ if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([$('q')]).catch(()=>{}); }
+    function setMessage(text, color){ $('msg').textContent = text || ''; $('msg').style.color = color || '#333'; }
+
+    function showQuestion(){
+        if(currentIndex >= questions.length || heroLives <= 0 || bossHits >= total){ finishBattle(); return; }
+        locked = false;
+        const q = questions[currentIndex] || {};
+        $('questionPanel').style.display = 'block';
+        $('questionBadge').textContent = 'Задание ' + (currentIndex + 1);
+        $('questionProgress').textContent = (currentIndex + 1) + ' / ' + questions.length;
+        $('q').innerHTML = String(q.prompt || '').replace(/\s+([.,!?;:])/g, '$1');
+        syncDraftDiagram();
+        $('ansInput').value = '';
+        $('ansInput').readOnly = false;
+        $('attackBtn').style.display = 'inline-block';
+        $('nextBtn').style.display = 'none';
+        setMessage('');
+        typeset();
+        setTimeout(()=>$('ansInput').focus(), 50);
+    }
+
+    function centerOf(el){
+        const r = el.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+
+    function animateShot(kind, done){
+        const projectile = $('projectile');
+        const explosion = $('explosion');
+        const fromEl = kind === 'good' ? $('heroCard') : $('bossCard');
+        const toEl = kind === 'good' ? $('bossCard') : $('heroCard');
+        const from = centerOf(fromEl);
+        const to = centerOf(toEl);
+        projectile.src = kind === 'good' ? 'z2.png' : 'z1.png';
+        projectile.style.transition = 'none';
+        projectile.style.display = 'block';
+        projectile.style.left = from.x + 'px';
+        projectile.style.top = from.y + 'px';
+        projectile.style.opacity = '1';
+        projectile.style.width = '84px';
+        projectile.style.height = '84px';
+        projectile.style.transform = 'translate(-50%,-50%) scale(0.8)';
+        explosion.style.display = 'none';
+        void projectile.offsetWidth;
+        requestAnimationFrame(()=>{
+            projectile.style.transition = 'left .5s ease-in, top .5s ease-in, transform .5s ease-in, opacity .5s ease-in';
+            projectile.style.left = to.x + 'px';
+            projectile.style.top = to.y + 'px';
+            projectile.style.transform = 'translate(-50%,-50%) scale(1.18)';
+        });
+        const targetCard = kind === 'good' ? $('bossCard') : $('heroCard');
+        targetCard.classList.add(kind === 'good' ? 'hit' : 'hit');
+        setTimeout(()=>{
+            projectile.style.display = 'none';
+            targetCard.classList.remove('hit');
+            explosion.style.left = to.x + 'px';
+            explosion.style.top = to.y + 'px';
+            explosion.style.display = 'block';
+            setTimeout(()=>{ explosion.style.display = 'none'; if(typeof done === 'function') done(); }, 420);
+        }, 520);
+    }
+
+    function resolveAttack(){
+        if(locked) return;
+        const raw = $('ansInput').value;
+        if(!String(raw).trim()) return;
+        locked = true;
+        $('attackBtn').disabled = true;
+        $('ansInput').readOnly = true;
+        const q = questions[currentIndex] || {};
+        const answers = (q.accepts || []).map(norm);
+        const isCorrect = answers.includes(norm(raw));
+        if(isCorrect){
+            correct++;
+            bossHits++;
+            setMessage('✅ Отличный удар! Босс получает урон.', '#17834a');
+            $('heroCard').classList.add('attack');
+            setTimeout(()=>$('heroCard').classList.remove('attack'), 260);
+            updateBossUi();
+            animateShot('good', afterResolution);
+        } else {
+            wrong++;
+            heroLives = Math.max(0, heroLives - 1);
+            let txt = '❌ Босс контратакует!';
+            if(cfg.showCorrectOnError){ txt += ' Верный ответ: ' + ((q.accepts || [])[0] ?? ''); }
+            setMessage(txt, '#c62828');
+            $('bossCard').classList.add('attack');
+            setTimeout(()=>$('bossCard').classList.remove('attack'), 260);
+            updateHeroUi();
+            animateShot('bad', afterResolution);
+        }
+    }
+
+    function afterResolution(){
+        $('attackBtn').disabled = false;
+        $('attackBtn').style.display = 'none';
+        $('nextBtn').style.display = 'inline-block';
+        if(heroLives <= 0 || bossHits >= total || currentIndex >= questions.length - 1){
+            $('nextBtn').textContent = 'Завершить баттл';
+        } else {
+            $('nextBtn').textContent = 'Следующее задание →';
+        }
+    }
+
+    function nextStep(){
+        currentIndex++;
+        if(currentIndex >= questions.length || heroLives <= 0 || bossHits >= total){ finishBattle(); return; }
+        showQuestion();
+    }
+
+    function finishBattle(){
+        if(timerInt) clearInterval(timerInt);
+        $('questionPanel').style.display = 'none';
+        const heroRemain = heroPct();
+        const bossRemain = bossPct();
+        let title = 'Баттл завершён';
+        let text = 'Сражение окончено.';
+        if(heroLives <= 0 && bossHits >= total){
+            title = 'Ничья!';
+            text = 'Оба соперника потеряли все силы одновременно.';
+        } else if(heroLives <= 0){
+            title = 'Победил Страж КИМов';
+            text = 'Жизни героя закончились раньше. Попробуйте ещё раз!';
+        } else if(bossHits >= total){
+            title = 'Победа!';
+            text = 'Вы полностью обнулили линию жизни босса.';
+        } else if(heroRemain > bossRemain){
+            title = 'Победа!';
+            text = 'У героя осталась более длинная линия жизни. Арена ЕГЭ пройдена!';
+        } else if(heroRemain < bossRemain){
+            title = 'Победил Страж КИМов';
+            text = 'У босса осталась более длинная линия жизни. Есть шанс на реванш!';
+        } else {
+            title = 'Ничья!';
+            text = 'Линии жизни оказались равны. Очень напряжённый баттл!';
+        }
+        $('finishTitle').textContent = title;
+        $('finishText').textContent = text;
+        $('stCorrect').textContent = String(correct);
+        $('stWrong').textContent = String(wrong);
+        $('stHero').textContent = Math.round(heroRemain) + '%';
+        $('stBoss').textContent = Math.round(bossRemain) + '%';
+        $('finishOverlay').style.display = 'flex';
+    }
+
+    function enterArena(){
+        $('startOverlay').style.display = 'none';
+        $('centerControls').style.display = 'flex';
+        applySelectedHero();
+        updateHeroUi();
+        updateBossUi();
+    }
+
+    function startBattle(){
+        $('startBattleBtn').style.display = 'none';
+        startedAt = Date.now();
+        $('timer').textContent = '00:00';
+        if(timerInt) clearInterval(timerInt);
+        timerInt = setInterval(()=>{ $('timer').textContent = fmt((Date.now() - startedAt)/1000); }, 1000);
+        currentIndex = 0;
+        heroLives = maxLives;
+        bossHits = 0;
+        wrong = 0;
+        correct = 0;
+        updateHeroUi();
+        updateBossUi();
+        showQuestion();
+    }
+
+
+    // --- Черновик для Баттла ЕГЭ ---
+    const draftState = { canvas:null, ctx:null, drawing:false, tool:'pen', startX:0, startY:0, snapshot:null, undo:[], redo:[] };
+
+    function resizeDraftCanvas(){
+        const canvas = $('canvas-battle');
+        if(!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        if(rect.width <= 0 || rect.height <= 0) return;
+        const old = document.createElement('canvas');
+        old.width = canvas.width; old.height = canvas.height;
+        const oldCtx = old.getContext('2d');
+        if(canvas.width && canvas.height) oldCtx.drawImage(canvas, 0, 0);
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        if(old.width && old.height) ctx.drawImage(old,0,0,old.width/dpr,old.height/dpr);
+        draftState.canvas = canvas;
+        draftState.ctx = ctx;
+    }
+
+    function saveDraftState(){
+        const c = draftState.canvas;
+        if(!c) return;
+        try{
+            draftState.undo.push(c.toDataURL());
+            if(draftState.undo.length > 30) draftState.undo.shift();
+            draftState.redo = [];
+        }catch(e){}
+    }
+
+    function restoreDraftState(data){
+        const c = draftState.canvas, ctx = draftState.ctx;
+        if(!c || !ctx || !data) return;
+        const img = new Image();
+        img.onload = function(){
+            ctx.save();
+            ctx.setTransform(1,0,0,1,0,0);
+            ctx.clearRect(0,0,c.width,c.height);
+            ctx.restore();
+            ctx.drawImage(img,0,0,c.width/(window.devicePixelRatio||1),c.height/(window.devicePixelRatio||1));
+        };
+        img.src = data;
+    }
+
+    function undoDraft(){
+        const c = draftState.canvas;
+        if(!c || draftState.undo.length <= 1) return;
+        const cur = draftState.undo.pop();
+        draftState.redo.push(cur);
+        restoreDraftState(draftState.undo[draftState.undo.length - 1]);
+    }
+
+    function redoDraft(){
+        if(!draftState.redo.length) return;
+        const data = draftState.redo.pop();
+        draftState.undo.push(data);
+        restoreDraftState(data);
+    }
+
+    function clearDraft(){
+        if(!draftState.ctx || !draftState.canvas) return;
+        saveDraftState();
+        const c = draftState.canvas;
+        draftState.ctx.save();
+        draftState.ctx.setTransform(1,0,0,1,0,0);
+        draftState.ctx.clearRect(0,0,c.width,c.height);
+        draftState.ctx.restore();
+    }
+
+    function setDraftTool(tool){
+        draftState.tool = tool || 'pen';
+        document.querySelectorAll('#drawTools [data-tool-btn]').forEach(b => b.classList.toggle('active', b.dataset.toolBtn === draftState.tool));
+    }
+
+    function posOnCanvas(e){
+        const r = draftState.canvas.getBoundingClientRect();
+        return {x:e.clientX-r.left, y:e.clientY-r.top};
+    }
+
+    function beginDraft(e){
+        if(!draftState.ctx || draftState.tool === 'pointer') return;
+        e.preventDefault();
+        const p = posOnCanvas(e);
+        draftState.drawing = true;
+        draftState.startX = p.x; draftState.startY = p.y;
+        draftState.snapshot = draftState.ctx.getImageData(0,0,draftState.canvas.width,draftState.canvas.height);
+        if(draftState.tool === 'pen' || draftState.tool === 'eraser'){
+            saveDraftState();
+            draftState.ctx.beginPath();
+            draftState.ctx.moveTo(p.x,p.y);
+        }
+    }
+
+    function drawDraft(e){
+        if(!draftState.drawing || !draftState.ctx) return;
+        e.preventDefault();
+        const p = posOnCanvas(e);
+        const ctx = draftState.ctx;
+        const color = $('color-battle') ? $('color-battle').value : '#003399';
+        const size = $('size-battle') ? Number($('size-battle').value || 3) : 3;
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.lineWidth = draftState.tool === 'eraser' ? size * 3 : size;
+        ctx.strokeStyle = draftState.tool === 'eraser' ? 'rgba(255,255,255,1)' : color;
+        ctx.fillStyle = color;
+
+        if(draftState.tool === 'pen' || draftState.tool === 'eraser'){
+            ctx.lineTo(p.x,p.y); ctx.stroke(); return;
+        }
+
+        if(draftState.snapshot) ctx.putImageData(draftState.snapshot,0,0);
+        ctx.beginPath();
+        if(draftState.tool === 'line' || draftState.tool === 'vector'){
+            ctx.moveTo(draftState.startX,draftState.startY);
+            ctx.lineTo(p.x,p.y);
+            ctx.stroke();
+            if(draftState.tool === 'vector'){
+                const ang = Math.atan2(p.y-draftState.startY,p.x-draftState.startX);
+                const len = 12 + size;
+                ctx.beginPath();
+                ctx.moveTo(p.x,p.y);
+                ctx.lineTo(p.x-len*Math.cos(ang-Math.PI/6), p.y-len*Math.sin(ang-Math.PI/6));
+                ctx.moveTo(p.x,p.y);
+                ctx.lineTo(p.x-len*Math.cos(ang+Math.PI/6), p.y-len*Math.sin(ang+Math.PI/6));
+                ctx.stroke();
+            }
+        } else if(draftState.tool === 'circle'){
+            const rad = Math.hypot(p.x-draftState.startX,p.y-draftState.startY);
+            ctx.arc(draftState.startX,draftState.startY,rad,0,Math.PI*2);
+            ctx.stroke();
+        } else if(draftState.tool === 'triangle'){
+            ctx.moveTo(draftState.startX,p.y);
+            ctx.lineTo((draftState.startX+p.x)/2,draftState.startY);
+            ctx.lineTo(p.x,p.y);
+            ctx.closePath(); ctx.stroke();
+        }
+    }
+
+    function endDraft(){
+        if(!draftState.drawing) return;
+        if(!(draftState.tool === 'pen' || draftState.tool === 'eraser')) saveDraftState();
+        draftState.drawing = false;
+        draftState.snapshot = null;
+    }
+
+    function syncDraftDiagram(){
+        const box = $('draftDiagram');
+        if(!box) return;
+        const qEl = $('q');
+        const source = qEl ? qEl.querySelector('svg,img,picture,canvas') : null;
+        if(!source){ box.style.display='none'; box.innerHTML=''; return; }
+        box.innerHTML = '';
+        const clone = source.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.style.maxWidth = '100%';
+        clone.style.maxHeight = '100%';
+        clone.style.width = 'auto';
+        clone.style.height = 'auto';
+        box.appendChild(clone);
+        box.style.display = 'block';
+    }
+
+    function toggleDraft(){
+        const panel = $('drawPanel');
+        const qPanel = $('questionPanel');
+        const btn = $('draftBtnBattle');
+        if(!panel || !qPanel) return;
+        const open = !panel.classList.contains('open');
+        panel.classList.toggle('open', open);
+        qPanel.classList.toggle('draft-open', open);
+        if(btn) btn.classList.toggle('active', open);
+        if(open){
+            syncDraftDiagram();
+            setTimeout(()=>{ resizeDraftCanvas(); if(draftState.undo.length === 0) saveDraftState(); }, 60);
+        }
+    }
+
+    function initDraft(){
+        const canvas = $('canvas-battle');
+        if(!canvas) return;
+        resizeDraftCanvas();
+        setDraftTool('pen');
+        canvas.addEventListener('pointerdown', beginDraft);
+        canvas.addEventListener('pointermove', drawDraft);
+        canvas.addEventListener('pointerup', endDraft);
+        canvas.addEventListener('pointercancel', endDraft);
+        canvas.addEventListener('pointerleave', endDraft);
+        $('draftBtnBattle')?.addEventListener('click', toggleDraft);
+        $('drawClose')?.addEventListener('click', toggleDraft);
+        $('clearBattle')?.addEventListener('click', clearDraft);
+        $('undoBattle')?.addEventListener('click', undoDraft);
+        $('redoBattle')?.addEventListener('click', redoDraft);
+        $('tool-select-battle')?.addEventListener('change', e => setDraftTool(e.target.value));
+        document.querySelectorAll('#drawTools [data-tool-btn]').forEach(b => b.addEventListener('click', () => setDraftTool(b.dataset.toolBtn)));
+        window.addEventListener('resize', resizeDraftCanvas);
+    }
+
+    document.querySelectorAll('.charCard').forEach(card=>{
+        card.addEventListener('click', ()=>{
+            document.querySelectorAll('.charCard').forEach(c=>c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedHero = { name: card.dataset.name || 'Игрок', src: card.dataset.src || 'pers1.png' };
+            applySelectedHero();
+        });
+    });
+
+    $('enterArenaBtn').addEventListener('click', enterArena);
+    $('startBattleBtn').addEventListener('click', startBattle);
+    $('attackBtn').addEventListener('click', resolveAttack);
+    $('nextBtn').addEventListener('click', nextStep);
+    $('ansInput').addEventListener('keydown', e=>{ if(e.key === 'Enter' && $('questionPanel').style.display !== 'none' && $('attackBtn').style.display !== 'none'){ resolveAttack(); } });
+    $('restartBtn').addEventListener('click', ()=> location.reload());
+
+    initDraft();
+    if(cfg.instruction){ $('instructionText').textContent = cfg.instruction; }
+    applySelectedHero();
+    updateHeroUi();
+    updateBossUi();
+})();
+<\/script>
+</body>
+</html>`;
