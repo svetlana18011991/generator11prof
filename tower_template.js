@@ -370,18 +370,20 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
         window.setTool('tower', 'pen');
 
         function normalizeAnswer(s){ return String(s||"").trim().toLowerCase(); }
-        function escapeHtml(s){
-            return String(s == null ? "" : s).replace(/[&<>"']/g, function(ch){
-                return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
-            });
-        }
-        function getCorrectAnswerText(q, acc){
-            if (q && q.answer !== undefined && q.answer !== null && String(q.answer).trim() !== "") return String(q.answer);
-            if (q && q.correctAnswer !== undefined && q.correctAnswer !== null && String(q.correctAnswer).trim() !== "") return String(q.correctAnswer);
-            if (acc && acc.length) return String(acc[0]);
-            return "";
-        }
 
+        function escapeHtmlTowerAnswer(value){
+            return String(value ?? "").replace(/[&<>'"]/g, ch => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "'": "&#39;",
+                '"': "&quot;"
+            }[ch]));
+        }
+        function getTowerCorrectAnswerText(q, acc){
+            const value = (q && (q.correctAnswer ?? q.answer)) ?? (Array.isArray(acc) ? acc[0] : "");
+            return String(value ?? "").trim();
+        }
         function normalizeQuestionMedia(root){
             if(!root) return;
             root.querySelectorAll('img').forEach(img => {
@@ -408,75 +410,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             });
         }
         function showQuestion(){ const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; msgEl.textContent=""; answersEl.innerHTML=""; inputRow.style.display="none"; answersEl.style.display="flex"; qEl.innerHTML=q.prompt; normalizeQuestionMedia(qEl); window.clearCanvas('tower'); if(drawPanel){ drawPanel.classList.remove('open'); overlay.classList.remove('draft-open'); } if(draftBtn) draftBtn.classList.remove('active'); badgeEl.textContent= String(qi+1) + " / 9"; ansInput.style.display = "block"; answersEl.style.display="none"; inputRow.style.display="flex"; ansInput.value=""; submitBtn.onclick = () => checkAnswer(ansInput.value); showOverlayAnimated(); setTimeout(()=>{ ansInput.focus(); }, 50); if (window.__CFG?.useLatex) { const renderMath = () => { if(window.MathJax && window.MathJax.typesetPromise) { window.MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}); setTimeout(()=>MathJax.typesetPromise([document.getElementById("card")]).catch(()=>{}), 350); } else { setTimeout(renderMath, 200); } }; renderMath(); } }
-        function checkAnswer(userValue){
-            if (state.answered) return;
-            state.answered = true;
-
-            const qi = state.questionIndex;
-            const q = QUESTIONS[(QUESTIONS.length ? (qi % QUESTIONS.length) : 0)];
-            const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue);
-            const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer];
-            const ok = acc.map(normalizeAnswer).includes(valStr);
-            const waitingBlock = state.current;
-
-            if(ok){
-                state.correct++;
-                msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100).";
-                playGood();
-                state.dropping = false;
-                setTimeout(()=>{
-                    hideOverlayAnimated();
-                    state.waitingAnswer = false;
-                    if(state.current) state.dropping = true;
-                    else setNextEnabled(true);
-                }, 220);
-            } else {
-                state.wrong++;
-                const showCorrectOnError = !!(window.__CFG && window.__CFG.showCorrectOnError);
-                const correctAnswerText = getCorrectAnswerText(q, acc);
-                const correctHtml = (showCorrectOnError && correctAnswerText)
-                    ? "<br><span style='color: var(--muted);'>Верный ответ: <b style='color: var(--good);'>" + escapeHtml(correctAnswerText) + "</b></span>"
-                    : "";
-
-                msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается, взрывается и исчезает." + correctHtml;
-                state.dropping = false;
-
-                const scorchDur = 0.35;
-                let elapsed = 0;
-                function scorchStep(){
-                    if(!state.current || state.current !== waitingBlock) return;
-                    elapsed += 1/60;
-                    state.current.char = Math.min(1, elapsed / scorchDur);
-                    if(Math.random() < 0.25){
-                        state.smokes.push({
-                            x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15),
-                            y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10),
-                            vx: (Math.random()*2-1)*40,
-                            vy: -80 - Math.random()*80,
-                            life:0.6+Math.random()*0.4,
-                            age:0,
-                            rad: 14+Math.random()*18
-                        });
-                    }
-                    if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); }
-                }
-                requestAnimationFrame(scorchStep);
-
-                setTimeout(()=>{
-                    state.waitingAnswer = false;
-                    if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); }
-                    state.current = null;
-                    setNextEnabled(true);
-
-                    if(showCorrectOnError && correctAnswerText){
-                        setTimeout(()=>{ hideOverlayAnimated(); }, 1900);
-                    } else {
-                        hideOverlayAnimated();
-                    }
-                }, 520);
-            }
-            state.blockIndex++;
-        }
+        function checkAnswer(userValue){ if (state.answered) return; state.answered = true; const qi = state.questionIndex; const q = QUESTIONS[(QUESTIONS.length? (qi % QUESTIONS.length):0)]; let ok=false; const valStr = normalizeAnswer(Array.isArray(userValue) ? userValue[0] : userValue); const acc = (q.accepts && q.accepts.length) ? q.accepts : [q.answer]; ok = acc.map(normalizeAnswer).includes(valStr); const waitingBlock = state.current; if(ok){ state.correct++; msgEl.innerHTML = "<span style='color: var(--good); font-weight:900;'>Верно!</span> Блок опускается (+100)."; playGood(); state.dropping = false; setTimeout(()=>{ hideOverlayAnimated(); state.waitingAnswer = false; if(state.current) state.dropping = true; else setNextEnabled(true); }, 220); } else { state.wrong++; const showCorrectOnError = !!((window.__CFG && window.__CFG.showCorrectOnError) || (q && q.showCorrectOnError)); const correctAnswerText = getTowerCorrectAnswerText(q, acc); const correctHtml = (showCorrectOnError && correctAnswerText) ? "<br><span style='color: var(--muted);'>Верный ответ: <b style='color: var(--good);'>" + escapeHtmlTowerAnswer(correctAnswerText) + "</b></span>" : ""; msgEl.innerHTML = "<span style='color: var(--bad); font-weight:900;'>Неверно!</span> Блок обугливается, взрывается и исчезает." + correctHtml; state.dropping = false; const scorchDur = 0.35; let elapsed = 0; function scorchStep(){ if(!state.current || state.current !== waitingBlock) return; elapsed += 1/60; state.current.char = Math.min(1, elapsed / scorchDur); if(Math.random() < 0.25){ state.smokes.push({ x: waitingBlock.x + waitingBlock.w/2 + (Math.random()*30-15), y: waitingBlock.y + waitingBlock.h/2 + (Math.random()*20-10), vx: (Math.random()*2-1)*40, vy: -80 - Math.random()*80, life:0.6+Math.random()*0.4, age:0, rad: 14+Math.random()*18 }); } if(elapsed < scorchDur){ requestAnimationFrame(scorchStep); } } requestAnimationFrame(scorchStep); setTimeout(()=>{ state.waitingAnswer = false; if(waitingBlock && waitingBlock === state.current){ boomAt(waitingBlock); } state.current = null; setNextEnabled(true); if(showCorrectOnError && correctAnswerText){ setTimeout(()=>{ hideOverlayAnimated(); }, 2200); } else { hideOverlayAnimated(); } }, 520); } state.blockIndex++; }
         ansInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") checkAnswer(ansInput.value); }); document.addEventListener("keydown",(e)=>{ if(overlay.style.display==="flex" && e.key==="Enter"){ checkAnswer(ansInput.value); } }); nextBtn.addEventListener("click", ()=>{ if(nextBtn.disabled) return; state.questionIndex++; if(state.questionIndex >= 9){ finishGame(); return; } spawnBlock(); });
 
         let __assetsPromise = null;
