@@ -109,22 +109,43 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #drawCanvasWrap{position:relative;flex:1 1 auto;min-height:0;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
         #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:68%;overflow:visible}
         #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:52vh;width:auto!important;height:auto!important;object-fit:contain!important}
-        #draftTaskStatement{display:none;flex:0 0 auto;max-height:24vh;overflow:auto;padding:0 2px 2px;color:#222}
-        #draftTaskStatement .draft-condition-text{font-size:14px;line-height:1.22;text-align:center;color:#222}
+        #draftTaskStatement{
+            display:none;
+            position:relative;
+            flex:0 0 auto;
+            height:24vh;
+            max-height:24vh;
+            overflow:hidden;
+            padding:10px 12px;
+            color:#222;
+            background:#fff;
+            border:1px solid #d9e7f5;
+            border-radius:12px;
+            box-shadow:0 3px 10px rgba(0,0,0,.10);
+            box-sizing:border-box;
+        }
+        #draftTaskStatement .draft-condition-text{
+            position:relative;
+            z-index:1;
+            font-size:14px;
+            line-height:1.22;
+            text-align:center;
+            color:#222;
+            pointer-events:none;
+        }
         #draftTaskStatement .draft-figure-wrap{
             position:relative;
             display:block;
             width:fit-content;
             max-width:100%;
-            max-height:22vh;
             margin:0 auto 6px auto;
-            padding:18px 26px;
+            padding:8px 12px;
             background:#fff;
-            border:1px solid #d9e7f5;
-            border-radius:12px;
-            box-shadow:0 3px 10px rgba(0,0,0,.10);
-            overflow:hidden;
+            border:1px solid #edf3fb;
+            border-radius:10px;
+            overflow:visible;
             box-sizing:border-box;
+            pointer-events:none;
         }
         #draftTaskStatement .draft-figure-wrap svg,
         #draftTaskStatement .draft-figure-wrap img,
@@ -132,7 +153,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #draftTaskStatement .draft-figure-wrap canvas:not(#draftFigureAnnot){
             display:block;
             max-width:100%;
-            max-height:17vh;
+            max-height:18vh;
             width:auto!important;
             height:auto!important;
             object-fit:contain!important;
@@ -141,10 +162,13 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         }
         #draftFigureAnnot{
             position:absolute!important;
-            inset:0!important;
+            left:0!important;
+            top:0!important;
+            right:0!important;
+            bottom:0!important;
             width:100%!important;
             height:100%!important;
-            z-index:20!important;
+            z-index:30!important;
             pointer-events:auto!important;
             touch-action:none!important;
             cursor:crosshair!important;
@@ -747,7 +771,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     function resizeFigureCanvas(){
         const canvas = $('draftFigureAnnot');
         if(!canvas) return;
-        const wrap = canvas.parentElement;
+        const wrap = $('draftTaskStatement') || canvas.parentElement;
         const rect = wrap.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
         if(rect.width <= 0 || rect.height <= 0) return;
@@ -943,13 +967,15 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             fig.style.margin = '0 auto';
             fig.style.pointerEvents = 'none';
 
-            const annot = document.createElement('canvas');
-            annot.id = 'draftFigureAnnot';
-            annot.title = 'Можно делать пометки на чертеже и на белом поле вокруг него';
-            wrap.appendChild(annot);
         }
 
         box.appendChild(clone);
+
+        const annot = document.createElement('canvas');
+        annot.id = 'draftFigureAnnot';
+        annot.title = 'Можно делать пометки по всей белой области условия';
+        box.appendChild(annot);
+
         box.style.display = 'block';
 
         const afterRender = ()=>{
