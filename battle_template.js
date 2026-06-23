@@ -106,23 +106,33 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #drawTools input[type="color"]{cursor:pointer;height:28px;width:32px;border:none;background:transparent;padding:0;flex:0 0 auto}
         #drawTools input[type="range"]{cursor:pointer;width:70px;flex:0 0 auto}
         #drawClose{margin-left:auto;background:#fff3e0 !important;color:#e65100;border:1px solid #ffcc80 !important;width:28px;height:28px;border-radius:8px;font-size:19px !important;line-height:1}
-        #drawCanvasWrap{position:relative;flex:1 1 auto;min-height:0;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
-        #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:68%;overflow:visible}
-        #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:52vh;width:auto!important;height:auto!important;object-fit:contain!important}
+        
+        #drawCanvasWrap{
+            position:relative;
+            flex:1 1 auto;
+            min-height:0;
+            background-color:#fff;
+            background-size:20px 20px;
+            background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);
+            border:2px solid #bbdefb;
+            border-radius:10px;
+            overflow:hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
         #draftTaskStatement{
             display:none;
             position:relative;
             flex:0 0 auto;
-            height:24vh;
-            max-height:24vh;
+            max-height:45vh;
             overflow:hidden;
             padding:10px 12px;
             color:#222;
             background:#fff;
-            border:1px solid #d9e7f5;
-            border-radius:12px;
-            box-shadow:0 3px 10px rgba(0,0,0,.10);
+            border-bottom:2px solid #bbdefb;
             box-sizing:border-box;
+            z-index:10;
         }
         #draftTaskStatement .draft-condition-text{
             position:relative;
@@ -150,17 +160,18 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #draftTaskStatement .draft-figure-wrap svg,
         #draftTaskStatement .draft-figure-wrap img,
         #draftTaskStatement .draft-figure-wrap picture,
-        #draftTaskStatement .draft-figure-wrap canvas:not(#draftFigureAnnot){
+        #draftTaskStatement .draft-figure-wrap canvas{
             display:block;
             max-width:100%;
-            max-height:18vh;
+            max-height:26vh;
             width:auto!important;
             height:auto!important;
             object-fit:contain!important;
             margin:0 auto!important;
             pointer-events:none;
         }
-        #draftFigureAnnot{
+
+        #canvas-battle{
             position:absolute!important;
             left:0!important;
             top:0!important;
@@ -174,13 +185,12 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             cursor:crosshair!important;
             background:transparent!important;
         }
-        #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;background:transparent}
+        
         @media(max-width:1120px){
             #questionPanel.draft-open{display:none!important}
             #drawPanel{left:50%;right:auto;top:54%;bottom:auto;transform:translate(-50%,-50%);width:min(92vw,660px);height:76vh;border:2px solid var(--accent);border-radius:18px}
             #drawTools{display:flex;flex-wrap:nowrap;gap:7px;align-items:center;background:#e3f2fd;padding:6px 8px;border-radius:10px;border:1px solid #bbdefb;color:#333;overflow:hidden;min-height:40px;flex:0 0 auto}
         }
-
         
         @keyframes idleHero{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-7px) rotate(.8deg)}}
         @keyframes idleBoss{0%,100%{transform:translateY(0) rotate(.4deg)}50%{transform:translateY(-6px) rotate(-.8deg)}}
@@ -281,9 +291,9 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
                 <button type="button" id="clearBattle" title="Очистить">🗑️</button>
                 <button id="drawClose" type="button" title="Закрыть">×</button>
             </div>
-            <div id="draftTaskStatement"></div>
             <div id="drawCanvasWrap">
-                <canvas id="canvas-battle"></canvas>
+                <div id="draftTaskStatement"></div>
+                <canvas id="canvas-battle" title="Рисуйте прямо поверх условия и на клетчатом поле"></canvas>
             </div>
         </div>
     </div>
@@ -381,7 +391,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     function typeset(){ if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([$('q')]).catch(()=>{}); }
     function setMessage(text, color){ $('msg').textContent = text || ''; $('msg').style.color = color || '#333'; }
 
-
     function fitQuestionPanel(){
         const panel = $('questionPanel');
         const qEl = $('q');
@@ -413,10 +422,18 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         $('questionBadge').textContent = 'Задание ' + (currentIndex + 1);
         $('questionProgress').textContent = (currentIndex + 1) + ' / ' + questions.length;
         $('q').innerHTML = String(q.prompt || '').replace(/\s+([.,!?;:])/g, '$1');
-        draftState.figureUndo = [];
-        draftState.figureRedo = [];
+        
+        // Очищаем черновик для нового задания
+        draftState.undo = [];
+        draftState.redo = [];
+        if(draftState.ctx && draftState.canvas){
+            draftState.ctx.save();
+            draftState.ctx.setTransform(1,0,0,1,0,0);
+            draftState.ctx.clearRect(0,0,draftState.canvas.width,draftState.canvas.height);
+            draftState.ctx.restore();
+        }
+
         syncDraftTaskStatement();
-        syncDraftDiagram();
         $('ansInput').value = '';
         $('ansInput').readOnly = false;
         $('attackBtn').style.display = 'inline-block';
@@ -559,9 +576,8 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         $('finishOverlay').style.display = 'flex';
     }
 
-
     function cleanPlayerName(value){
-        return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 24) || 'Игрок';
+        return String(value || '').trim().replace(/\\s+/g, ' ').slice(0, 24) || 'Игрок';
     }
 
     function updateChoiceNames(){
@@ -602,8 +618,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         showQuestion();
     }
 
-
-
     // --- Звуки и кат-сцена атаки ---
     let audioCtx = null;
     function getAudio(){
@@ -620,7 +634,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         const now = ctx.currentTime;
 
         if(kind === 'good'){
-            // Попадание героя: высокий лазерный заряд + яркий щелчок
             const master = ctx.createGain();
             master.connect(ctx.destination);
             master.gain.setValueAtTime(0.0001, now);
@@ -663,7 +676,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             noise.start(now);
             noise.stop(now + 0.13);
         } else {
-            // Попадание босса: низкий тяжёлый удар + глухой басовый хвост
             const master = ctx.createGain();
             master.connect(ctx.destination);
             master.gain.setValueAtTime(0.0001, now);
@@ -738,60 +750,14 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         fitQuestionPanel();
     }
 
-    // --- Черновик для Баттла ЕГЭ ---
-    const draftState = { canvas:null, ctx:null, figureCanvas:null, figureCtx:null, activeSurface:'main', drawing:false, tool:'pen', startX:0, startY:0, snapshot:null, undo:[], redo:[], figureUndo:[], figureRedo:[] };
-
-
-    function getActiveCanvas(){
-        return draftState.activeSurface === 'figure' ? draftState.figureCanvas : draftState.canvas;
-    }
-    function getActiveCtx(){
-        return draftState.activeSurface === 'figure' ? draftState.figureCtx : draftState.ctx;
-    }
-    function getUndoStack(){
-        return draftState.activeSurface === 'figure' ? draftState.figureUndo : draftState.undo;
-    }
-    function getRedoStack(){
-        return draftState.activeSurface === 'figure' ? draftState.figureRedo : draftState.redo;
-    }
-
-
-    function bindFigureCanvasEvents(){
-        const figCanvas = $('draftFigureAnnot');
-        if(figCanvas && !figCanvas.dataset.bound){
-            figCanvas.addEventListener('pointerdown', beginDraft);
-            figCanvas.addEventListener('pointermove', drawDraft);
-            figCanvas.addEventListener('pointerup', endDraft);
-            figCanvas.addEventListener('pointercancel', endDraft);
-            figCanvas.addEventListener('pointerleave', endDraft);
-            figCanvas.dataset.bound = '1';
-        }
-    }
-
-    function resizeFigureCanvas(){
-        const canvas = $('draftFigureAnnot');
-        if(!canvas) return;
-        const wrap = $('draftTaskStatement') || canvas.parentElement;
-        const rect = wrap.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        if(rect.width <= 0 || rect.height <= 0) return;
-        const old = document.createElement('canvas');
-        old.width = canvas.width; old.height = canvas.height;
-        const oldCtx = old.getContext('2d');
-        if(canvas.width && canvas.height) oldCtx.drawImage(canvas,0,0);
-        canvas.width = Math.max(1, Math.round(rect.width * dpr));
-        canvas.height = Math.max(1, Math.round(rect.height * dpr));
-        const ctx = canvas.getContext('2d');
-        ctx.setTransform(dpr,0,0,dpr,0,0);
-        if(old.width && old.height) ctx.drawImage(old,0,0,old.width/dpr,old.height/dpr);
-        draftState.figureCanvas = canvas;
-        draftState.figureCtx = ctx;
-    }
+    // --- Черновик для Баттла ЕГЭ (унифицированный холст) ---
+    const draftState = { canvas:null, ctx:null, drawing:false, tool:'pen', startX:0, startY:0, snapshot:null, undo:[], redo:[] };
 
     function resizeDraftCanvas(){
         const canvas = $('canvas-battle');
         if(!canvas) return;
-        const rect = canvas.getBoundingClientRect();
+        const wrap = $('drawCanvasWrap');
+        const rect = wrap.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
         if(rect.width <= 0 || rect.height <= 0) return;
         const old = document.createElement('canvas');
@@ -808,9 +774,9 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function saveDraftState(){
-        const c = getActiveCanvas();
-        const undoStack = getUndoStack();
-        const redoStack = getRedoStack();
+        const c = draftState.canvas;
+        const undoStack = draftState.undo;
+        const redoStack = draftState.redo;
         if(!c) return;
         try{
             undoStack.push(c.toDataURL());
@@ -820,7 +786,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function restoreDraftState(data){
-        const c = getActiveCanvas(), ctx = getActiveCtx();
+        const c = draftState.canvas, ctx = draftState.ctx;
         if(!c || !ctx || !data) return;
         const img = new Image();
         img.onload = function(){
@@ -834,7 +800,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function undoDraft(){
-        const c = getActiveCanvas(), undoStack = getUndoStack(), redoStack = getRedoStack();
+        const c = draftState.canvas, undoStack = draftState.undo, redoStack = draftState.redo;
         if(!c || undoStack.length <= 1) return;
         const cur = undoStack.pop();
         redoStack.push(cur);
@@ -842,7 +808,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function redoDraft(){
-        const undoStack = getUndoStack(), redoStack = getRedoStack();
+        const undoStack = draftState.undo, redoStack = draftState.redo;
         if(!redoStack.length) return;
         const data = redoStack.pop();
         undoStack.push(data);
@@ -850,7 +816,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function clearDraft(){
-        const ctx = getActiveCtx(), c = getActiveCanvas();
+        const ctx = draftState.ctx, c = draftState.canvas;
         if(!ctx || !c) return;
         saveDraftState();
         ctx.save();
@@ -865,15 +831,13 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function posOnCanvas(e){
-        const canvas = e.currentTarget || getActiveCanvas();
+        const canvas = draftState.canvas;
         const r = canvas.getBoundingClientRect();
         return {x:e.clientX-r.left, y:e.clientY-r.top};
     }
 
     function beginDraft(e){
-        const target = e.currentTarget;
-        draftState.activeSurface = target && target.id === 'draftFigureAnnot' ? 'figure' : 'main';
-        const ctx = getActiveCtx(), canvas = getActiveCanvas();
+        const ctx = draftState.ctx, canvas = draftState.canvas;
         if(!ctx || !canvas || draftState.tool === 'pointer') return;
         e.preventDefault();
         const p = posOnCanvas(e);
@@ -888,7 +852,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     }
 
     function drawDraft(e){
-        const ctx = getActiveCtx();
+        const ctx = draftState.ctx;
         if(!draftState.drawing || !ctx) return;
         e.preventDefault();
         const p = posOnCanvas(e);
@@ -938,7 +902,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         draftState.snapshot = null;
     }
 
-
     function syncDraftTaskStatement(){
         const box = $('draftTaskStatement');
         const qEl = $('q');
@@ -949,7 +912,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         clone.removeAttribute('id');
         clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
         clone.classList.add('draft-condition-text');
-        clone.innerHTML = clone.innerHTML.replace(/\s+([.,!?;:])/g, '$1');
+        clone.innerHTML = clone.innerHTML.replace(/\\s+([.,!?;:])/g, '$1');
 
         const fig = clone.querySelector('svg,img,picture,canvas');
         if(fig){
@@ -960,34 +923,23 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             wrap.appendChild(fig);
 
             fig.style.maxWidth = '100%';
-            fig.style.maxHeight = '17vh';
+            fig.style.maxHeight = '26vh';
             fig.style.width = 'auto';
             fig.style.height = 'auto';
             fig.style.objectFit = 'contain';
             fig.style.margin = '0 auto';
             fig.style.pointerEvents = 'none';
-
         }
 
         box.appendChild(clone);
-
-        const annot = document.createElement('canvas');
-        annot.id = 'draftFigureAnnot';
-        annot.title = 'Можно делать пометки по всей белой области условия';
-        box.appendChild(annot);
-
         box.style.display = 'block';
 
         const afterRender = ()=>{
             requestAnimationFrame(()=>{
-                resizeFigureCanvas();
-                bindFigureCanvasEvents();
-                if(draftState.figureUndo.length === 0 && draftState.figureCanvas){
-                    draftState.activeSurface = 'figure';
-                    saveDraftState();
-                    draftState.activeSurface = 'main';
-                }
                 resizeDraftCanvas();
+                if(draftState.undo.length === 0 && draftState.canvas){
+                    saveDraftState();
+                }
             });
         };
 
@@ -996,11 +948,6 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         } else {
             afterRender();
         }
-    }
-
-    function syncDraftDiagram(){
-        // Дубликат чертежа на клетчатом поле отключён:
-        // в черновике показываем только полное условие сверху.
     }
 
     function toggleDraft(){
@@ -1014,12 +961,10 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         if(btn) btn.classList.toggle('active', open);
         if(open){
             syncDraftTaskStatement();
-            syncDraftDiagram();
             setTimeout(()=>{
                 resizeDraftCanvas();
                 fitQuestionPanel();
                 if(draftState.undo.length === 0){
-                    draftState.activeSurface = 'main';
                     saveDraftState();
                 }
             }, 60);
@@ -1043,7 +988,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         $('redoBattle')?.addEventListener('click', redoDraft);
         $('tool-select-battle')?.addEventListener('change', e => setDraftTool(e.target.value));
         document.querySelectorAll('#drawTools [data-tool-btn]').forEach(b => b.addEventListener('click', () => setDraftTool(b.dataset.toolBtn)));
-        window.addEventListener('resize', ()=>{ resizeDraftCanvas(); resizeFigureCanvas(); });
+        window.addEventListener('resize', ()=>{ resizeDraftCanvas(); });
     }
 
     document.querySelectorAll('.charCard').forEach(card=>{
