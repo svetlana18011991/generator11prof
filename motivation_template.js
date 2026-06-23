@@ -44,16 +44,25 @@ const MOTIVATION_TEMPLATE = `<!DOCTYPE html>
         .puzzleBoard{
             position:relative;
             background:rgba(255,255,255,.08);
-            border:2px solid rgba(255,255,255,.18);
+            border:1px solid rgba(160,210,255,.24);
             border-radius:24px;
             padding:14px;
-            box-shadow:var(--shadow);
+            box-shadow:var(--shadow), 0 0 24px rgba(72,170,255,.12), inset 0 0 20px rgba(255,255,255,.03);
             overflow:hidden;
         }
         .puzzleBoard::before{
             content:"";position:absolute;inset:0;
-            background:linear-gradient(135deg, rgba(255,255,255,.10), transparent 38%, rgba(255,255,255,.04));
+            background:linear-gradient(135deg, rgba(255,255,255,.08), transparent 38%, rgba(255,255,255,.03));
             pointer-events:none;
+        }
+        .puzzleBoard::after{
+            content:""; position:absolute; inset:0; border-radius:24px; pointer-events:none;
+            box-shadow: 0 0 0 1px rgba(139,208,255,.28), 0 0 22px rgba(56,149,255,.22), 0 0 45px rgba(68,168,255,.10);
+            animation: puzzleGlow 3.6s ease-in-out infinite alternate;
+        }
+        @keyframes puzzleGlow{
+            0%{ box-shadow: 0 0 0 1px rgba(139,208,255,.20), 0 0 14px rgba(56,149,255,.18), 0 0 30px rgba(68,168,255,.08);}
+            100%{ box-shadow: 0 0 0 1px rgba(170,225,255,.34), 0 0 26px rgba(56,149,255,.30), 0 0 50px rgba(68,168,255,.16);}
         }
         #puzzle{
             position:relative;
@@ -61,57 +70,50 @@ const MOTIVATION_TEMPLATE = `<!DOCTYPE html>
             aspect-ratio: 16 / 10;
             border-radius:18px;
             overflow:hidden;
-            display:grid;
-            gap:3px;
-            background:rgba(0,0,0,.28);
-            border:1px solid rgba(255,255,255,.18);
+            background:linear-gradient(135deg, rgba(12,20,46,.96), rgba(8,14,33,.96));
+            border:1px solid rgba(160,210,255,.20);
         }
         .piece{
-            position:relative;
+            position:absolute;
             border:0;
             cursor:pointer;
             overflow:hidden;
+            background:linear-gradient(135deg, rgba(8,18,44,.98), rgba(18,38,76,.96));
+            transition:transform .14s ease, box-shadow .25s ease, opacity .25s ease, filter .25s ease;
+            box-shadow:inset 0 0 0 1px rgba(182,222,255,.18), inset 0 0 18px rgba(255,255,255,.025);
+        }
+        .piece .piece-image{
+            position:absolute;
+            inset:0;
+            opacity:0;
+            transition:opacity .28s ease;
             background-image:var(--img);
             background-size:var(--bgw) var(--bgh);
             background-position:var(--bgx) var(--bgy);
-            clip-path:polygon(8% 0,92% 0,100% 8%,100% 92%,92% 100%,8% 100%,0 92%,0 8%);
-            filter:brightness(.26) grayscale(.88);
-            opacity:.92;
-            transition:transform .14s ease, filter .25s ease, opacity .25s ease, box-shadow .25s ease;
-            box-shadow:inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 25px rgba(0,0,0,.50);
+            background-repeat:no-repeat;
         }
         .piece::before{
             content:"?";
             position:absolute;inset:0;
             display:flex;align-items:center;justify-content:center;
-            font-size:clamp(18px,3vw,42px);
-            color:rgba(255,255,255,.92);
-            text-shadow:0 0 12px rgba(0,0,0,.7);
-            background:radial-gradient(circle, rgba(0,0,0,.16), rgba(0,0,0,.52));
+            font-size:clamp(22px,3.5vw,46px);
+            color:rgba(255,255,255,.95);
+            text-shadow:0 0 14px rgba(0,0,0,.72);
+            background:
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,.06), transparent 36%),
+                linear-gradient(135deg, rgba(20,41,83,.88), rgba(7,15,36,.96));
             font-weight:1000;
         }
-        .piece::after{
-            content:"";
-            position:absolute;
-            width:22%;height:22%;
-            right:-9%;top:39%;
-            border-radius:50%;
-            background:rgba(0,0,0,.22);
-            box-shadow:
-                calc(-100% - 3px) 0 0 rgba(255,255,255,.07),
-                0 0 0 1px rgba(255,255,255,.14);
-            opacity:.85;
-        }
-        .piece:hover{transform:translateY(-2px) scale(1.015);filter:brightness(.38) grayscale(.75);z-index:3}
+        .piece:hover{transform:translateY(-2px) scale(1.01); box-shadow:inset 0 0 0 1px rgba(194,232,255,.26), 0 0 16px rgba(75,165,255,.16); z-index:4}
         .piece.open{
             cursor:default;
-            filter:none;
-            opacity:1;
-            box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 0 18px rgba(87,255,154,.22);
+            background:transparent;
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 0 18px rgba(87,255,154,.16);
         }
-        .piece.open::before,.piece.open::after{display:none}
+        .piece.open .piece-image{opacity:1}
+        .piece.open::before{display:none}
         .piece.solvedPulse{animation:piecePulse .75s ease-out 1}
-        @keyframes piecePulse{0%{transform:scale(1)}45%{transform:scale(1.04);box-shadow:0 0 28px rgba(87,255,154,.65)}100%{transform:scale(1)}}
+        @keyframes piecePulse{0%{transform:scale(1)}45%{transform:scale(1.025);box-shadow:0 0 28px rgba(87,255,154,.42)}100%{transform:scale(1)}}
         .side{
             background:rgba(255,255,255,.92);
             color:#1b2435;
@@ -309,13 +311,6 @@ const MOTIVATION_TEMPLATE = `<!DOCTYPE html>
     totalCountEl.textContent = questions.length;
 
     function norm(v){ return String(v == null ? '' : v).trim().replace(',', '.').toLowerCase(); }
-    function bestGrid(n){
-        if(n <= 1) return {cols:1, rows:1};
-        let cols = Math.ceil(Math.sqrt(n * 1.45));
-        let rows = Math.ceil(n / cols);
-        while((cols - 1) * rows >= n && cols > 1) cols--;
-        return {cols, rows};
-    }
     function typeset(el){ if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]).catch(()=>{}); }
     function firstVisualFromHtml(html){
         const tmp = document.createElement('div');
@@ -324,30 +319,169 @@ const MOTIVATION_TEMPLATE = `<!DOCTYPE html>
         return visual ? visual.outerHTML : '';
     }
 
+    function seededRandom(seed){
+        let t = seed >>> 0;
+        return function(){
+            t += 0x6D2B79F5;
+            let r = Math.imul(t ^ (t >>> 15), 1 | t);
+            r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+            return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    function buildPieceLayout(count){
+        count = Math.max(1, Number(count) || 1);
+        const rand = seededRandom(1000 + count * 97);
+        let rects = [{ x: 0, y: 0, w: 100, h: 100 }];
+
+        while (rects.length < count) {
+            rects.sort((a,b) => (b.w * b.h) - (a.w * a.h));
+            const rect = rects.shift();
+            if (!rect) break;
+
+            let vertical = rect.w >= rect.h;
+            if (rect.w > 60 && rect.h > 40) vertical = rand() > 0.45 ? vertical : !vertical;
+
+            if (vertical) {
+                const cut = Math.max(28, Math.min(72, 42 + rand() * 16));
+                const w1 = rect.w * cut / 100;
+                const w2 = rect.w - w1;
+                rects.push({ x: rect.x, y: rect.y, w: w1, h: rect.h });
+                rects.push({ x: rect.x + w1, y: rect.y, w: w2, h: rect.h });
+            } else {
+                const cut = Math.max(28, Math.min(72, 42 + rand() * 16));
+                const h1 = rect.h * cut / 100;
+                const h2 = rect.h - h1;
+                rects.push({ x: rect.x, y: rect.y, w: rect.w, h: h1 });
+                rects.push({ x: rect.x, y: rect.y + h1, w: rect.w, h: h2 });
+            }
+        }
+
+        return rects.slice(0, count);
+    }
+
+    function buildPuzzleClipPath(rect, index){
+        const outerTop = rect.y <= 0.1;
+        const outerLeft = rect.x <= 0.1;
+        const outerRight = rect.x + rect.w >= 99.9;
+        const outerBottom = rect.y + rect.h >= 99.9;
+
+        const rand = seededRandom(4000 + index * 131 + Math.round(rect.x * 17) + Math.round(rect.y * 29));
+        const notchA = 8 + rand() * 4;
+        const notchB = 10 + rand() * 4;
+        const p1 = 26 + rand() * 6;
+        const p2 = 44 + rand() * 5;
+        const p3 = 56 + rand() * 5;
+        const p4 = 74 + rand() * 5;
+
+        const pts = [];
+        const add = (x, y) => pts.push(`${x.toFixed(2)}% ${y.toFixed(2)}%`);
+
+        add(0, 0);
+
+        if (outerTop) {
+            add(100, 0);
+        } else {
+            add(p1, 0);
+            add(p2 - 2, 0);
+            add(p2, notchA * 0.55);
+            add(50, notchB);
+            add(p3, notchA * 0.55);
+            add(p3 + 2, 0);
+            add(p4, 0);
+            add(100, 0);
+        }
+
+        if (outerRight) {
+            add(100, 100);
+        } else {
+            add(100, p1);
+            add(100 - notchA * 0.55, p2);
+            add(100 - notchB, 50);
+            add(100 - notchA * 0.55, p3);
+            add(100, p4);
+            add(100, 100);
+        }
+
+        if (outerBottom) {
+            add(0, 100);
+        } else {
+            add(p4, 100);
+            add(p3 + 2, 100);
+            add(p3, 100 - notchA * 0.55);
+            add(50, 100 - notchB);
+            add(p2, 100 - notchA * 0.55);
+            add(p2 - 2, 100);
+            add(p1, 100);
+            add(0, 100);
+        }
+
+        if (outerLeft) {
+            add(0, 0);
+        } else {
+            add(0, p4);
+            add(0, p3);
+            add(notchA * 0.55, p3);
+            add(notchB, 50);
+            add(notchA * 0.55, p2);
+            add(0, p2);
+            add(0, p1);
+            add(0, 0);
+        }
+
+        return `polygon(${pts.join(',')})`;
+    }
+
+    function stylePieceFromRect(piece, rect, index){
+        piece.style.left = rect.x + '%';
+        piece.style.top = rect.y + '%';
+        piece.style.width = rect.w + '%';
+        piece.style.height = rect.h + '%';
+        piece.style.setProperty('--bgw', (100 / rect.w * 100) + '%');
+        piece.style.setProperty('--bgh', (100 / rect.h * 100) + '%');
+        const bgx = rect.w >= 99.9 ? '50%' : (rect.x / (100 - rect.w) * 100) + '%';
+        const bgy = rect.h >= 99.9 ? '50%' : (rect.y / (100 - rect.h) * 100) + '%';
+        piece.style.setProperty('--bgx', bgx);
+        piece.style.setProperty('--bgy', bgy);
+        const clip = buildPuzzleClipPath(rect, index);
+        piece.style.clipPath = clip;
+        piece.style.webkitClipPath = clip;
+    }
+
+    function syncPuzzleAspectRatio(){
+        if(!image) return;
+        const img = new Image();
+        img.onload = function(){
+            if(img.naturalWidth && img.naturalHeight){
+                puzzle.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+            }
+        };
+        img.src = image;
+    }
+
     function buildPuzzle(){
         puzzle.innerHTML = '';
         if(!questions.length){
             puzzle.innerHTML = '<div style="padding:30px;color:#fff;font-weight:900">Нет заданий для игры. Сначала сгенерируйте вариант.</div>';
             return;
         }
-        const {cols, rows} = bestGrid(questions.length);
-        puzzle.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
-        puzzle.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
-        puzzle.style.setProperty('--img', 'url("' + image + '")');
-        puzzle.style.setProperty('--bgw', (cols * 100) + '%');
-        puzzle.style.setProperty('--bgh', (rows * 100) + '%');
 
-        for(let i=0;i<questions.length;i++){
+        syncPuzzleAspectRatio();
+        const layout = buildPieceLayout(questions.length);
+
+        for(let i = 0; i < questions.length; i++){
+            const rect = layout[i];
             const piece = document.createElement('button');
             piece.type = 'button';
             piece.className = 'piece';
             piece.dataset.index = i;
-            const c = i % cols;
-            const r = Math.floor(i / cols);
-            const bgx = cols === 1 ? '50%' : (c * 100 / (cols - 1)) + '%';
-            const bgy = rows === 1 ? '50%' : (r * 100 / (rows - 1)) + '%';
-            piece.style.setProperty('--bgx', bgx);
-            piece.style.setProperty('--bgy', bgy);
+            piece.style.setProperty('--img', 'url("' + image + '")');
+            stylePieceFromRect(piece, rect, i);
+
+            const inner = document.createElement('div');
+            inner.className = 'piece-image';
+            piece.appendChild(inner);
+
             piece.addEventListener('click', () => {
                 if(opened.has(i)) return;
                 openTask(i);
