@@ -109,6 +109,47 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         #drawCanvasWrap{position:relative;flex:1 1 auto;min-height:0;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);border:2px solid #bbdefb;border-radius:10px;overflow:hidden}
         #draftDiagram{position:absolute;left:12px;top:12px;z-index:1;background:#fff;border-radius:10px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.12);display:none;max-width:calc(100% - 24px);max-height:68%;overflow:visible}
         #draftDiagram svg,#draftDiagram img,#draftDiagram canvas{display:block;max-width:100%;max-height:52vh;width:auto!important;height:auto!important;object-fit:contain!important}
+        #draftTaskStatement{display:none;flex:0 0 auto;max-height:24vh;overflow:auto;padding:0 2px 2px;color:#222}
+        #draftTaskStatement .draft-condition-text{font-size:14px;line-height:1.22;text-align:center;color:#222}
+        #draftTaskStatement .draft-figure-wrap{
+            position:relative;
+            display:block;
+            width:fit-content;
+            max-width:100%;
+            max-height:22vh;
+            margin:0 auto 6px auto;
+            padding:18px 26px;
+            background:#fff;
+            border:1px solid #d9e7f5;
+            border-radius:12px;
+            box-shadow:0 3px 10px rgba(0,0,0,.10);
+            overflow:hidden;
+            box-sizing:border-box;
+        }
+        #draftTaskStatement .draft-figure-wrap svg,
+        #draftTaskStatement .draft-figure-wrap img,
+        #draftTaskStatement .draft-figure-wrap picture,
+        #draftTaskStatement .draft-figure-wrap canvas:not(#draftFigureAnnot){
+            display:block;
+            max-width:100%;
+            max-height:17vh;
+            width:auto!important;
+            height:auto!important;
+            object-fit:contain!important;
+            margin:0 auto!important;
+            pointer-events:none;
+        }
+        #draftFigureAnnot{
+            position:absolute!important;
+            inset:0!important;
+            width:100%!important;
+            height:100%!important;
+            z-index:20!important;
+            pointer-events:auto!important;
+            touch-action:none!important;
+            cursor:crosshair!important;
+            background:transparent!important;
+        }
         #canvas-battle{position:relative;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;background:transparent}
         @media(max-width:1120px){
             #questionPanel.draft-open{display:none!important}
@@ -890,13 +931,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
         if(fig){
             const wrap = document.createElement('div');
             wrap.className = 'draft-figure-wrap';
-            wrap.style.position = 'relative';
-            wrap.style.display = 'block';
-            wrap.style.width = 'fit-content';
-            wrap.style.maxWidth = '100%';
-            wrap.style.maxHeight = '18vh';
-            wrap.style.margin = '0 auto 5px auto';
-            wrap.style.overflow = 'hidden';
+
             fig.parentNode.insertBefore(wrap, fig);
             wrap.appendChild(fig);
 
@@ -906,19 +941,11 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
             fig.style.height = 'auto';
             fig.style.objectFit = 'contain';
             fig.style.margin = '0 auto';
+            fig.style.pointerEvents = 'none';
 
             const annot = document.createElement('canvas');
             annot.id = 'draftFigureAnnot';
-            annot.title = 'Можно делать пометки на чертеже';
-            annot.style.position = 'absolute';
-            annot.style.left = '0';
-            annot.style.top = '0';
-            annot.style.width = '100%';
-            annot.style.height = '100%';
-            annot.style.zIndex = '5';
-            annot.style.pointerEvents = 'auto';
-            annot.style.touchAction = 'none';
-            annot.style.cursor = 'crosshair';
+            annot.title = 'Можно делать пометки на чертеже и на белом поле вокруг него';
             wrap.appendChild(annot);
         }
 
