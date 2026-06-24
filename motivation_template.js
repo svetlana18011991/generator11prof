@@ -161,22 +161,21 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
         }
         .finishBox{
             display:none;
-            position:fixed;inset:0;z-index:50;
-            background:rgba(0,0,0,.62);backdrop-filter:blur(8px);
-            align-items:center;justify-content:center;padding:18px;
+            margin-top:14px;
         }
+        .finishBox.show{display:block}
         .finishCard{
-            width:min(720px,100%);
-            background:rgba(255,255,255,.96);
+            width:100%;
+            background:linear-gradient(135deg,#fff7e7,#eef8ff);
             color:#172033;
-            border-radius:28px;
-            border:2px solid var(--accent);
-            box-shadow:var(--shadow);
-            padding:28px;
+            border-radius:18px;
+            border:1px solid rgba(255,140,0,.35);
+            box-shadow:0 8px 20px rgba(0,0,0,.12);
+            padding:16px;
             text-align:center;
         }
-        .finishCard h2{margin:0 0 10px;font-size:clamp(28px,5vw,52px);color:#e65100}
-        .finishCard p{font-size:20px;line-height:1.45;margin:0 0 18px}
+        .finishCard h2{margin:0 0 8px;font-size:24px;color:#e65100}
+        .finishCard p{font-size:16px;line-height:1.4;margin:0 0 12px}
         .finishCard button,.modal button,.draftTools button,.draftTools select{
             font-family:inherit;
         }
@@ -259,6 +258,13 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
             <p>Нажми на закрытую деталь пазла, реши задание и введи ответ.</p>
             <p>Верно — деталь откроется. Неверно — деталь останется закрытой, но её можно открыть снова и попробовать ещё раз.</p>
             <div class="messageBox" id="sideMessage">У тебя получится. Шаг за шагом картинка соберётся!</div>
+            <div class="finishBox" id="finishBox">
+                <div class="finishCard">
+                    <h2>Картинка собрана!</h2>
+                    <p id="finishText">Ты справился. Продолжай верить в себя!</p>
+                    <button class="restartBtn" type="button" onclick="location.reload()">Сыграть ещё раз</button>
+                </div>
+            </div>
         </aside>
     </div>
 </div>
@@ -306,13 +312,6 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
     </div>
 </div>
 
-<div class="finishBox" id="finishBox">
-    <div class="finishCard">
-        <h2>Картинка собрана!</h2>
-        <p id="finishText">Ты справился. Продолжай верить в себя!</p>
-        <button class="restartBtn" type="button" onclick="location.reload()">Сыграть ещё раз</button>
-    </div>
-</div>
 
 <script>
 /*__CONFIG_DATA__*/
@@ -509,7 +508,7 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
         }
         updateProgress();
         if(opened.size === questions.length){
-            setTimeout(()=>document.getElementById('finishBox').style.display='flex',750);
+            setTimeout(()=>document.getElementById('finishBox').classList.add('show'),750);
         }
     }
 
