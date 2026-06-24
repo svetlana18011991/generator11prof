@@ -76,11 +76,13 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
         .piece{
             position:absolute;
             border:0;
+            padding:0;
+            margin:0;
             cursor:pointer;
             overflow:hidden;
             background:linear-gradient(135deg, rgba(8,18,44,.98), rgba(18,38,76,.96));
             transition:transform .14s ease, box-shadow .25s ease, opacity .25s ease, filter .25s ease;
-            box-shadow:inset 0 0 0 1px rgba(182,222,255,.18), inset 0 0 18px rgba(255,255,255,.025);
+            box-shadow:inset 0 0 0 1px rgba(182,222,255,.20), inset 0 0 20px rgba(255,255,255,.035);
         }
         .piece .piece-image{
             position:absolute;
@@ -94,24 +96,46 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
         }
         .piece::before{
             content:"?";
-            position:absolute;inset:0;
-            display:flex;align-items:center;justify-content:center;
+            position:absolute;
+            inset:0;
+            z-index:2;
+            display:flex;
+            align-items:center;
+            justify-content:center;
             font-size:clamp(22px,3.5vw,46px);
             color:rgba(255,255,255,.95);
             text-shadow:0 0 14px rgba(0,0,0,.72);
             background:
-                radial-gradient(circle at 50% 50%, rgba(255,255,255,.06), transparent 36%),
-                linear-gradient(135deg, rgba(20,41,83,.88), rgba(7,15,36,.96));
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,.08), transparent 34%),
+                linear-gradient(135deg, rgba(20,41,83,.90), rgba(7,15,36,.98));
             font-weight:1000;
         }
-        .piece:hover{transform:translateY(-2px) scale(1.01); box-shadow:inset 0 0 0 1px rgba(194,232,255,.26), 0 0 16px rgba(75,165,255,.16); z-index:4}
+        .piece .puzzle-lines{
+            position:absolute;
+            inset:0;
+            z-index:3;
+            pointer-events:none;
+            background:
+                radial-gradient(circle at 100% 50%, transparent 0 8%, rgba(178,222,255,.24) 8.5%, transparent 9.5%),
+                radial-gradient(circle at 0 50%, transparent 0 8%, rgba(178,222,255,.18) 8.5%, transparent 9.5%),
+                radial-gradient(circle at 50% 0, transparent 0 8%, rgba(178,222,255,.16) 8.5%, transparent 9.5%),
+                radial-gradient(circle at 50% 100%, transparent 0 8%, rgba(178,222,255,.18) 8.5%, transparent 9.5%);
+            box-shadow:inset 0 0 0 1px rgba(198,232,255,.28);
+            opacity:.9;
+        }
+        .piece:hover{
+            transform:translateY(-2px) scale(1.006);
+            box-shadow:inset 0 0 0 1px rgba(194,232,255,.32), 0 0 16px rgba(75,165,255,.18);
+            z-index:4;
+        }
         .piece.open{
             cursor:default;
             background:transparent;
-            box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 0 18px rgba(87,255,154,.16);
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 0 18px rgba(87,255,154,.16);
         }
         .piece.open .piece-image{opacity:1}
         .piece.open::before{display:none}
+        .piece.open .puzzle-lines{opacity:.55}
         .piece.solvedPulse{animation:piecePulse .75s ease-out 1}
         @keyframes piecePulse{0%{transform:scale(1)}45%{transform:scale(1.025);box-shadow:0 0 28px rgba(87,255,154,.42)}100%{transform:scale(1)}}
         .side{
@@ -340,16 +364,16 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
             if (!rect) break;
 
             let vertical = rect.w >= rect.h;
-            if (rect.w > 60 && rect.h > 40) vertical = rand() > 0.45 ? vertical : !vertical;
+            if (rect.w > 55 && rect.h > 35) vertical = rand() > 0.45 ? vertical : !vertical;
 
             if (vertical) {
-                const cut = Math.max(28, Math.min(72, 42 + rand() * 16));
+                const cut = 38 + rand() * 24;
                 const w1 = rect.w * cut / 100;
                 const w2 = rect.w - w1;
                 rects.push({ x: rect.x, y: rect.y, w: w1, h: rect.h });
                 rects.push({ x: rect.x + w1, y: rect.y, w: w2, h: rect.h });
             } else {
-                const cut = Math.max(28, Math.min(72, 42 + rand() * 16));
+                const cut = 38 + rand() * 24;
                 const h1 = rect.h * cut / 100;
                 const h2 = rect.h - h1;
                 rects.push({ x: rect.x, y: rect.y, w: rect.w, h: h1 });
@@ -357,79 +381,8 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
             }
         }
 
+        // Эти области полностью покрывают картинку без дыр и без потери частей.
         return rects.slice(0, count);
-    }
-
-    function buildPuzzleClipPath(rect, index){
-        const outerTop = rect.y <= 0.1;
-        const outerLeft = rect.x <= 0.1;
-        const outerRight = rect.x + rect.w >= 99.9;
-        const outerBottom = rect.y + rect.h >= 99.9;
-
-        const rand = seededRandom(4000 + index * 131 + Math.round(rect.x * 17) + Math.round(rect.y * 29));
-        const notchA = 8 + rand() * 4;
-        const notchB = 10 + rand() * 4;
-        const p1 = 26 + rand() * 6;
-        const p2 = 44 + rand() * 5;
-        const p3 = 56 + rand() * 5;
-        const p4 = 74 + rand() * 5;
-
-        const pts = [];
-        const add = (x, y) => pts.push(`${x.toFixed(2)}% ${y.toFixed(2)}%`);
-
-        add(0, 0);
-
-        if (outerTop) {
-            add(100, 0);
-        } else {
-            add(p1, 0);
-            add(p2 - 2, 0);
-            add(p2, notchA * 0.55);
-            add(50, notchB);
-            add(p3, notchA * 0.55);
-            add(p3 + 2, 0);
-            add(p4, 0);
-            add(100, 0);
-        }
-
-        if (outerRight) {
-            add(100, 100);
-        } else {
-            add(100, p1);
-            add(100 - notchA * 0.55, p2);
-            add(100 - notchB, 50);
-            add(100 - notchA * 0.55, p3);
-            add(100, p4);
-            add(100, 100);
-        }
-
-        if (outerBottom) {
-            add(0, 100);
-        } else {
-            add(p4, 100);
-            add(p3 + 2, 100);
-            add(p3, 100 - notchA * 0.55);
-            add(50, 100 - notchB);
-            add(p2, 100 - notchA * 0.55);
-            add(p2 - 2, 100);
-            add(p1, 100);
-            add(0, 100);
-        }
-
-        if (outerLeft) {
-            add(0, 0);
-        } else {
-            add(0, p4);
-            add(0, p3);
-            add(notchA * 0.55, p3);
-            add(notchB, 50);
-            add(notchA * 0.55, p2);
-            add(0, p2);
-            add(0, p1);
-            add(0, 0);
-        }
-
-        return `polygon(${pts.join(',')})`;
     }
 
     function stylePieceFromRect(piece, rect, index){
@@ -437,15 +390,19 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
         piece.style.top = rect.y + '%';
         piece.style.width = rect.w + '%';
         piece.style.height = rect.h + '%';
+
+        // Каждый кусок показывает ровно свою часть общей картинки.
         piece.style.setProperty('--bgw', (100 / rect.w * 100) + '%');
         piece.style.setProperty('--bgh', (100 / rect.h * 100) + '%');
+
         const bgx = rect.w >= 99.9 ? '50%' : (rect.x / (100 - rect.w) * 100) + '%';
         const bgy = rect.h >= 99.9 ? '50%' : (rect.y / (100 - rect.h) * 100) + '%';
         piece.style.setProperty('--bgx', bgx);
         piece.style.setProperty('--bgy', bgy);
-        const clip = buildPuzzleClipPath(rect, index);
-        piece.style.clipPath = clip;
-        piece.style.webkitClipPath = clip;
+
+        // Визуально делаем куски похожими на пазл, но не обрезаем саму картинку.
+        const rand = seededRandom(6000 + index * 137 + Math.round(rect.x * 11) + Math.round(rect.y * 13));
+        piece.style.borderRadius = (10 + rand() * 6) + 'px';
     }
 
     function syncPuzzleAspectRatio(){
@@ -481,6 +438,10 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
             const inner = document.createElement('div');
             inner.className = 'piece-image';
             piece.appendChild(inner);
+
+            const lines = document.createElement('div');
+            lines.className = 'puzzle-lines';
+            piece.appendChild(lines);
 
             piece.addEventListener('click', () => {
                 if(opened.has(i)) return;
