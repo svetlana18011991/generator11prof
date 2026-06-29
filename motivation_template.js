@@ -383,6 +383,7 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
         // Эти области полностью покрывают картинку без дыр и без потери частей.
         return rects.slice(0, count);
     }
+    window.buildPieceLayout = buildPieceLayout;
 
     function stylePieceFromRect(piece, rect, index){
         piece.style.left = rect.x + '%';
