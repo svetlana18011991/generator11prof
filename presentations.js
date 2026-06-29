@@ -1085,9 +1085,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             }
         }
 
-        window.onclick = function() { 
-            if(currentSlide < slides.length - 1) showSlide(currentSlide + 1); 
-        };
+        window.onclick = function(e) { return; };
 
         window.addEventListener('load', () => {
             startPresentationTimer();
