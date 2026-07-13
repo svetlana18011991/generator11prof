@@ -68,6 +68,8 @@ function generatePresentation1() {
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
     let showCorrectOnError = getShowCorrectOnErrorSetting();
+    const panelTop = '15%';
+    const panelBottom = '15%';
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
