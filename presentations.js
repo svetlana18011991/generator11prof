@@ -698,7 +698,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     <title>Презентация урока</title>
     <base href="https://svetlana18011991.github.io/generator11prof/">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']] } };${window.SCRIPT_END}
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], macros: { tg: '\\\\operatorname{tg}', ctg: '\\\\operatorname{ctg}' } } };${window.SCRIPT_END}
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${window.SCRIPT_END}
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
