@@ -5,7 +5,7 @@ const BATTLE_TEMPLATE = `<!DOCTYPE html>
     <title>Баттл ЕГЭ</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], processEscapes: true }, startup: { typeset: false } };<\/script>
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], processEscapes: true, macros: { tg: '\\\\operatorname{tg}', ctg: '\\\\operatorname{ctg}' } }, startup: { typeset: false } };<\/script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
     <style>
         :root{

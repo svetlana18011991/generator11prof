@@ -5,7 +5,7 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
     <title>Башня знаний</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], processEscapes: true }, startup: { typeset: false } };</script>
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], processEscapes: true, macros: { tg: '\\\\operatorname{tg}', ctg: '\\\\operatorname{ctg}' } }, startup: { typeset: false } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
     :root{ --hud-bg: rgba(10, 12, 18, .55); --panel-bg: rgba(20, 22, 30, .78); --panel-stroke: rgba(255,255,255,.12); --text: rgba(255,255,255,.92); --muted: rgba(255,255,255,.72); --good: rgba(120, 255, 170, .95); --bad: rgba(255, 120, 140, .95); --shadow: 0 18px 60px rgba(0,0,0,.35); }

@@ -4,7 +4,7 @@ window.MOTIVATION_TEMPLATE = `<!DOCTYPE html>
     <meta charset="UTF-8">
     <title>Мотивационное послание</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], processEscapes: true }, startup: { typeset: false } };<\/script>
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], processEscapes: true, macros: { tg: '\\\\operatorname{tg}', ctg: '\\\\operatorname{ctg}' } }, startup: { typeset: false } };<\/script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
     <style>
         :root{
