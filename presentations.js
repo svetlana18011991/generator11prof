@@ -787,6 +787,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         <div class="title-box" style="padding: 40px; max-width: 1200px; width: 95%; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation();">
             <h2 style="font-size:3.2em; color:#4CAF50; margin:0;">Спасибо за работу!</h2>
             <div id="results-summary" style="font-size: 1.35em; color:#333; margin-top: 12px; font-weight: bold;"></div>
+            <div id="results-total-time" style="font-size: 1.25em; color:${accentColor}; margin-top: 8px; font-weight: bold;"></div>
             <table class="results-table">
                 <thead>
                     <tr>
@@ -822,6 +823,8 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         let answeredMap = {};
         let slideStartTime = Date.now();
         let presentationStartTime = Date.now();
+        let workStartTime = null;
+        let workEndTime = null;
         let totalTimerSeconds = ${timerMinutes} > 0 ? ${timerMinutes} * 60 : 0;
         let timerInterval = null;
         let resultsRendered = false;
@@ -986,6 +989,9 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         }
 
         function nextSlide() { 
+            if (currentSlide === 0 && workStartTime === null) {
+                workStartTime = Date.now();
+            }
             if (currentSlide < slides.length - 1) showSlide(currentSlide + 1); 
         }
 
@@ -1045,6 +1051,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
 
             let tbody = document.getElementById('results-tbody');
             let summary = document.getElementById('results-summary');
+            let totalTimeBox = document.getElementById('results-total-time');
             let html = '';
             let correctCount = 0;
 
@@ -1071,6 +1078,12 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
 
             if (summary) {
                 summary.textContent = 'Верно: ' + correctCount + ' из ' + userResults.length;
+            }
+
+            if (workEndTime === null) workEndTime = Date.now();
+            let totalWorkSeconds = Math.max(0, Math.round((workEndTime - (workStartTime || presentationStartTime)) / 1000));
+            if (totalTimeBox) {
+                totalTimeBox.textContent = '⏱ Общее время работы: ' + formatTime(totalWorkSeconds);
             }
 
             tbody.innerHTML = html;
