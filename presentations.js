@@ -29,6 +29,71 @@ function getShowCorrectOnErrorSetting() {
 // ==========================================
 // ЧЕРНОВИК В ПРЕЗЕНТАЦИЯХ: чертёж на белой подложке
 // ==========================================
+
+function isSecondPartPresentationTask(task) {
+    return !!(task && (task.isSecondPart || Number(task.part || 1) >= 2));
+}
+
+function escapePresJsSingle(value) {
+    return String(value == null ? '' : value)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r?\n/g, ' ');
+}
+
+function buildPresentationControls(task, index, options) {
+    options = options || {};
+    const accent = options.accent || '#ff8c00';
+    const instantCheck = !!options.instantCheck;
+    const showCorrectOnError = !!options.showCorrectOnError;
+    const showSolutions = options.showSolutions !== false;
+    const drawButton = `<button class="btn-settings" style="background:#fff;color:${accent};border:1px solid ${accent};font-size:20px;padding:8px 12px;border-radius:10px;cursor:pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${index}')" title="Открыть черновик">✏️</button>`;
+
+    if (isSecondPartPresentationTask(task)) {
+        return `<div class="pres-check-zone pres-second-part-zone" style="display:flex;gap:12px;justify-content:center;align-items:center;width:100%;flex-wrap:wrap;flex-shrink:0;">
+            ${instantCheck ? `<button type="button" id="pres-second-answer-btn-${index}" onclick="event.stopPropagation(); showSecondPartPresAnswer(${index})" style="background:#e8f5e9;color:#1b5e20;border:1px solid #4CAF50;border-radius:10px;font-size:16px;font-weight:bold;padding:9px 13px;cursor:pointer;">Показать ответ</button>` : ''}
+            <button type="button" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${index}')" style="background:#e3f2fd;color:#003399;border:1px solid #90caf9;border-radius:10px;font-size:16px;font-weight:bold;padding:9px 13px;cursor:pointer;">🔁 Аналоги</button>
+            ${drawButton}
+            <div id="pres-second-answer-${index}" style="display:none;width:100%;margin-top:4px;padding:10px 12px;background:#eef6ff;border-left:4px solid #003399;border-radius:7px;color:#222;text-align:left;"><b>Ответ:</b> ${task.answer || ''}</div>
+        </div><div id="pres-status-${index}" class="pres-status" style="margin-top:10px;min-height:28px;font-size:18px;font-weight:bold;text-align:center;"></div>`;
+    }
+
+    const answerJs = escapePresJsSingle(task && task.answer);
+    return `<div class="pres-check-zone" style="display:flex;gap:12px;justify-content:center;align-items:center;width:100%;flex-wrap:wrap;flex-shrink:0;">
+        <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${index}" style="font-size:1.1em;padding:12px 20px;width:180px;border-radius:10px;border:2px solid ${accent};text-align:center;outline:none;">
+        <div id="pres-feedback-${index}" class="pres-feedback" style="width:100%;text-align:center;font-weight:bold;min-height:24px;display:none;"></div>
+        ${instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${index}, '${answerJs}', this, ${showCorrectOnError})" style="background:#e8f5e9;border:1px solid #4CAF50;border-radius:10px;font-size:18px;cursor:pointer;padding:8px 12px;outline:none;box-shadow:0 4px 10px rgba(76,175,80,.2);" title="Проверить">✅</button>` : ''}
+        ${showSolutions && task && task.theory && String(task.theory).trim() !== '' ? `<button id="pres-help-${index}" class="btn-settings" style="display:none;background:#e3f2fd;color:#003399;border:1px solid #90caf9;font-size:16px;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${index}')" title="Открыть разбор">💡 Разбор</button>` : ''}
+        <button class="pres-btn" onclick="submitTask(${index}, '${answerJs}')" data-correct="${escapePresAttr(task && task.answer)}" style="font-size:1.1em;padding:12px 30px;border-radius:10px;border:none;background:${accent};color:white;cursor:pointer;font-weight:bold;">ОК</button>
+        ${drawButton}
+    </div><div id="pres-status-${index}" class="pres-status" style="margin-top:10px;min-height:28px;font-size:18px;font-weight:bold;text-align:center;"></div>`;
+}
+
+function buildPresentationHiddenData(tasks) {
+    const showAnswers = getShowCorrectOnErrorSetting();
+    return (tasks || []).map((task, index) => {
+        let content = task.theory || '';
+        if (isSecondPartPresentationTask(task)) {
+            const code = task.prototypeCode ? ` — прототип ${task.prototypeCode}` : '';
+            const title = task.prototypeTitle || 'Похожие задания';
+            const analogs = Array.isArray(task.analogs) ? task.analogs : [];
+            content = `<h3 style="margin-top:0;color:#003399;">Аналоги${code}</h3><div style="color:#555;margin-bottom:14px;">${title}</div>`;
+            if (!analogs.length) {
+                content += `<div style="padding:14px;background:#f5f5f5;border-radius:8px;">Все задания этого прототипа уже вошли в текущий вариант.</div>`;
+            } else {
+                content += '<ol style="padding-left:24px;">';
+                analogs.forEach(a => {
+                    content += `<li style="margin-bottom:20px;"><div>${a.text || ''}</div>`;
+                    if (showAnswers) content += `<div style="margin-top:8px;padding:9px 12px;background:#eef6ff;border-left:3px solid #003399;border-radius:5px;"><b>Ответ:</b> ${a.answer || ''}</div>`;
+                    content += '</li>';
+                });
+                content += '</ol>';
+            }
+        }
+        return `<div id="theory-pres-${index}" style="display:none;">${encodeURIComponent(content)}</div>`;
+    }).join('');
+}
+
 function getPresentationDraftDiagramHtml(task) {
     function firstVisualFromHtml(html) {
         if (!html || !String(html).trim()) return '';
@@ -68,8 +133,6 @@ function generatePresentation1() {
     let showSolutions = document.getElementById('toggle-explanations') ? document.getElementById('toggle-explanations').checked : true;
     let instantCheck = document.getElementById('toggle-instant-check') ? document.getElementById('toggle-instant-check').checked : false;
     let showCorrectOnError = getShowCorrectOnErrorSetting();
-    const panelTop = '15%';
-    const panelBottom = '15%';
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     
@@ -83,19 +146,7 @@ function generatePresentation1() {
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
-                    
-                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
-                        <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 10px; border: 2px solid #ccc; text-align: center; outline: none;">
-                        <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
-                        
-                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this, ${showCorrectOnError})" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
-                        
-                        ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
-                        
-                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" data-correct="${t.answer}" style="font-size: 1.1em; padding: 12px 30px; border-radius: 10px; border: none; background: #ff8c00; color: white; cursor: pointer; font-weight: bold;">ОК</button>
-                        <button class="btn-settings" style="background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; font-size: 20px; padding: 8px 12px; border-radius: 8px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
-                    </div>
-                    <div id="pres-status-${i}" class="pres-status" style="margin-top: 10px; min-height: 28px; font-size: 18px; font-weight: bold; text-align: center;"></div>
+                    ${buildPresentationControls(t, i, {accent:'#ff8c00', instantCheck, showCorrectOnError, showSolutions})}
 
                 </div>
             </div>
@@ -104,6 +155,7 @@ function generatePresentation1() {
                 <div style="display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; margin-bottom: 8px; background: #e3f2fd; padding: 6px 10px; border-radius: 8px; border: 1px solid #bbdefb; min-height:34px; box-sizing:border-box; overflow:hidden; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Карандаш">🖊️</button>
+                    <button onclick="window.setTool('pres-${i}', 'highlighter')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Выделитель — полупрозрачный маркер">🖍️</button>
                     <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Отменить действие">↶</button>
                     <button onclick="if(window.redoCanvas) window.redoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Повторить действие">↷</button>
                     <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid #90caf9; border-radius: 4px; padding: 4px 8px; font-size: 13px; cursor: pointer; outline: none; max-width:150px; flex:0 1 150px; color: #003399; font-weight: 500;">
@@ -129,7 +181,7 @@ function generatePresentation1() {
         </div>
     `).join('');
 
-    let hiddenTheories = window.currentGeneratedTasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory)}</div>`).join('');
+    let hiddenTheories = buildPresentationHiddenData(window.currentGeneratedTasks);
     generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, "Презентация_Урока_Стиль1.html", 'p1.jpg', 'p2.jpg', '#ff8c00');
 }
 
@@ -160,19 +212,7 @@ function generatePresentation2() {
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
-                    
-                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
-                        <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #f8bbd0; text-align: center; outline: none; color: #e91e63;">
-                        <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
-                        
-                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this, ${showCorrectOnError})" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
-                        
-                        ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
-                        
-                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" data-correct="${t.answer}" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #ff4081; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(255,64,129,0.3);">ОК</button>
-                        <button class="btn-settings" style="background: #fce4ec; color: #d81b60; border: 1px solid #f8bbd0; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
-                    </div>
-                    <div id="pres-status-${i}" class="pres-status" style="margin-top: 10px; min-height: 28px; font-size: 18px; font-weight: bold; text-align: center;"></div>
+                    ${buildPresentationControls(t, i, {accent:'#ff4081', instantCheck, showCorrectOnError, showSolutions})}
 
                 </div>
             </div>
@@ -181,6 +221,7 @@ function generatePresentation2() {
                 <div style="display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; margin-bottom: 8px; background: #fce4ec; padding: 6px 10px; border-radius: 12px; border: 1px solid #f8bbd0; min-height:34px; box-sizing:border-box; overflow:hidden; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Карандаш">🖊️</button>
+                    <button onclick="window.setTool('pres-${i}', 'highlighter')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Выделитель — полупрозрачный маркер">🖍️</button>
                     <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Отменить действие">↶</button>
                     <button onclick="if(window.redoCanvas) window.redoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Повторить действие">↷</button>
                     <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid #f48fb1; border-radius: 8px; padding: 4px 8px; font-size: 13px; cursor: pointer; outline: none; max-width:150px; flex:0 1 150px; color: #d81b60; font-weight: 500;">
@@ -206,7 +247,7 @@ function generatePresentation2() {
         </div>
     `).join('');
 
-    let hiddenTheories = window.currentGeneratedTasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory)}</div>`).join('');
+    let hiddenTheories = buildPresentationHiddenData(window.currentGeneratedTasks);
     generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, "Презентация_Урока_Стиль2.html", 'f1.png', 'f2.png', '#ff4081');
 }
 
@@ -237,19 +278,7 @@ function generatePresentation3() {
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
-                    
-                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
-                        <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid #e1bee7; text-align: center; outline: none; color: #7b1fa2;">
-                        <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
-                        
-                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${t.answer}', this, ${showCorrectOnError})" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
-                        
-                        ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
-                        
-                        <button class="pres-btn" onclick="submitTask(${i}, '${t.answer}')" data-correct="${t.answer}" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: #9c27b0; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(156,39,176,0.3);">ОК</button>
-                        <button class="btn-settings" style="background: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
-                    </div>
-                    <div id="pres-status-${i}" class="pres-status" style="margin-top: 10px; min-height: 28px; font-size: 18px; font-weight: bold; text-align: center;"></div>
+                    ${buildPresentationControls(t, i, {accent:'#9c27b0', instantCheck, showCorrectOnError, showSolutions})}
 
                 </div>
             </div>
@@ -258,6 +287,7 @@ function generatePresentation3() {
                 <div style="display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; margin-bottom: 8px; background: #f3e5f5; padding: 6px 10px; border-radius: 12px; border: 1px solid #e1bee7; min-height:34px; box-sizing:border-box; overflow:hidden; color: #333;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Карандаш">🖊️</button>
+                    <button onclick="window.setTool('pres-${i}', 'highlighter')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Выделитель — полупрозрачный маркер">🖍️</button>
                     <button onclick="if(window.undoCanvas) window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Отменить действие">↶</button>
                     <button onclick="if(window.redoCanvas) window.redoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Повторить действие">↷</button>
                     <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid #ce93d8; border-radius: 8px; padding: 4px 8px; font-size: 13px; cursor: pointer; outline: none; max-width:150px; flex:0 1 150px; color: #7b1fa2; font-weight: 500;">
@@ -283,7 +313,7 @@ function generatePresentation3() {
         </div>
     `).join('');
 
-    let hiddenTheories = window.currentGeneratedTasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory)}</div>`).join('');
+    let hiddenTheories = buildPresentationHiddenData(window.currentGeneratedTasks);
     generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, "Презентация_Урока_Стиль3.html", 's2.png', 's1.png', '#9c27b0');
 }
 
@@ -430,15 +460,7 @@ function makeCustomPresentationTaskSlide(t, i, settings) {
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;">
                     ${t.svg ? `<div style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%; flex-shrink: 1; min-height: 0;" class="svg-wrapper">${t.svg}</div>` : ""}
                     <div class="task-text" style="margin-bottom: 20px; text-align: center; color: #333; width: 100%; flex-shrink: 1; overflow-y: auto;">${t.text}</div>
-                    <div class="pres-check-zone" style="display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; flex-wrap: wrap; flex-shrink: 0;">
-                        <input type="text" class="pres-input" placeholder="Ответ..." id="ans-${i}" style="font-size: 1.1em; padding: 12px 20px; width: 180px; border-radius: 12px; border: 2px solid ${accent}; text-align: center; outline: none; color: ${accent};">
-                        <div id="pres-feedback-${i}" class="pres-feedback" style="width:100%; text-align:center; font-weight:bold; min-height:24px; display:none;"></div>
-                        ${ instantCheck ? `<button class="pres-btn-instant" onclick="checkPresSingle(${i}, '${String(t.answer).replace(/'/g, "\\'")}', this, ${showCorrectOnError})" style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 10px; font-size: 18px; cursor: pointer; padding: 8px 12px; outline: none; box-shadow: 0 4px 10px rgba(76,175,80,0.2);" title="Проверить">✅</button>` : '' }
-                        ${ showSolutions && t.theory && t.theory.trim() !== '' ? `<button id="pres-help-${i}" class="btn-settings" style="display:none; background: #e3f2fd; color: #003399; border: 1px solid #90caf9; font-size: 16px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${i}')" title="Открыть разбор">💡 Разбор</button>` : '' }
-                        <button class="pres-btn" onclick="submitTask(${i}, '${String(t.answer).replace(/'/g, "\\'")}')" data-correct="${escapePresAttr(t.answer)}" style="font-size: 1.1em; padding: 12px 30px; border-radius: 12px; border: none; background: ${accent}; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.16);">ОК</button>
-                        <button class="btn-settings" style="background: #fff; color: ${accent}; border: 1px solid ${accent}; font-size: 20px; padding: 8px 12px; border-radius: 10px; cursor: pointer;" onclick="event.stopPropagation(); window.toggleCanvas('pres-${i}')" title="Открыть черновик">✏️</button>
-                    </div>
-                    <div id="pres-status-${i}" class="pres-status" style="margin-top: 10px; min-height: 28px; font-size: 18px; font-weight: bold; text-align: center;"></div>
+                    ${buildPresentationControls(t, i, {accent:accent, instantCheck, showCorrectOnError, showSolutions})}
                 </div>
             </div>
 
@@ -446,6 +468,7 @@ function makeCustomPresentationTaskSlide(t, i, settings) {
                 <div style="display: flex; flex-wrap: nowrap; gap: 10px; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,.72); padding: 8px 15px; border-radius: 12px; border: 1px solid ${accent}; color: #333; overflow:hidden;">
                     <button onclick="window.setTool('pres-${i}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
                     <button onclick="window.setTool('pres-${i}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
+                    <button onclick="window.setTool('pres-${i}', 'highlighter')" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0 2px; flex:0 0 auto;" title="Выделитель — полупрозрачный маркер">🖍️</button>
                     <button onclick="window.undoCanvas && window.undoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить">↶</button>
                     <button onclick="window.redoCanvas && window.redoCanvas('pres-${i}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Повторить">↷</button>
                     <select id="tool-select-pres-${i}" onchange="window.setTool('pres-${i}', this.value)" style="background: #fff; border: 1px solid ${accent}; border-radius: 8px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: ${accent}; font-weight: 500; min-width:120px;">
@@ -487,7 +510,7 @@ function generateCustomPresentationFromEditor() {
     const topicsList = (window.selectedBlockTitles || []).map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
     const authorLine = getCustomPresAuthorLine();
     const taskSlides = tasks.map((t, i) => makeCustomPresentationTaskSlide(t, i, settings)).join('');
-    const hiddenTheories = tasks.map((t, i) => `<div id="theory-pres-${i}" style="display:none;">${encodeURIComponent(t.theory || '')}</div>`).join('');
+    const hiddenTheories = buildPresentationHiddenData(tasks);
     generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorLine, topicsList, 'Презентация_Урока_Свой_стиль.html', startBg, fallbackMain, accentColor);
     const modal = document.getElementById('custom-pres-editor-modal');
     if (modal) modal.style.display = 'none';
@@ -995,6 +1018,16 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
                 workStartTime = Date.now();
             }
             if (currentSlide < slides.length - 1) showSlide(currentSlide + 1); 
+        }
+
+        function showSecondPartPresAnswer(idx) {
+            event.stopPropagation();
+            const box = document.getElementById('pres-second-answer-' + idx);
+            const btn = document.getElementById('pres-second-answer-btn-' + idx);
+            if (!box) return;
+            box.style.display = 'block';
+            if (btn) btn.style.display = 'none';
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([box]).catch(()=>{});
         }
 
         // --- МГНОВЕННАЯ ПРОВЕРКА В ПРЕЗЕНТАЦИИ ---
