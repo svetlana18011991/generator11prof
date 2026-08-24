@@ -1139,8 +1139,8 @@ body.auth-locked > *:not(#passwordGate) {
             <p>Разбор можно свернуть кнопкой <strong>«Скрыть»</strong>, при этом задачи для самостоятельной тренировки остаются на экране.</p>
 
             <h3>4. Черновик</h3>
-            <p>В интерактивном варианте есть встроенный черновик. В заданиях второй части и у аналогов его можно открыть кнопкой с карандашом.</p>
-            <p>Видимый размер окна черновика остаётся компактным, но рабочее поле внутри прокручивается. Сейчас его вертикальная рабочая область увеличена примерно <strong>в 3 раза</strong>, поэтому для длинного решения можно прокручивать черновик вниз и продолжать записи.</p>
+            <p>В интерактивном варианте есть встроенный черновик. Обычные задания, задачи для отработки и аналоги используют один и тот же набор инструментов и одинаковую логику рисования.</p>
+            <p>В заданиях второй части видимый размер окна черновика остаётся компактным, а рабочая область внутри имеет высоту <strong>ровно в 3 раза больше</strong> и прокручивается. Это даёт место для длинного решения без тяжёлого холста, который может тормозить.</p>
             <p>В черновике доступны ручка, маркер, ластик, отмена и возврат действия, фигуры, выбор цвета и толщины линии, а также очистка поля. Записи сохраняются во время работы с вариантом.</p>
 
             <h3>5. Настройте оформление</h3>
@@ -2278,20 +2278,58 @@ body.auth-locked > *:not(#passwordGate) {
 
     function hideTooltip() { tooltip.style.display = 'none'; }
 
-    function buildInlineScratchpadHTML(draftId, isSecondPart = false) {
-        // Черновик в аналогах/задачах для отработки использует ТОЧНО ТУ ЖЕ
-        // структуру рабочего canvas, что и черновик обычного интерактивного задания.
-        // Отличается только режим рабочей области по части:
-        // 1 часть — без прокрутки; 2 часть — длинное поле с вертикальной прокруткой.
+    function buildDraftDiagramCardHTML(draftId, diagramSource) {
+        if (!diagramSource) return "";
+        return `<style>
+            .draft-diagram-card-${draftId} {
+                position:absolute;
+                left:12px;
+                top:22px;
+                width:fit-content;
+                height:fit-content;
+                max-width:42%;
+                max-height:76%;
+                background:#fff;
+                border:1px solid #d7d7d7;
+                border-radius:8px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.08);
+                padding:24px 12px 10px;
+                box-sizing:border-box;
+                display:block;
+                overflow:visible;
+                z-index:1;
+                pointer-events:none;
+            }
+            .draft-diagram-card-${draftId} svg,
+            .draft-diagram-card-${draftId} img,
+            .draft-diagram-card-${draftId} picture,
+            .draft-diagram-card-${draftId} canvas {
+                display:block !important;
+                max-width:min(300px, calc(100vw - 120px)) !important;
+                max-height:220px !important;
+                width:auto !important;
+                height:auto !important;
+                object-fit:contain !important;
+                overflow:visible !important;
+                margin:0 !important;
+            }
+        </style><div id="draft-diagram-card-${draftId}" class="draft-diagram-card-${draftId}">${diagramSource}</div>`;
+    }
+
+    function buildInlineScratchpadHTML(draftId, isSecondPart = false, diagramHTML = "") {
+        // Один общий шаблон черновика для обычной задачи, задач для отработки и аналогов.
+        // Во второй части рабочая область ровно в 3 раза выше видимого окна: 320 × 3 = 960 px.
+        // Это сохраняет прокрутку для длинного решения, но не создаёт тяжёлый canvas 2880 px,
+        // из-за которого письмо в аналогах могло заметно подвисать.
         const scratchViewportStyle = isSecondPart
             ? "height:320px;overflow-y:auto;overflow-x:hidden;border:2px solid #bbdefb;border-radius:8px;background:#fff;"
             : "height:320px;overflow:hidden;border:2px solid #bbdefb;border-radius:8px;background:#fff;";
-        const scratchWorkspaceHeight = isSecondPart ? 2880 : 320;
+        const scratchWorkspaceHeight = isSecondPart ? 960 : 320;
 
         return `<div id="draw-wrapper-${draftId}" class="${isSecondPart ? 'second-part-scratchpad' : ''}" style="display:none; margin-top:20px; width:100%; transition:all 0.3s ease; clear:both;">
             <div style="display:flex; gap:10px; align-items:center; margin-bottom:5px; background:#e3f2fd; padding:8px 15px; border-radius:8px; border:1px solid #bbdefb; color:#333;">
                 <button onclick="window.setTool('${draftId}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
-                <button onclick="window.setTool('${draftId}', 'zoom')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Лупа">🔍</button>
+                <button onclick="window.setTool('${draftId}', 'zoom')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Лупа: нажмите на чертёж, чтобы открыть его крупно">🔍</button>
                 <button onclick="window.setTool('${draftId}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
                 <button onclick="window.setTool('${draftId}', 'highlighter')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Выделитель — полупрозрачный маркер">🖍️</button>
                 <button onclick="window.undoCanvas('${draftId}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить действие">↶</button>
@@ -2315,6 +2353,7 @@ body.auth-locked > *:not(#passwordGate) {
             </div>
             <div style="${scratchViewportStyle}">
                 <div style="position:relative; width:100%; height:${scratchWorkspaceHeight}px; background-color:#fff; background-size:20px 20px; background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);">
+                    ${diagramHTML || ''}
                     <canvas id="canvas-${draftId}" style="position:absolute; left:0; top:0; z-index:2; display:block; width:100%; height:100%; touch-action:none; cursor:crosshair;"></canvas>
                 </div>
             </div>
@@ -2701,7 +2740,10 @@ body.auth-locked > *:not(#passwordGate) {
                 finalTasks.forEach(t => {
                     const key = String(t.protoIndex ?? '');
                     const selectedIds = selectedIdsByProto[key] || new Set();
-                    t.analogs = (t.allProtoTasks || []).filter(a => !selectedIds.has(String(a.id ?? a.text ?? '')));
+                    const prototypeSvg = (t.prototype && t.prototype.svg_code) ? t.prototype.svg_code : "";
+                    t.analogs = (t.allProtoTasks || [])
+                        .filter(a => !selectedIds.has(String(a.id ?? a.text ?? '')))
+                        .map(a => ({ ...a, svg: a.svg || a.svg_code || prototypeSvg || "" }));
                 });
             }
             hasContent = true;
@@ -2748,11 +2790,14 @@ body.auth-locked > *:not(#passwordGate) {
                     `;
                     if(item.theory.tasks) {
                         item.theory.tasks.forEach((t, practiceIndex) => {
-                            let tSvgCode = t.svg_code || "";
+                            // Если у конкретной задачи нет собственного svg_code, берём чертёж прототипа.
+                            // Так после скрытия верхнего разбора чертёж не исчезает у задач для отработки.
+                            let tSvgCode = t.svg_code || item.theory.svg_code || "";
                             if (tSvgCode) { let tmp = document.createElement('div'); tmp.innerHTML = tSvgCode; window.autoFixSVGArrows(tmp); applySafeSvgPadding(tmp); tSvgCode = tmp.innerHTML; }
-                            let tSvg = tSvgCode ? `<br><div style="margin:10px 0; max-width:300px;">${tSvgCode}</div>` : '';
+                            let tSvg = tSvgCode ? `<div class="generated-task-diagram" style="margin:10px 0;max-width:320px;padding:14px 8px 6px;box-sizing:border-box;overflow:visible;">${tSvgCode}</div>` : '';
                             const practiceDraftId = `practice-${taskCounter}-${practiceIndex + 1}`;
-                            const practiceScratchpad = buildInlineScratchpadHTML(practiceDraftId, false);
+                            const practiceDiagramHTML = buildDraftDiagramCardHTML(practiceDraftId, tSvgCode);
+                            const practiceScratchpad = buildInlineScratchpadHTML(practiceDraftId, false, practiceDiagramHTML);
                             theoryHtml += `<li style='margin-bottom:18px;'><div style="display:flex;align-items:flex-start;gap:8px;"><div style="flex:1;min-width:0;">${protectTaskTypography(t.text)}${tSvg}</div><button type="button" onclick="window.toggleCanvas('${practiceDraftId}')" title="Открыть черновик" style="flex:0 0 auto;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:6px;font-size:18px;padding:5px 9px;cursor:pointer;">✏️</button></div><div style="margin-top:7px;"><span style='color:#003399;cursor:pointer;border-bottom:1px dashed #003399;' onclick='this.innerText="Ответ: ${t.answer}"; this.style.border="none"; this.style.fontWeight="bold";'>Показать ответ</span></div>${practiceScratchpad}</li>`;
                         });
                     }
@@ -2769,8 +2814,18 @@ body.auth-locked > *:not(#passwordGate) {
                         analogsHtml += `<ol style="padding-left:24px;">`;
                         analogList.forEach((a, analogIndex) => {
                             const analogDraftId = `analog-${taskCounter}-${analogIndex + 1}`;
-                            const analogScratchpad = buildInlineScratchpadHTML(analogDraftId, true);
-                            analogsHtml += `<li style="margin-bottom:20px;"><div style="display:flex;align-items:flex-start;gap:8px;"><div style="flex:1;min-width:0;">${protectTaskTypography(a.text)}</div><button type="button" onclick="window.toggleCanvas('${analogDraftId}')" title="Открыть черновик" style="flex:0 0 auto;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:6px;font-size:18px;padding:5px 9px;cursor:pointer;">✏️</button></div>${analogScratchpad}`;
+                            let analogSvgCode = a.svg || a.svg_code || (item.prototype && item.prototype.svg_code) || "";
+                            if (analogSvgCode) {
+                                let tmp = document.createElement('div');
+                                tmp.innerHTML = analogSvgCode;
+                                window.autoFixSVGArrows(tmp);
+                                applySafeSvgPadding(tmp);
+                                analogSvgCode = tmp.innerHTML;
+                            }
+                            const analogDiagram = analogSvgCode ? `<div class="generated-task-diagram" style="margin:10px 0;max-width:340px;padding:14px 8px 6px;box-sizing:border-box;overflow:visible;">${analogSvgCode}</div>` : "";
+                            const analogDiagramHTML = buildDraftDiagramCardHTML(analogDraftId, analogSvgCode);
+                            const analogScratchpad = buildInlineScratchpadHTML(analogDraftId, true, analogDiagramHTML);
+                            analogsHtml += `<li style="margin-bottom:20px;"><div style="display:flex;align-items:flex-start;gap:8px;"><div style="flex:1;min-width:0;">${protectTaskTypography(a.text)}${analogDiagram}</div><button type="button" onclick="window.toggleCanvas('${analogDraftId}')" title="Открыть черновик" style="flex:0 0 auto;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:6px;font-size:18px;padding:5px 9px;cursor:pointer;">✏️</button></div>${analogScratchpad}`;
                             if (showCorrectOnError) analogsHtml += `<div style="margin-top:8px;padding:9px 12px;background:#eef6ff;border-left:3px solid #003399;border-radius:5px;"><b>Ответ:</b> ${a.answer}</div>`;
                             analogsHtml += `</li>`;
                         });
@@ -2784,7 +2839,7 @@ body.auth-locked > *:not(#passwordGate) {
                     answer: String(item.answer),
                     theory: theoryHtml,
                     analogsHtml: analogsHtml,
-                    analogs: isSecondPartBlock ? (item.analogs || []).map(a => ({ id: a.id, text: a.text, answer: a.answer })) : [],
+                    analogs: isSecondPartBlock ? (item.analogs || []).map(a => ({ id: a.id, text: a.text, answer: a.answer, svg: a.svg || a.svg_code || "" })) : [],
                     part: isSecondPartBlock ? 2 : 1,
                     isSecondPart: isSecondPartBlock,
                     prototypeCode: item.prototype && item.prototype.code ? item.prototype.code : "",
@@ -2849,83 +2904,17 @@ body.auth-locked > *:not(#passwordGate) {
                     <div id="second-answer-data-${taskCounter}" style="display:none;">${encodeURIComponent(String(item.answer))}</div>
                 ` : "";
 
-                const draftDiagramTaskNum = parseInt(String(tid).replace(/\D/g, '')) || 0;
-                const needsDraftDiagram = [1, 2, 3, 8, 11].includes(draftDiagramTaskNum);
-                let draftDiagramSource = "";
-                if (needsDraftDiagram) {
-                    draftDiagramSource = mainSvg || "";
-                    if (!draftDiagramSource && item.text) {
-                        let tmpDiagram = document.createElement('div');
-                        tmpDiagram.innerHTML = item.text;
-                        window.autoFixSVGArrows(tmpDiagram);
-                        let foundDiagram = tmpDiagram.querySelector('svg, img, picture, canvas');
-                        if (foundDiagram) draftDiagramSource = foundDiagram.outerHTML;
-                    }
+                // Любой реальный чертёж задачи переносим и в её черновик — без жёсткого списка номеров.
+                let draftDiagramSource = mainSvg || "";
+                if (!draftDiagramSource && item.text) {
+                    let tmpDiagram = document.createElement('div');
+                    tmpDiagram.innerHTML = item.text;
+                    window.autoFixSVGArrows(tmpDiagram);
+                    let foundDiagram = tmpDiagram.querySelector('svg, img, picture, canvas');
+                    if (foundDiagram) draftDiagramSource = foundDiagram.outerHTML;
                 }
-                let draftDiagramHTML = (needsDraftDiagram && draftDiagramSource) ? `<style>
-                    .draft-diagram-card-${taskCounter} {
-                        position:absolute;
-                        left:12px;
-                        top:22px;
-                        width:fit-content;
-                        height:fit-content;
-                        max-width:42%;
-                        max-height:76%;
-                        background:#fff;
-                        border:1px solid #d7d7d7;
-                        border-radius:8px;
-                        box-shadow:0 2px 8px rgba(0,0,0,0.08);
-                        padding:24px 12px 10px;
-                        box-sizing:border-box;
-                        display:block;
-                        overflow:visible;
-                        z-index:1;
-                        pointer-events:none;
-                    }
-                    .draft-diagram-card-${taskCounter} svg,
-                    .draft-diagram-card-${taskCounter} img,
-                    .draft-diagram-card-${taskCounter} picture,
-                    .draft-diagram-card-${taskCounter} canvas {
-                        display:block !important;
-                        max-width:min(300px, calc(100vw - 120px)) !important;
-                        max-height:220px !important;
-                        width:auto !important;
-                        height:auto !important;
-                        object-fit:contain !important;
-                        overflow:visible !important;
-                        margin:0 !important;
-                    }
-                </style><div id="draft-diagram-card-${taskCounter}" class="draft-diagram-card-${taskCounter}">${draftDiagramSource}</div>` : "";
-                
-                const scratchViewportStyle = isSecondPartBlock ? "height:320px;overflow-y:auto;overflow-x:hidden;border:2px solid #bbdefb;border-radius:8px;background:#fff;" : "height:320px;overflow:hidden;border:2px solid #bbdefb;border-radius:8px;background:#fff;";
-                const scratchWorkspaceHeight = isSecondPartBlock ? 2880 : 320;
-                let scratchpadHTML = `<div id="draw-wrapper-${taskCounter}" class="${isSecondPartBlock ? 'second-part-scratchpad' : ''}" style="display:none; margin-top: 20px; width: 100%; transition: all 0.3s ease; clear: both;">
-                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: #e3f2fd; padding: 8px 15px; border-radius: 8px; border: 1px solid #bbdefb; color: #333;">
-                        <button onclick="window.setTool('${taskCounter}', 'pointer')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Указатель (Перетаскивание)">👆</button>
-                        <button onclick="window.setTool('${taskCounter}', 'zoom')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Лупа: нажмите на чертёж, чтобы открыть его крупно">🔍</button>
-                        <button onclick="window.setTool('${taskCounter}', 'pen')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Карандаш">🖊️</button>
-                        <button onclick="window.setTool('${taskCounter}', 'highlighter')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Выделитель — полупрозрачный маркер">🖍️</button>
-                        <button onclick="window.undoCanvas('${taskCounter}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Отменить действие">↶</button>
-                        <button onclick="window.redoCanvas('${taskCounter}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Повторить действие">↷</button>
-                        <select id="tool-select-${taskCounter}" onchange="window.setTool('${taskCounter}', this.value)" style="background: #fff; border: 1px solid #90caf9; border-radius: 4px; padding: 4px 8px; font-size: 14px; cursor: pointer; outline: none; color: #003399; font-weight: 500;">
-                            <option value="" disabled selected hidden>🔺 Фигуры</option>
-                            <option value="line">📏 Прямая</option>
-                            <option value="vector">↗️ Вектор</option>
-                            <option value="circle">⭕ Окружность</option>
-                            <option value="triangle">🔺 Треугольник</option>
-                            <option value="cylinder">🛢️ Цилиндр</option>
-                            <option value="cone">🍦 Конус</option>
-                            <option value="sphere">🔮 Сфера</option>
-                        </select>
-                        <input type="color" id="color-${taskCounter}" value="#003399" style="cursor:pointer; height: 30px; width: 35px; border: none; background: transparent; padding: 0;" title="Цвет">
-                        <input type="range" id="size-${taskCounter}" min="1" max="15" value="3" style="cursor:pointer; width: 80px;" title="Толщина линии">
-                        <button onclick="window.setTool('${taskCounter}', 'eraser')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Ластик">🧽</button>
-                        <div style="flex-grow:1;"></div>
-                        <button onclick="window.clearCanvas('${taskCounter}')" style="background:none; border:none; cursor:pointer; font-size:20px;" title="Очистить всё">🗑️</button>
-                        <input type="hidden" id="tool-${taskCounter}" value="pen">
-                    </div>
-                    <div style="${scratchViewportStyle}"><div style="position:relative;width:100%;height:${scratchWorkspaceHeight}px;background-color:#fff;background-size:20px 20px;background-image:linear-gradient(to right,#d2e3f2 1px,transparent 1px),linear-gradient(to bottom,#d2e3f2 1px,transparent 1px);">${draftDiagramHTML}<canvas id="canvas-${taskCounter}" style="position:absolute;left:0;top:0;z-index:2;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;"></canvas></div></div>
-                </div>`;
+                const draftDiagramHTML = buildDraftDiagramCardHTML(String(taskCounter), draftDiagramSource);
+                let scratchpadHTML = buildInlineScratchpadHTML(String(taskCounter), isSecondPartBlock, draftDiagramHTML);
 
                 const displayTaskText = protectTaskTypography(item.text);
                 const taskActionArea = isSecondPartBlock
