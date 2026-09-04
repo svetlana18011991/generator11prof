@@ -2642,7 +2642,7 @@ body.auth-locked > *:not(#passwordGate) {
             let activePools = selectedProtos.map((p, selectedIndex) => {
                 const originalProtoIndex = randomPick ? randomPick.protoIndex : data.prototypes.indexOf(p);
                 const chosenTask = randomPick && p.tasks ? p.tasks[randomPick.taskIndex] : null;
-                const poolTasks = chosenTask ? [chosenTask] : (orderedTasks ? [...p.tasks] : shuffleArray([...p.tasks]));
+                const poolTasks = chosenTask ? [chosenTask] : shuffleArray([...p.tasks]);
                 return {
                     tasks: poolTasks,
                     allTasks: [...p.tasks],
@@ -2672,7 +2672,11 @@ body.auth-locked > *:not(#passwordGate) {
             }
 
             // Логика набора внутри одного номера задания:
-            // берём НЕ все задачи первого прототипа подряд, а по одной задаче
+            // порядок прототипов зависит от галочки «Упорядочить задания»,
+            // но задачи ВНУТРИ каждого прототипа всегда перемешиваются.
+            // Поэтому при повторной генерации сохраняются те же типы/прототипы,
+            // а конкретные аналоги из каждого прототипа выбираются заново.
+            // Берём НЕ все задачи первого прототипа подряд, а по одной задаче
             // из каждого выбранного прототипа. Когда дошли до конца прототипов,
             // идём на следующий слой: снова по одной задаче из каждого прототипа.
             // Только после того, как все уникальные задачи выбранных прототипов
@@ -2684,7 +2688,7 @@ body.auth-locked > *:not(#passwordGate) {
                     prototype: pool.prototype || pool.theory,
                     protoIndex: pool.protoIndex,
                     allTasks: [...(pool.allTasks || pool.tasks || [])],
-                    tasks: orderedTasks ? [...pool.tasks] : shuffleArray([...pool.tasks])
+                    tasks: shuffleArray([...pool.tasks])
                 })).filter(pool => pool.tasks.length > 0);
 
                 if (!orderedTasks) {
