@@ -574,27 +574,27 @@
         {
             "desc": "Прототип 17. Поверхность прямой призмы с ромбом в основании",
             "svg_code": "<svg width=\"300\" height=\"281.0\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 74.126 69.432\"><defs><clipPath id=\"clip-0\"><path clip-rule=\"nonzero\" d=\"M 0 37 L 73.261719 37 L 73.261719 68.746094 L 0 68.746094 Z M 0 37 \"/></clipPath><clipPath id=\"clip-1\"><path clip-rule=\"nonzero\" d=\"M 0 0.125 L 73.261719 0.125 L 73.261719 32 L 0 32 Z M 0 0.125 \"/></clipPath><clipPath id=\"clip-2\"><path clip-rule=\"nonzero\" d=\"M 0 43 L 73.261719 43 L 73.261719 68.746094 L 0 68.746094 Z M 0 43 \"/></clipPath><clipPath id=\"clip-3\"><path clip-rule=\"nonzero\" d=\"M 16 43 L 57 43 L 57 68.746094 L 16 68.746094 Z M 16 43 \"/></clipPath></defs><g clip-path=\"url(#clip-0)\"><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 0.000127577 0.00079402 L 47.96138 0.00079402 L 67.351401 16.734864 L 19.390148 16.734864 Z M 0.000127577 0.00079402 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></g><g clip-path=\"url(#clip-1)\"><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 0.000127577 45.922656 L 47.96138 45.922656 L 67.351401 62.656726 L 19.390148 62.656726 Z M 0.000127577 45.922656 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></g><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 0.000127577 0.00079402 L 0.000127577 45.922656 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 47.96138 0.00079402 L 47.96138 45.922656 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 67.351401 16.734864 L 67.351401 62.656726 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 19.390148 16.734864 L 19.390148 62.656726 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/><g clip-path=\"url(#clip-2)\"><path fill=\"none\" stroke-width=\"0.3985\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-dasharray=\"2.98883 2.98883\" stroke-miterlimit=\"10\" d=\"M 0.000127577 0.00079402 L 67.351401 16.734864 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></g><g clip-path=\"url(#clip-3)\"><path fill=\"none\" stroke-width=\"0.3985\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-dasharray=\"2.98883 2.98883\" stroke-miterlimit=\"10\" d=\"M 47.96138 0.00079402 L 19.390148 16.734864 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></g><path fill=\"none\" stroke-width=\"0.3985\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-dasharray=\"2.98883 2.98883\" stroke-miterlimit=\"10\" d=\"M 19.390148 16.734864 L 19.390148 62.656726 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></svg>",
-            "theory_task": "В основании прямой призмы лежит ромб с диагоналями $6$ и $8$. Боковое ребро призмы равно $10$. Найдите площадь поверхности призмы.",
-            "theory_sol": "Площадь основания ромба: $S_{\\mathrm{osn}}=\\frac{6\\cdot8}{2}=24$.<br>Сторона ромба: $a=\\sqrt{3^2+4^2}=5$, поэтому периметр основания $P=20$.<br>$S_{\\mathrm{b}}=P\\cdot h=20\\cdot10=200$.<br>$S=2S_{\\mathrm{osn}}+S_{\\mathrm{b}}=2\\cdot24+200=248$.<br><br><b>Ответ:</b> 248",
+            "theory_task": "Найдите площадь поверхности прямой призмы, в основании которой лежит ромб с диагоналями, равными $10$ и $24$, а боковое ребро призмы равно $3$.",
+            "theory_sol": "Площадь основания ромба: $S_{\\mathrm{osn}}=\\frac{10\\cdot24}{2}=120$.<br>Половины диагоналей равны $5$ и $12$, поэтому сторона ромба $a=\\sqrt{5^2+12^2}=13$, а периметр основания $P=52$.<br>Площадь боковой поверхности: $S_{\\mathrm{b}}=P\\cdot h=52\\cdot3=156$.<br>Полная площадь поверхности: $S=2S_{\\mathrm{osn}}+S_{\\mathrm{b}}=2\\cdot120+156=396$.<br><br><b>Ответ:</b> 396",
             "tasks": [
                 {
-                    "text": "В основании прямой призмы лежит ромб с диагоналями $6$ и $8$. Боковое ребро равно $5$. Найдите площадь поверхности призмы.",
+                    "text": "Найдите площадь поверхности прямой призмы, в основании которой лежит ромб с диагоналями, равными $6$ и $8$, а боковое ребро призмы равно $5$.",
                     "answer": "148"
                 },
                 {
-                    "text": "Диагонали ромба равны $10$ и $24$, боковое ребро равно $3$. Найдите площадь поверхности призмы.",
+                    "text": "Найдите площадь поверхности прямой призмы, в основании которой лежит ромб с диагоналями, равными $10$ и $24$, а боковое ребро призмы равно $3$.",
                     "answer": "396"
                 },
                 {
-                    "text": "Диагонали ромба равны $8$ и $6$, боковое ребро равно $7$. Найдите площадь поверхности призмы.",
+                    "text": "Найдите площадь поверхности прямой призмы, в основании которой лежит ромб с диагоналями, равными $8$ и $6$, а боковое ребро призмы равно $7$.",
                     "answer": "188"
                 },
                 {
-                    "text": "Диагонали ромба равны $12$ и $16$, боковое ребро равно $4$. Найдите площадь поверхности призмы.",
+                    "text": "Найдите площадь поверхности прямой призмы, в основании которой лежит ромб с диагоналями, равными $12$ и $16$, а боковое ребро призмы равно $4$.",
                     "answer": "352"
                 },
                 {
-                    "text": "Диагонали ромба равны $14$ и $48$, боковое ребро равно $2$. Найдите площадь поверхности призмы.",
+                    "text": "Найдите площадь поверхности прямой призмы, в основании которой лежит ромб с диагоналями, равными $14$ и $48$, а боковое ребро призмы равно $2$.",
                     "answer": "872"
                 }
             ]
@@ -602,27 +602,27 @@
         {
             "desc": "Прототип 18. Объём прямой призмы с ромбом в основании",
             "svg_code": "<svg width=\"300\" height=\"281.0\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 74.126 69.432\"><defs><clipPath id=\"clip-0\"><path clip-rule=\"nonzero\" d=\"M 0 37 L 73.261719 37 L 73.261719 68.746094 L 0 68.746094 Z M 0 37 \"/></clipPath><clipPath id=\"clip-1\"><path clip-rule=\"nonzero\" d=\"M 0 0.125 L 73.261719 0.125 L 73.261719 32 L 0 32 Z M 0 0.125 \"/></clipPath><clipPath id=\"clip-2\"><path clip-rule=\"nonzero\" d=\"M 0 43 L 73.261719 43 L 73.261719 68.746094 L 0 68.746094 Z M 0 43 \"/></clipPath><clipPath id=\"clip-3\"><path clip-rule=\"nonzero\" d=\"M 16 43 L 57 43 L 57 68.746094 L 16 68.746094 Z M 16 43 \"/></clipPath></defs><g clip-path=\"url(#clip-0)\"><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 0.000127577 0.00079402 L 47.96138 0.00079402 L 67.351401 16.734864 L 19.390148 16.734864 Z M 0.000127577 0.00079402 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></g><g clip-path=\"url(#clip-1)\"><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 0.000127577 45.922656 L 47.96138 45.922656 L 67.351401 62.656726 L 19.390148 62.656726 Z M 0.000127577 45.922656 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></g><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 0.000127577 0.00079402 L 0.000127577 45.922656 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 47.96138 0.00079402 L 47.96138 45.922656 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 67.351401 16.734864 L 67.351401 62.656726 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/><path fill=\"none\" stroke-width=\"0.79701\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-miterlimit=\"10\" d=\"M 19.390148 16.734864 L 19.390148 62.656726 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/><g clip-path=\"url(#clip-2)\"><path fill=\"none\" stroke-width=\"0.3985\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-dasharray=\"2.98883 2.98883\" stroke-miterlimit=\"10\" d=\"M 0.000127577 0.00079402 L 67.351401 16.734864 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></g><g clip-path=\"url(#clip-3)\"><path fill=\"none\" stroke-width=\"0.3985\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-dasharray=\"2.98883 2.98883\" stroke-miterlimit=\"10\" d=\"M 47.96138 0.00079402 L 19.390148 16.734864 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></g><path fill=\"none\" stroke-width=\"0.3985\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" stroke=\"rgb(0%, 0%, 0%)\" stroke-opacity=\"1\" stroke-dasharray=\"2.98883 2.98883\" stroke-miterlimit=\"10\" d=\"M 19.390148 16.734864 L 19.390148 62.656726 \" transform=\"matrix(0.988347, 0, 0, -0.988347, 3.34753, 65.399222)\"/></svg>",
-            "theory_task": "В основании прямой призмы лежит ромб с диагоналями $6$ и $8$. Боковое ребро призмы равно $10$. Найдите объём призмы.",
-            "theory_sol": "Площадь основания ромба равна половине произведения диагоналей: $S_{\\mathrm{osn}}=\\frac{6\\cdot8}{2}=24$.<br>Объём прямой призмы: $V=S_{\\mathrm{osn}}\\cdot h=24\\cdot10=240$.<br><br><b>Ответ:</b> 240",
+            "theory_task": "Найдите объём прямой призмы, в основании которой лежит ромб с диагоналями, равными $12$ и $16$, а боковое ребро призмы равно $4$.",
+            "theory_sol": "Площадь основания ромба равна половине произведения диагоналей: $S_{\\mathrm{osn}}=\\frac{12\\cdot16}{2}=96$.<br>Объём прямой призмы: $V=S_{\\mathrm{osn}}\\cdot h=96\\cdot4=384$.<br><br><b>Ответ:</b> 384",
             "tasks": [
                 {
-                    "text": "В основании прямой призмы лежит ромб с диагоналями $6$ и $8$. Боковое ребро равно $5$. Найдите объём призмы.",
+                    "text": "Найдите объём прямой призмы, в основании которой лежит ромб с диагоналями, равными $6$ и $8$, а боковое ребро призмы равно $5$.",
                     "answer": "120"
                 },
                 {
-                    "text": "Диагонали ромба равны $10$ и $24$, боковое ребро равно $3$. Найдите объём призмы.",
+                    "text": "Найдите объём прямой призмы, в основании которой лежит ромб с диагоналями, равными $10$ и $24$, а боковое ребро призмы равно $3$.",
                     "answer": "360"
                 },
                 {
-                    "text": "Диагонали ромба равны $12$ и $16$, боковое ребро равно $4$. Найдите объём призмы.",
+                    "text": "Найдите объём прямой призмы, в основании которой лежит ромб с диагоналями, равными $12$ и $16$, а боковое ребро призмы равно $4$.",
                     "answer": "384"
                 },
                 {
-                    "text": "Диагонали ромба равны $14$ и $48$, боковое ребро равно $2$. Найдите объём призмы.",
+                    "text": "Найдите объём прямой призмы, в основании которой лежит ромб с диагоналями, равными $14$ и $48$, а боковое ребро призмы равно $2$.",
                     "answer": "672"
                 },
                 {
-                    "text": "Диагонали ромба равны $4$ и $6$, боковое ребро равно $9$. Найдите объём призмы.",
+                    "text": "Найдите объём прямой призмы, в основании которой лежит ромб с диагоналями, равными $4$ и $6$, а боковое ребро призмы равно $9$.",
                     "answer": "108"
                 }
             ]
@@ -883,16 +883,16 @@
 };
 
     // Прототипы 1–2. Не используем z1/f1: эти имена заняты другими ресурсами сайта.
-    task3Extra.prototypes[0].svg_code = task3ExtraImage('task3_z1.png', 203, 'Составной многогранник — пример прототипа 1');
+    task3Extra.prototypes[0].svg_code = task3ExtraImage('task3_z1.png', 270, 'Составной многогранник — пример прототипа 1');
     task3Extra.prototypes[0].tasks.forEach((task, index) => {
         const n = index + 2;
-        task.svg_code = task3ExtraImage(`task3_z${n}.png`, 191, `Составной многогранник — вариант z${n}`);
+        task.svg_code = task3ExtraImage(`task3_z${n}.png`, 255, `Составной многогранник — вариант z${n}`);
     });
 
-    task3Extra.prototypes[1].svg_code = task3ExtraImage('task3_f1.png', 203, 'Составной многогранник — пример прототипа 2');
+    task3Extra.prototypes[1].svg_code = task3ExtraImage('task3_f1.png', 270, 'Составной многогранник — пример прототипа 2');
     task3Extra.prototypes[1].tasks.forEach((task, index) => {
         const n = index + 2;
-        task.svg_code = task3ExtraImage(`task3_f${n}.png`, 191, `Составной многогранник — вариант f${n}`);
+        task.svg_code = task3ExtraImage(`task3_f${n}.png`, 255, `Составной многогранник — вариант f${n}`);
     });
 
     // Устойчивые встроенные чертежи: без Base64, transform и повторяющихся id.
@@ -906,7 +906,7 @@
     // Внешние файлы с уникальными безопасными именами; старые имена оставлены только как запасной вариант.
     task3Extra.prototypes[8].svg_code  = task3ExtraImage(['task3_square_prism_cylinder.png', 'про.png'], 233, 'Цилиндр в правильной четырёхугольной призме');
     task3Extra.prototypes[9].svg_code  = task3ExtraImage(['task3_hex_prism_cylinder.png', 'proto11.png'], 233, 'Цилиндр в правильной шестиугольной призме');
-    task3Extra.prototypes[10].svg_code = task3ExtraImage(['task3_tri_prism_in_cylinder.png', 'tri_cyl.png'], 180, 'Правильная треугольная призма, вписанная в цилиндр');
+    task3Extra.prototypes[10].svg_code = task3ExtraImage(['task3_tri_prism_in_cylinder.png', 'tri_cyl.png'], 240, 'Правильная треугольная призма, вписанная в цилиндр');
 
     task3Extra.prototypes[11].svg_code = task3ExtraCylinder;
     task3Extra.prototypes[12].svg_code = task3ExtraCone;
@@ -923,7 +923,7 @@
     task3Extra.prototypes[23].svg_code = task3ExtraTetra;
     task3Extra.prototypes[24].svg_code = task3ExtraImage(['task3_tetra_mid.png', 'tetra_mid.png'], 248, 'Многогранник из середин рёбер тетраэдра');
     task3Extra.prototypes[25].svg_code = task3ExtraHexPrism;
-    task3Extra.prototypes[26].svg_code = task3ExtraImage(['task3_prism_diag.png', 'prism_diag.png'], 248, 'Диагонали правильной четырёхугольной призмы');
+    task3Extra.prototypes[26].svg_code = task3ExtraImage(['task3_prism_diag.png', 'prism_diag.png'], 330, 'Диагонали правильной четырёхугольной призмы');
 
     window.extraDatabase[3] = task3Extra;
     window.extraDatabase["task3"] = task3Extra;
