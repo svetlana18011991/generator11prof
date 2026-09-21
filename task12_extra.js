@@ -1,380 +1,724 @@
 (function() {
     window.extraDatabase = window.extraDatabase || {};
 
+    function imageHtml(name, alt) {
+        const src = window.task11ExtraImages && window.task11ExtraImages[name];
+        if (!src) {
+            return `<div style="width:340px;max-width:100%;min-height:180px;display:flex;align-items:center;justify-content:center;border:1px dashed #999;border-radius:8px;background:#fafafa;color:#777;text-align:center;padding:12px;box-sizing:border-box;">Рисунок ${name} не найден</div>`;
+        }
+        return `<img src="${src}" alt="${alt || name}" style="display:block;width:340px;max-width:100%;height:auto;max-height:400px;object-fit:contain;margin:0 auto;border-radius:4px;">`;
+    }
+
     const task12Extra = {
     "title": "Дополнительно",
-    "source": "Задание 12. Исследование функций",
+    "source": "Дополнительные прототипы задания 11 «Графики функций»",
     "prototypes": [
         {
-            "desc": "Корень из квадратного трёхчлена",
-            "theory_task": "Найдите точку максимума функции \\(y=\\sqrt{16+8x-x^2}\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Функция \\(y=\\sqrt{t}\\) возрастает, поэтому достаточно найти точку максимума подкоренного выражения \\(f(x)=-x^2+8x+16\\).</li><li style=\"margin:4px 0\">Это квадратичная функция, причём \\(a=-1<0\\), поэтому её наибольшее значение достигается в вершине параболы:\n\\[\nx_0=-\\frac{b}{2a}=-\\frac{8}{2\\cdot(-1)}=4.\n\\]</li><li style=\"margin:4px 0\">Следовательно, подкоренное выражение, а вместе с ним и исходная функция, принимает наибольшее значение при \\(x=4\\).</li></ol>\nСледовательно, \\(x=4\\) — точка максимума.<br><br><b>Ответ:</b> \\(4\\)",
+            "desc": "Линейная функция: найти аргумент",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=kx+b. $$ Найдите значение \\(x\\), при котором $$ f(x)=-13{,}5. $$",
+            "theory_sol": "По графику возьмём две отмеченные точки: $$ A(-1;-3), \\qquad B(3;4). $$<br><br>Найдём угловой коэффициент: $$ k= \\frac{4-(-3)}{3-(-1)} = \\frac74. $$<br><br>Подставим координаты точки \\(A\\): $$ -3=-\\frac74+b. $$<br><br>Отсюда $$ b=-\\frac54. $$<br><br>Следовательно, $$ f(x)=\\frac74x-\\frac54. $$<br><br>Составим уравнение: $$ \\frac74x-\\frac54=-13{,}5. $$<br><br>Так как $$ -13{,}5=-\\frac{27}{2}, $$ получаем $$ 7x-5=-54. $$<br><br>Тогда $$ 7x=-49, \\qquad x=-7. $$<br><br><b>Ответ:</b> \\(-7\\)",
             "tasks": [
                 {
-                    "text": "Найдите точку минимума функции \\(y=\\sqrt{x^2-8x+20}\\).",
-                    "answer": "4"
+                    "text": "На рисунке изображён график функции \\(f(x)=kx+b\\). Найдите значение \\(x\\), при котором \\(f(x)=14{,}5\\).",
+                    "answer": "11",
+                    "image": "kot2.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=\\sqrt{x^2-10x+34}\\).",
-                    "answer": "3"
+                    "text": "На рисунке изображён график функции \\(f(x)=kx+b\\). Найдите значение \\(x\\), при котором \\(f(x)=4{,}75\\).",
+                    "answer": "14",
+                    "image": "kot3.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=\\sqrt{7+6x-x^2}\\).",
-                    "answer": "4"
+                    "text": "На рисунке изображён график функции \\(f(x)=kx+b\\). Найдите значение \\(x\\), при котором \\(f(x)=-6{,}5\\).",
+                    "answer": "-16",
+                    "image": "kot4.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=\\sqrt{20-4x-x^2}\\).",
-                    "answer": "-2"
+                    "text": "На рисунке изображён график функции \\(f(x)=kx+b\\). Найдите значение \\(x\\), при котором \\(f(x)=-8\\).",
+                    "answer": "14",
+                    "image": "kot5.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=kx+b\\). Найдите значение \\(x\\), при котором \\(f(x)=16\\).",
+                    "answer": "-10",
+                    "image": "kot6.jpg"
                 }
-            ]
+            ],
+            "image": "kot1.jpg"
         },
         {
-            "desc": "Логарифм квадратного трёхчлена",
-            "theory_task": "Найдите точку максимума функции \\(y=\\log_{2}(10+6x-x^2)-3\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Так как основание логарифма \\(2>1\\), функция \\(y=\\log_2 t\\) возрастает. Поэтому достаточно найти точку максимума аргумента \\(f(x)=-x^2+6x+10\\).</li><li style=\"margin:4px 0\">Это квадратичная функция, причём \\(a=-1<0\\), поэтому максимум достигается в вершине параболы:\n\\[\nx_0=-\\frac{b}{2a}=-\\frac{6}{2\\cdot(-1)}=3.\n\\]</li><li style=\"margin:4px 0\">Значит, аргумент логарифма, а вместе с ним и исходная функция, принимает наибольшее значение при \\(x=3\\). Вычитание числа \\(3\\) точку максимума не изменяет.</li></ol>\nСледовательно, \\(x=3\\) — точка максимума.<br><br><b>Ответ:</b> \\(3\\)",
+            "desc": "\\(f(x)=\\dfrac{k}{x}+a\\): значение функции",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=\\frac{k}{x}+a. $$ Найдите \\(f(-12)\\).",
+            "theory_sol": "Горизонтальная асимптота графика имеет уравнение $$ y=a. $$<br><br>По рисунку $$ a=1. $$<br><br>На графике отмечена точка $$ A(3;2). $$<br><br>Подставим её координаты: $$ 2=\\frac{k}{3}+1. $$<br><br>Отсюда $$ k=3. $$<br><br>Следовательно, $$ f(x)=\\frac3x+1. $$<br><br>Тогда $$ f(-12) = \\frac3{-12}+1 = -\\frac14+1 = 0{,}75. $$<br><br><b>Ответ:</b> \\(0{,}75\\)",
             "tasks": [
                 {
-                    "text": "Найдите точку минимума функции \\(y=\\log_{5}(x^2-8x+20)+2\\).",
-                    "answer": "4"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите \\(f\\left(50\\right)\\).",
+                    "answer": "-2,96",
+                    "image": "kot8.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=\\log_{3}(x^2-6x+10)+4\\).",
-                    "answer": "4"
+                    "text": "На рисунке изображён график функции $$ f(x)=\\frac{k}{x}+a. $$ Найдите $$ f\\left(\\frac13\\right). $$",
+                    "answer": "11",
+                    "image": "kot9.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=\\log_{2}(7+6x-x^2)+1\\).",
-                    "answer": "5"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите \\(f\\left(7{,}5\\right)\\).",
+                    "answer": "1,6",
+                    "image": "kot10.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=\\log_{7}(5-4x-x^2)-2\\).",
-                    "answer": "-2"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите \\(f\\left(25\\right)\\).",
+                    "answer": "0,84",
+                    "image": "kot11.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите \\(f\\left(12{,}5\\right)\\).",
+                    "answer": "-2,4",
+                    "image": "kot12.jpg"
                 }
-            ]
+            ],
+            "image": "kot7.jpg"
         },
         {
-            "desc": "Показательная функция с квадратным показателем",
-            "theory_task": "Найдите точку максимума функции \\(y=5^{12x-2x^2+1}\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Так как основание степени \\(5>1\\), функция \\(y=5^t\\) возрастает. Поэтому достаточно найти точку максимума показателя \\(f(x)=-2x^2+12x+1\\).</li><li style=\"margin:4px 0\">Это квадратичная функция, причём \\(a=-2<0\\), поэтому максимум достигается в вершине параболы:\n\\[\nx_0=-\\frac{b}{2a}=-\\frac{12}{2\\cdot(-2)}=3.\n\\]</li><li style=\"margin:4px 0\">Следовательно, показатель степени, а вместе с ним и исходная функция, принимает наибольшее значение при \\(x=3\\).</li></ol>\nСледовательно, \\(x=3\\) — точка максимума.<br><br><b>Ответ:</b> \\(3\\)",
+            "desc": "\\(f(x)=\\dfrac{k}{x}+a\\): найти аргумент",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=\\frac{k}{x}+a. $$ Найдите, при каком значении \\(x\\) значение функции равно \\(0{,}8\\).",
+            "theory_sol": "По горизонтальной асимптоте получаем $$ a=1. $$<br><br>По отмеченной точке \\(A(3;2)\\): $$ 2=\\frac{k}{3}+1. $$<br><br>Следовательно, $$ k=3. $$<br><br>Значит, $$ f(x)=\\frac3x+1. $$<br><br>По условию $$ \\frac3x+1=0{,}8. $$<br><br>Тогда $$ \\frac3x=-0{,}2. $$<br><br>Умножим обе части на \\(x\\): $$ -0{,}2x=3. $$<br><br>Следовательно, $$ x=-15. $$<br><br><b>Ответ:</b> \\(-15\\)",
             "tasks": [
                 {
-                    "text": "Найдите точку минимума функции \\(y=3^{x^2-10x+7}\\).",
-                    "answer": "5"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите, при каком значении \\(x\\) значение функции равно \\(-3{,}1\\).",
+                    "answer": "-20",
+                    "image": "kot14.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=2^{x^2-6x+9}\\).",
-                    "answer": "1"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите, при каком значении \\(x\\) значение функции равно \\(-17\\).",
+                    "answer": "-0,25",
+                    "image": "kot15.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=3^{-x^2+4x-3}\\).",
-                    "answer": "3"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите, при каком значении \\(x\\) значение функции равно \\(2{,}2\\).",
+                    "answer": "-15",
+                    "image": "kot16.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=11^{6x-x^2}\\).",
-                    "answer": "3"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите, при каком значении \\(x\\) значение функции равно \\(0{,}75\\).",
+                    "answer": "16",
+                    "image": "kot17.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x}+a\\). Найдите, при каком значении \\(x\\) значение функции равно \\(-27\\).",
+                    "answer": "0,2",
+                    "image": "kot18.jpg"
                 }
-            ]
+            ],
+            "image": "kot13.jpg"
         },
         {
-            "desc": "Функция вида x + a/x",
-            "theory_task": "Найдите точку минимума функции \\(y=x+\\dfrac{36}{x}\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Область определения: \\(x\\ne0\\). Производная: \\(y'=1-\\dfrac{36}{x^2}=\\dfrac{(x-6)(x+6)}{x^2}\\).</li><li style=\"margin:4px 0\">Нули производной: \\(x=-6\\) и \\(x=6\\). Знаменатель положителен при \\(x\\ne0\\).</li><li style=\"margin:4px 0\">Построим числовую ось:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(-6\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(0\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(6\\)<small style=\"display:block;color:#555\">min</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span></div>\nСледовательно, \\(x=6\\) — точка минимума.<br><br><b>Ответ:</b> \\(6\\)",
+            "desc": "\\(f(x)=\\dfrac{k}{x+a}\\): значение функции",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=\\frac{k}{x+a}. $$ Найдите \\(f(19)\\).",
+            "theory_sol": "Вертикальная асимптота функции имеет уравнение $$ x=-a. $$<br><br>По рисунку $$ x=-1. $$<br><br>Следовательно, $$ a=1. $$<br><br>На графике отмечена точка $$ A(2;1). $$<br><br>Подставим её координаты: $$ 1=\\frac{k}{2+1}. $$<br><br>Отсюда $$ k=3. $$<br><br>Значит, $$ f(x)=\\frac3{x+1}. $$<br><br>Тогда $$ f(19)=\\frac3{20}=0{,}15. $$<br><br><b>Ответ:</b> \\(0{,}15\\)",
             "tasks": [
                 {
-                    "text": "Найдите точку максимума функции \\(y=x+\\dfrac{25}{x}\\).",
-                    "answer": "-5"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x+a}\\). Найдите \\(f\\left(-7\\right)\\).",
+                    "answer": "-0,25",
+                    "image": "kot20.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=x+\\dfrac{16}{x}\\) на отрезке \\([1;8]\\).",
-                    "answer": "8"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x+a}\\). Найдите \\(f\\left(-1{,}8\\right)\\).",
+                    "answer": "15",
+                    "image": "kot21.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=x+\\dfrac{9}{x}\\) на отрезке \\([-6;-1]\\).",
-                    "answer": "-6"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x+a}\\). Найдите \\(f\\left(18\\right)\\).",
+                    "answer": "-0,1",
+                    "image": "kot22.jpg"
                 },
                 {
-                    "text": "Найдите точку минимума функции \\(y=\\dfrac{49}{x}+x+12\\).",
-                    "answer": "7"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x+a}\\). Найдите \\(f\\left(-24\\right)\\).",
+                    "answer": "0,12",
+                    "image": "kot23.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{k}{x+a}\\). Найдите \\(f\\left(-22\\right)\\).",
+                    "answer": "0,25",
+                    "image": "kot24.jpg"
                 }
-            ]
+            ],
+            "image": "kot19.jpg"
         },
         {
-            "desc": "Дробно-рациональная функция x/(x² + a)",
-            "theory_task": "Найдите точку максимума функции \\(y=-\\dfrac{x}{x^2+16}\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=\\dfrac{x^2-16}{(x^2+16)^2}=\\dfrac{(x-4)(x+4)}{(x^2+16)^2}\\).</li><li style=\"margin:4px 0\">Нули производной: \\(x=-4\\) и \\(x=4\\). Знаменатель всегда положителен.</li><li style=\"margin:4px 0\">Расставим знаки:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(-4\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(4\\)<small style=\"display:block;color:#555\">min</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span></div>\nСледовательно, \\(x=-4\\) — точка максимума.<br><br><b>Ответ:</b> \\(-4\\)",
+            "desc": "\\(f(x)=\\dfrac{k}{x+a}\\): найти аргумент",
+            "theory_task": "На рисунке изображён график функции вида $$ f(x)=\\frac{k}{x+a}. $$ Найдите значение \\(x\\), при котором $$ f(x)=0{,}2. $$",
+            "theory_sol": "По вертикальной асимптоте получаем $$ a=1. $$<br><br>По точке \\(A(2;1)\\): $$ 1=\\frac{k}{3}. $$<br><br>Следовательно, $$ k=3. $$<br><br>Значит, $$ f(x)=\\frac3{x+1}. $$<br><br>По условию $$ \\frac3{x+1}=0{,}2. $$<br><br>Тогда $$ 0{,}2(x+1)=3. $$<br><br>Отсюда $$ x+1=15, \\qquad x=14. $$<br><br><b>Ответ:</b> \\(14\\)",
             "tasks": [
                 {
-                    "text": "Найдите точку минимума функции \\(y=-\\dfrac{x}{x^2+9}\\).",
-                    "answer": "3"
+                    "text": "На рисунке изображён график функции вида \\(f(x)=\\dfrac{k}{x+a}\\). Найдите значение \\(x\\), при котором \\(f(x)=-0{,}08\\).",
+                    "answer": "-24",
+                    "image": "kot26.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=\\dfrac{x}{x^2+36}\\).",
-                    "answer": "6"
+                    "text": "На рисунке изображён график функции вида \\(f(x)=\\dfrac{k}{x+a}\\). Найдите значение \\(x\\), при котором \\(f(x)=0{,}12\\).",
+                    "answer": "23",
+                    "image": "kot27.jpg"
                 },
                 {
-                    "text": "Найдите точку минимума функции \\(y=\\dfrac{x}{x^2+49}\\).",
-                    "answer": "-7"
+                    "text": "На рисунке изображён график функции вида \\(f(x)=\\dfrac{k}{x+a}\\). Найдите значение \\(x\\), при котором \\(f(x)=-0{,}04\\).",
+                    "answer": "48",
+                    "image": "kot28.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=-\\dfrac{x}{x^2+1}\\).",
-                    "answer": "-1"
+                    "text": "На рисунке изображён график функции вида \\(f(x)=\\dfrac{k}{x+a}\\). Найдите значение \\(x\\), при котором \\(f(x)=0{,}15\\).",
+                    "answer": "-19",
+                    "image": "kot29.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции вида \\(f(x)=\\dfrac{k}{x+a}\\). Найдите значение \\(x\\), при котором \\(f(x)=-0{,}125\\).",
+                    "answer": "38",
+                    "image": "kot30.jpg"
                 }
-            ]
+            ],
+            "image": "kot25.jpg"
         },
         {
-            "desc": "Кубическая функция в виде произведения",
-            "theory_task": "Найдите точку максимума функции \\(y=(x-1)^2(x-3)+4\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=2(x-1)(x-3)+(x-1)^2=(x-1)(3x-7)\\).</li><li style=\"margin:4px 0\">Нули производной: \\(x=1\\) и \\(x=\\dfrac73\\).</li><li style=\"margin:4px 0\">Построим числовую ось:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(\\frac73\\)<small style=\"display:block;color:#555\">min</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span></div>\nСледовательно, \\(x=1\\) — точка максимума.<br><br><b>Ответ:</b> \\(1\\)",
+            "desc": "\\(f(x)=\\dfrac{kx+a}{x+b}\\): найти \\(k\\)",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=\\frac{kx+a}{x+b}. $$ Найдите \\(k\\).",
+            "theory_sol": "Для функции $$ f(x)=\\frac{kx+a}{x+b} $$ горизонтальная асимптота имеет уравнение $$ y=k. $$<br><br>По рисунку горизонтальная асимптота проходит по прямой $$ y=1. $$<br><br>Следовательно, $$ k=1. $$<br><br><b>Ответ:</b> \\(1\\)",
             "tasks": [
                 {
-                    "text": "Найдите точку минимума функции \\(y=(x+2)^2(x+4)-3\\).",
-                    "answer": "-2"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(k\\).",
+                    "answer": "-1",
+                    "image": "kot32.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=(x-3)^2(x-6)+2\\).",
-                    "answer": "3"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(k\\).",
+                    "answer": "2",
+                    "image": "kot33.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=(x+1)^2(x+3)-2\\) на отрезке \\([-2;0]\\).",
-                    "answer": "-2"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(k\\).",
+                    "answer": "-2",
+                    "image": "kot34.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=(x-2)^2(x-5)+6\\) на отрезке \\([1;3]\\).",
-                    "answer": "6"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(k\\).",
+                    "answer": "2",
+                    "image": "kot35.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(k\\).",
+                    "answer": "2",
+                    "image": "kot36.jpg"
                 }
-            ]
+            ],
+            "image": "kot31.jpg"
         },
         {
-            "desc": "Кубическая функция на отрезке",
-            "theory_task": "Найдите наибольшее значение функции \\(y=x^3-12x+5\\) на отрезке \\([-3;1]\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=3x^2-12=3(x-2)(x+2)\\).</li><li style=\"margin:4px 0\">На отрезке находится одна критическая точка: \\(x=-2\\).</li><li style=\"margin:4px 0\">Функция возрастает до \\(-2\\) и убывает после \\(-2\\):</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(-3\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(-2\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1\\)</span></div>\n\\(y(-2)=-8+24+5=21\\).<br><br><b>Ответ:</b> \\(21\\)",
+            "desc": "\\(f(x)=\\dfrac{kx+a}{x+b}\\): найти \\(a\\)",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=\\frac{kx+a}{x+b}. $$ Найдите \\(a\\).",
+            "theory_sol": "По горизонтальной асимптоте получаем $$ k=1. $$<br><br>Вертикальная асимптота имеет уравнение $$ x=-3. $$<br><br>Следовательно, $$ b=3. $$<br><br>На графике отмечена точка $$ A(1;2). $$<br><br>Подставим её координаты: $$ 2=\\frac{1+a}{1+3}. $$<br><br>Тогда $$ 1+a=8, \\qquad a=7. $$<br><br><b>Ответ:</b> \\(7\\)",
             "tasks": [
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=x^3-27x+4\\) на отрезке \\([0;4]\\).",
-                    "answer": "-50"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(a\\).",
+                    "answer": "-4",
+                    "image": "kot38.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=7+12x-x^3\\) на отрезке \\([-2;2]\\).",
-                    "answer": "23"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(a\\).",
+                    "answer": "-5",
+                    "image": "kot39.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=x^3-3x^2+2\\) на отрезке \\([1;4]\\).",
-                    "answer": "-2"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(a\\).",
+                    "answer": "0",
+                    "image": "kot40.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=x^3+3x^2-9x+1\\) на отрезке \\([-4;1]\\).",
-                    "answer": "28"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(a\\).",
+                    "answer": "-4",
+                    "image": "kot41.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=\\dfrac{kx+a}{x+b}\\). Найдите \\(a\\).",
+                    "answer": "8",
+                    "image": "kot42.jpg"
                 }
-            ]
+            ],
+            "image": "kot37.jpg"
         },
         {
-            "desc": "Функция с логарифмом на отрезке",
-            "theory_task": "Найдите наибольшее значение функции \\(y=x^2-10x+8\\ln x+12\\) на отрезке \\([0{,}5;1{,}5]\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=2x-10+\\dfrac8x=\\dfrac{2(x-1)(x-4)}x\\).</li><li style=\"margin:4px 0\">На заданном отрезке находится один нуль производной: \\(x=1\\).</li><li style=\"margin:4px 0\">Производная меняет знак с плюса на минус:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(0{,}5\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1{,}5\\)</span></div>\n\\(y(1)=1-10+8\\ln1+12=3\\).<br><br><b>Ответ:</b> \\(3\\)",
+            "desc": "\\(f(x)=b+\\log_a x\\): значение функции",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=b+\\log_a x. $$ Найдите \\(f(32)\\).",
+            "theory_sol": "По отмеченным точкам графика получаем $$ f(2)=-2, \\qquad f(4)=-1. $$<br><br>Следовательно, $$ b+\\log_a2=-2, $$ $$ b+\\log_a4=-1. $$<br><br>Так как $$ \\log_a4=2\\log_a2, $$ получаем $$ \\log_a2=1. $$<br><br>Поэтому $$ a=2, \\qquad b=-3. $$<br><br>Значит, $$ f(x)=-3+\\log_2x. $$<br><br>Тогда $$ f(32)=-3+5=2. $$<br><br><b>Ответ:</b> \\(2\\)",
             "tasks": [
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=x^2-3x+\\ln x+5\\) на отрезке \\(\\left[\\dfrac34;\\dfrac54\\right]\\).",
-                    "answer": "3"
+                    "text": "На рисунке изображён график функции \\(f(x)=b+\\log_a x\\). Найдите \\(f\\left(27\\right)\\).",
+                    "answer": "1",
+                    "image": "kot44.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=2x^2-16x+12\\ln x+20\\) на отрезке \\(\\left[\\dfrac45;\\dfrac65\\right]\\).",
-                    "answer": "6"
+                    "text": "На рисунке изображён график функции \\(f(x)=b+\\log_a x\\). Найдите \\(f\\left(16\\right)\\).",
+                    "answer": "4",
+                    "image": "kot45.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=2x^2-5x+\\ln x+1\\) на отрезке \\(\\left[\\dfrac56;\\dfrac76\\right]\\).",
-                    "answer": "-2"
+                    "text": "На рисунке изображён график функции $$ f(x)=b+\\log_a x. $$ Найдите $$ f\\left(\\frac18\\right). $$",
+                    "answer": "-6",
+                    "image": "kot46.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=2x^2-13x+9\\ln x+8\\) на отрезке \\(\\left[\\dfrac{13}{14};\\dfrac{15}{14}\\right]\\).",
-                    "answer": "-3"
+                    "text": "На рисунке изображён график функции \\(f(x)=b+\\log_a x\\). Найдите \\(f\\left(0{,}25\\right)\\).",
+                    "answer": "-5",
+                    "image": "kot47.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции $$ f(x)=b+\\log_a x. $$ Найдите $$ f\\left(\\frac13\\right). $$",
+                    "answer": "-3",
+                    "image": "kot48.jpg"
                 }
-            ]
+            ],
+            "image": "kot43.jpg"
         },
         {
-            "desc": "Косинус с линейным слагаемым",
-            "theory_task": "Найдите наибольшее значение функции \\(y=8\\cos x+4\\sqrt3\\,x-\\dfrac{4\\sqrt3\\pi}{3}+5\\) на отрезке \\(\\left[0;\\dfrac\\pi2\\right]\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=-8\\sin x+4\\sqrt3\\).</li><li style=\"margin:4px 0\">\\(y'=0\\Rightarrow\\sin x=\\dfrac{\\sqrt3}{2}\\Rightarrow x=\\dfrac\\pi3\\).</li><li style=\"margin:4px 0\">На отрезке производная меняет знак с плюса на минус:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(0\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(\\frac\\pi3\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(\\frac\\pi2\\)</span></div>\n\\(y\\!\\left(\\dfrac\\pi3\\right)=4+\\dfrac{4\\sqrt3\\pi}{3}-\\dfrac{4\\sqrt3\\pi}{3}+5=9\\).<br><br><b>Ответ:</b> \\(9\\)",
+            "desc": "\\(f(x)=b+\\log_a x\\): найти аргумент",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=b+\\log_a x. $$ Найдите значение \\(x\\), при котором $$ f(x)=1. $$",
+            "theory_sol": "По отмеченным точкам получаем $$ a=2, \\qquad b=-3. $$<br><br>Следовательно, $$ f(x)=-3+\\log_2x. $$<br><br>По условию $$ -3+\\log_2x=1. $$<br><br>Тогда $$ \\log_2x=4. $$<br><br>Следовательно, $$ x=2^4=16. $$<br><br><b>Ответ:</b> \\(16\\)",
             "tasks": [
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=2+\\dfrac{3\\pi}{4}-3x-3\\sqrt2\\cos x\\) на отрезке \\(\\left[0;\\dfrac\\pi2\\right]\\).",
-                    "answer": "-1"
+                    "text": "На рисунке изображён график функции \\(f(x)=b+\\log_a x\\). Найдите значение \\(x\\), при котором \\(f(x)=3\\).",
+                    "answer": "64",
+                    "image": "kot50.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=10\\sin x-5\\sqrt3\\,x+\\dfrac{5\\sqrt3\\pi}{6}+4\\) на отрезке \\(\\left[0;\\dfrac\\pi2\\right]\\).",
-                    "answer": "9"
+                    "text": "На рисунке изображён график функции \\(f(x)=b+\\log_a x\\). Найдите значение \\(x\\), при котором \\(f(x)=-5\\).",
+                    "answer": "0,25",
+                    "image": "kot51.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=6x-6\\sqrt2\\sin x-\\dfrac{3\\pi}{2}+8\\) на отрезке \\(\\left[0;\\dfrac\\pi2\\right]\\).",
-                    "answer": "2"
+                    "text": "На рисунке изображён график функции \\(f(x)=b+\\log_a x\\). Найдите значение \\(x\\), при котором \\(f(x)=-6\\).",
+                    "answer": "0,125",
+                    "image": "kot52.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=6\\cos x+3\\sqrt3\\,x-\\sqrt3\\pi+2\\) на отрезке \\(\\left[0;\\dfrac\\pi2\\right]\\).",
-                    "answer": "5"
+                    "text": "На рисунке изображён график функции \\(f(x)=b+\\log_a x\\). Найдите значение \\(x\\), при котором \\(f(x)=2\\).",
+                    "answer": "81",
+                    "image": "kot53.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=b+\\log_a x\\). Найдите значение \\(x\\), при котором \\(f(x)=3\\).",
+                    "answer": "243",
+                    "image": "kot54.jpg"
                 }
-            ]
+            ],
+            "image": "kot49.jpg"
         },
         {
-            "desc": "Тангенс с линейным слагаемым",
-            "theory_task": "Найдите наименьшее значение функции \\(y=2\\operatorname{tg} x-4x+\\pi+1\\) на отрезке \\(\\left[-\\dfrac\\pi3;\\dfrac\\pi3\\right]\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=\\dfrac2{\\cos^2x}-4=2(\\operatorname{tg}^2x-1)\\).</li><li style=\"margin:4px 0\">Нули производной: \\(x=-\\dfrac\\pi4\\) и \\(x=\\dfrac\\pi4\\).</li><li style=\"margin:4px 0\">Расставим знаки производной:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(-\\frac\\pi3\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(-\\frac\\pi4\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(\\frac\\pi4\\)<small style=\"display:block;color:#555\">min</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(\\frac\\pi3\\)</span></div>\nМинимум достигается при \\(x=\\dfrac\\pi4\\): \\(y\\!\\left(\\dfrac\\pi4\\right)=3\\).<br><br><b>Ответ:</b> \\(3\\)",
+            "desc": "\\(f(x)=\\log_a(x+b)\\): значение функции",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=\\log_a(x+b). $$ Найдите \\(f(11)\\).",
+            "theory_sol": "По графику отмечены точки $$ (-3;1) \\quad\\text{и}\\quad (-1;2). $$<br><br>Следовательно, $$ -3+b=a, $$ $$ -1+b=a^2. $$<br><br>Вычтем первое равенство из второго: $$ 2=a^2-a. $$<br><br>Получаем $$ a=2. $$<br><br>Тогда $$ b=5. $$<br><br>Значит, $$ f(x)=\\log_2(x+5). $$<br><br>Поэтому $$ f(11)=\\log_2 16=4. $$<br><br><b>Ответ:</b> \\(4\\)",
             "tasks": [
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=-2\\operatorname{tg} x+4x-\\pi+5\\) на отрезке \\(\\left[-\\dfrac\\pi3;\\dfrac\\pi3\\right]\\).",
-                    "answer": "3"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите \\(f\\left(27\\right)\\).",
+                    "answer": "5",
+                    "image": "kot56.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=3\\operatorname{tg} x-6x+\\dfrac{3\\pi}{2}+4\\) на отрезке \\(\\left[-\\dfrac\\pi3;\\dfrac\\pi3\\right]\\).",
-                    "answer": "7"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите \\(f\\left(63\\right)\\).",
+                    "answer": "6",
+                    "image": "kot57.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=5x-2{,}5\\operatorname{tg} x-\\dfrac{5\\pi}{4}+6\\) на отрезке \\(\\left[-\\dfrac\\pi3;\\dfrac\\pi3\\right]\\).",
-                    "answer": "3,5"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите \\(f\\left(29\\right)\\).",
+                    "answer": "5",
+                    "image": "kot58.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=4\\operatorname{tg} x-4x+\\pi+3\\) на отрезке \\(\\left[0;\\dfrac\\pi4\\right]\\).",
-                    "answer": "7"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите \\(f\\left(25\\right)\\).",
+                    "answer": "3",
+                    "image": "kot59.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите \\(f\\left(77\\right)\\).",
+                    "answer": "4",
+                    "image": "kot60.jpg"
                 }
-            ]
+            ],
+            "image": "kot55.jpg"
         },
         {
-            "desc": "Линейный множитель при cos x и sin x",
-            "theory_task": "Найдите точку максимума функции \\(y=(2x-2)\\cos x-2\\sin x+5\\), принадлежащую промежутку \\(\\left(0;\\dfrac\\pi2\\right)\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=2\\cos x-(2x-2)\\sin x-2\\cos x=2(1-x)\\sin x\\).</li><li style=\"margin:4px 0\">На заданном промежутке \\(\\sin x>0\\), поэтому \\(y'=0\\) при \\(x=1\\).</li><li style=\"margin:4px 0\">Производная положительна слева от \\(1\\) и отрицательна справа:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(0\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(\\frac\\pi2\\)</span></div>\nСледовательно, \\(x=1\\) — точка максимума.<br><br><b>Ответ:</b> \\(1\\)",
+            "desc": "\\(f(x)=\\log_a(x+b)\\): найти аргумент",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=\\log_a(x+b). $$ Найдите значение \\(x\\), при котором $$ f(x)=4. $$",
+            "theory_sol": "По отмеченным точкам получаем $$ a=2, \\qquad b=5. $$<br><br>Поэтому $$ f(x)=\\log_2(x+5). $$<br><br>По условию $$ \\log_2(x+5)=4. $$<br><br>Следовательно, $$ x+5=2^4=16. $$<br><br>Отсюда $$ x=11. $$<br><br><b>Ответ:</b> \\(11\\)",
             "tasks": [
                 {
-                    "text": "Найдите точку минимума функции \\(y=(0{,}8-x)\\cos x+\\sin x\\), принадлежащую промежутку \\(\\left(0;\\dfrac\\pi2\\right)\\).",
-                    "answer": "0,8"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите значение \\(x\\), при котором \\(f(x)=6\\).",
+                    "answer": "59",
+                    "image": "kot62.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=(4x-5)\\cos x-4\\sin x+3\\), принадлежащую промежутку \\(\\left(0;\\dfrac\\pi2\\right)\\).",
-                    "answer": "1,25"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите значение \\(x\\), при котором \\(f(x)=5\\).",
+                    "answer": "31",
+                    "image": "kot63.jpg"
                 },
                 {
-                    "text": "Найдите точку минимума функции \\(y=(1{,}2-x)\\cos x+\\sin x+4\\), принадлежащую промежутку \\(\\left(0;\\dfrac\\pi2\\right)\\).",
-                    "answer": "1,2"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите значение \\(x\\), при котором \\(f(x)=4\\).",
+                    "answer": "13",
+                    "image": "kot64.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=(4x-6)\\cos x-4\\sin x+2\\), принадлежащую промежутку \\(\\left(0;\\dfrac\\pi2\\right)\\).",
-                    "answer": "1,5"
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите значение \\(x\\), при котором \\(f(x)=4\\).",
+                    "answer": "79",
+                    "image": "kot65.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=\\log_a(x+b)\\). Найдите значение \\(x\\), при котором \\(f(x)=3\\).",
+                    "answer": "23",
+                    "image": "kot66.jpg"
                 }
-            ]
+            ],
+            "image": "kot61.jpg"
         },
         {
-            "desc": "Произведение линейного множителя и экспоненты",
-            "theory_task": "Найдите наибольшее значение функции \\(y=(6-x)\\mathrm{e}^{x-5}\\) на отрезке \\([2;8]\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=\\mathrm{e}^{x-5}(5-x)\\).</li><li style=\"margin:4px 0\">Экспонента положительна, поэтому нуль производной: \\(x=5\\).</li><li style=\"margin:4px 0\">Функция возрастает до \\(5\\) и убывает после \\(5\\):</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(2\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(5\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(8\\)</span></div>\n\\(y(5)=(6-5)\\mathrm{e}^0=1\\).<br><br><b>Ответ:</b> \\(1\\)",
+            "desc": "\\(f(x)=a^x+b\\): значение функции",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=a^x+b. $$ Найдите \\(f(6)\\).",
+            "theory_sol": "По отмеченным точкам получаем $$ a=2, \\qquad b=-3. $$<br><br>Следовательно, $$ f(x)=2^x-3. $$<br><br>Тогда $$ f(6)=2^6-3=64-3=61. $$<br><br><b>Ответ:</b> \\(61\\)",
             "tasks": [
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=(x-5)\\mathrm{e}^{x-4}\\) на отрезке \\([2;7]\\).",
-                    "answer": "-1"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите \\(f\\left(10\\right)\\).",
+                    "answer": "29",
+                    "image": "kot68.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=(8-x)\\mathrm{e}^{x-7}\\) на отрезке \\([3;10]\\).",
-                    "answer": "1"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите \\(f\\left(8\\right)\\).",
+                    "answer": "79",
+                    "image": "kot69.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=(x+2)\\mathrm{e}^{x+3}\\) на отрезке \\([-5;1]\\).",
-                    "answer": "-1"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите \\(f\\left(-5\\right)\\).",
+                    "answer": "28",
+                    "image": "kot70.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=(9-x)\\mathrm{e}^{x-8}\\) на отрезке \\([5;11]\\).",
-                    "answer": "1"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите \\(f\\left(-10\\right)\\).",
+                    "answer": "32",
+                    "image": "kot71.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите \\(f\\left(-8\\right)\\).",
+                    "answer": "77",
+                    "image": "kot72.jpg"
                 }
-            ]
+            ],
+            "image": "kot67.jpg"
         },
         {
-            "desc": "Произведение квадрата и экспоненты",
-            "theory_task": "Найдите точку максимума функции \\(y=(x-3)^2\\mathrm{e}^{x-7}\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=\\mathrm{e}^{x-7}(x-3)(x-1)\\).</li><li style=\"margin:4px 0\">Экспонента положительна. Нули производной: \\(x=1\\) и \\(x=3\\).</li><li style=\"margin:4px 0\">Построим числовую ось:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(3\\)<small style=\"display:block;color:#555\">min</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span></div>\nСледовательно, \\(x=1\\) — точка максимума.<br><br><b>Ответ:</b> \\(1\\)",
+            "desc": "\\(f(x)=a^x+b\\): найти аргумент",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=a^x+b. $$ Найдите значение \\(x\\), при котором $$ f(x)=29. $$",
+            "theory_sol": "По графику получаем $$ a=2, \\qquad b=-3. $$<br><br>Поэтому $$ f(x)=2^x-3. $$<br><br>Составим уравнение: $$ 2^x-3=29. $$<br><br>Тогда $$ 2^x=32=2^5. $$<br><br>Следовательно, $$ x=5. $$<br><br><b>Ответ:</b> \\(5\\)",
             "tasks": [
                 {
-                    "text": "Найдите точку минимума функции \\(y=(x+4)^2\\mathrm{e}^{x-2}\\).",
-                    "answer": "-4"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите значение \\(x\\), при котором \\(f(x)=13\\).",
+                    "answer": "8",
+                    "image": "kot74.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=(x-2)^2\\mathrm{e}^{5-x}\\).",
-                    "answer": "4"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите значение \\(x\\), при котором \\(f(x)=25\\).",
+                    "answer": "6",
+                    "image": "kot75.jpg"
                 },
                 {
-                    "text": "Найдите точку минимума функции \\(y=(x+3)^2\\mathrm{e}^{-x-1}\\).",
-                    "answer": "-3"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите значение \\(x\\), при котором \\(f(x)=12\\).",
+                    "answer": "-4",
+                    "image": "kot76.jpg"
                 },
                 {
-                    "text": "Найдите точку максимума функции \\(y=(x^2-6x+6)\\mathrm{e}^{x-6}\\).",
-                    "answer": "0"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите значение \\(x\\), при котором \\(f(x)=17\\).",
+                    "answer": "-8",
+                    "image": "kot77.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a^x+b\\). Найдите значение \\(x\\), при котором \\(f(x)=23\\).",
+                    "answer": "-6",
+                    "image": "kot78.jpg"
                 }
-            ]
+            ],
+            "image": "kot73.jpg"
         },
         {
-            "desc": "Произведение квадрата и экспоненты на отрезке",
-            "theory_task": "Найдите наименьшее значение функции \\(y=(x-2)^2\\mathrm{e}^{x-2}\\) на отрезке \\([1;4]\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=\\mathrm{e}^{x-2}(x-2)x\\).</li><li style=\"margin:4px 0\">На отрезке находится один внутренний нуль производной: \\(x=2\\).</li><li style=\"margin:4px 0\">Производная меняет знак с минуса на плюс:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(2\\)<small style=\"display:block;color:#555\">min</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(4\\)</span></div>\n\\(y(2)=0^2\\mathrm{e}^0=0\\).<br><br><b>Ответ:</b> \\(0\\)",
+            "desc": "\\(f(x)=a^{x+b}\\): значение функции",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=a^{x+b}. $$ Найдите \\(f(-7)\\).",
+            "theory_sol": "График проходит через точку $$ (-3;1). $$<br><br>Поскольку $$ a^0=1, $$ получаем $$ -3+b=0. $$<br><br>Следовательно, $$ b=3. $$<br><br>Также на графике отмечена точка $$ (1;4). $$<br><br>Поэтому $$ a^{1+3}=4. $$<br><br>Тогда $$ a^4=4, \\qquad a=\\sqrt2. $$<br><br>Значит, $$ f(x)=(\\sqrt2)^{x+3}. $$<br><br>Следовательно, $$ f(-7) = (\\sqrt2)^{-4} = \\frac14 = 0{,}25. $$<br><br><b>Ответ:</b> \\(0{,}25\\)",
             "tasks": [
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=(x-2)^2\\mathrm{e}^x\\) на отрезке \\([-5;1]\\).",
-                    "answer": "4"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите \\(f\\left(-9\\right)\\).",
+                    "answer": "16",
+                    "image": "kot80.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=(x+3)^2\\mathrm{e}^{-x-3}\\) на отрезке \\([-5;-1]\\).",
-                    "answer": "0"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите \\(f\\left(-2\\right)\\).",
+                    "answer": "32",
+                    "image": "kot81.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=(x+4)^2\\mathrm{e}^{-x-2}\\) на отрезке \\([-4;0]\\).",
-                    "answer": "4"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите \\(f\\left(-5\\right)\\).",
+                    "answer": "0,125",
+                    "image": "kot82.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=(x^2-5x+5)\\mathrm{e}^{2-x}\\) на отрезке \\([1;4]\\).",
-                    "answer": "-1"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите \\(f\\left(6\\right)\\).",
+                    "answer": "256",
+                    "image": "kot83.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите \\(f\\left(-4\\right)\\).",
+                    "answer": "8",
+                    "image": "kot84.jpg"
                 }
-            ]
+            ],
+            "image": "kot79.jpg"
         },
         {
-            "desc": "Квадратный трёхчлен относительно eˣ",
-            "theory_task": "Найдите наименьшее значение функции \\(y=\\mathrm{e}^{2x}-8\\mathrm{e}^x+20\\) на отрезке \\([1;2]\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=2\\mathrm{e}^x(\\mathrm{e}^x-4)\\).</li><li style=\"margin:4px 0\">Нуль производной: \\(\\mathrm{e}^x=4\\Rightarrow x=\\ln4\\), эта точка принадлежит отрезку.</li><li style=\"margin:4px 0\">Производная меняет знак с минуса на плюс:</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(\\ln4\\)<small style=\"display:block;color:#555\">min</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(2\\)</span></div>\nПри \\(\\mathrm{e}^x=4\\): \\(y=4^2-8\\cdot4+20=4\\).<br><br><b>Ответ:</b> \\(4\\)",
+            "desc": "\\(f(x)=a^{x+b}\\): найти аргумент",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=a^{x+b}. $$ Найдите значение \\(x\\), при котором $$ f(x)=16. $$",
+            "theory_sol": "По графику получаем $$ a=\\sqrt2, \\qquad b=3. $$<br><br>Следовательно, $$ (\\sqrt2)^{x+3}=16. $$<br><br>Запишем $$ 16=(\\sqrt2)^8. $$<br><br>Тогда $$ x+3=8. $$<br><br>Следовательно, $$ x=5. $$<br><br><b>Ответ:</b> \\(5\\)",
             "tasks": [
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=\\mathrm{e}^{2x}-6\\mathrm{e}^x+12\\) на отрезке \\([1;2]\\).",
-                    "answer": "3"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите значение \\(x\\), при котором \\(f(x)=8\\).",
+                    "answer": "-7",
+                    "image": "kot86.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=-\\mathrm{e}^{2x}+10\\mathrm{e}^x-16\\) на отрезке \\([1;2]\\).",
-                    "answer": "9"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите значение \\(x\\), при котором \\(f(x)=64\\).",
+                    "answer": "-3",
+                    "image": "kot87.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=2\\mathrm{e}^{2x}-12\\mathrm{e}^x+19\\) на отрезке \\([1;2]\\).",
-                    "answer": "1"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите значение \\(x\\), при котором \\(f(x)=0{,}125\\).",
+                    "answer": "-5",
+                    "image": "kot88.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=-2\\mathrm{e}^{2x}+16\\mathrm{e}^x-24\\) на отрезке \\([1;2]\\).",
-                    "answer": "8"
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите значение \\(x\\), при котором \\(f(x)=27\\).",
+                    "answer": "4",
+                    "image": "kot89.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a^{x+b}\\). Найдите значение \\(x\\), при котором \\(f(x)=81\\).",
+                    "answer": "-6",
+                    "image": "kot90.jpg"
                 }
-            ]
+            ],
+            "image": "kot85.jpg"
         },
         {
-            "desc": "Многочлен пятой степени на отрезке",
-            "theory_task": "Найдите наибольшее значение функции \\(y=x^5-5x^3-20x+7\\) на отрезке \\([-5;1]\\).<br><br>",
-            "theory_sol": "<ol style=\"margin:7px 0 7px 24px;padding-left:10px\"><li style=\"margin:4px 0\">Найдём производную: \\(y'=5x^4-15x^2-20=5(x^2-4)(x^2+1)\\).</li><li style=\"margin:4px 0\">На заданном отрезке находится один нуль производной: \\(x=-2\\).</li><li style=\"margin:4px 0\">Функция возрастает до \\(-2\\) и убывает после \\(-2\\):</li></ol>\n<div style=\"display:flex;align-items:center;justify-content:center;gap:2px;margin:10px auto;padding:8px;border:1px solid #9bbbe0;border-radius:8px;background:#f7fbff;max-width:560px\"><b style=\"margin-right:6px\">Знаки производной:</b><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(-5\\)</span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">+</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(-2\\)<small style=\"display:block;color:#555\">max</small></span><span style=\"padding:2px 10px;font-weight:700;color:#0756B7\">−</span><span style=\"min-width:52px;text-align:center;border-left:1px solid #777;border-right:1px solid #777;padding:2px 7px\">\\(1\\)</span></div>\n\\(y(-2)=-32+40+40+7=55\\).<br><br><b>Ответ:</b> \\(55\\)",
+            "desc": "\\(f(x)=k\\sqrt{x}\\): значение функции",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=k\\sqrt{x}. $$ Найдите \\(f(6{,}76)\\).",
+            "theory_sol": "На графике отмечена точка $$ A(4;5). $$<br><br>Подставим её координаты: $$ 5=k\\sqrt4. $$<br><br>Следовательно, $$ 5=2k, \\qquad k=2{,}5. $$<br><br>Значит, $$ f(x)=2{,}5\\sqrt{x}. $$<br><br>Тогда $$ f(6{,}76) = 2{,}5\\sqrt{6{,}76} = 2{,}5\\cdot2{,}6 = 6{,}5. $$<br><br><b>Ответ:</b> \\(6{,}5\\)",
             "tasks": [
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=x^5-5x^3-20x-3\\) на отрезке \\([-4;1]\\).",
-                    "answer": "45"
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите \\(f\\left(6{,}76\\right)\\).",
+                    "answer": "6,5",
+                    "image": "kot92.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=x^5-5x^3-20x+4\\) на отрезке \\([-1;5]\\).",
-                    "answer": "-44"
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите \\(f\\left(2{,}56\\right)\\).",
+                    "answer": "-2,4",
+                    "image": "kot93.jpg"
                 },
                 {
-                    "text": "Найдите наибольшее значение функции \\(y=3x^5-20x^3+6\\) на отрезке \\([-4;-1]\\).",
-                    "answer": "70"
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите \\(f\\left(32\\right)\\).",
+                    "answer": "8",
+                    "image": "kot94.jpg"
                 },
                 {
-                    "text": "Найдите наименьшее значение функции \\(y=3x^5-20x^3-4\\) на отрезке \\([1;4]\\).",
-                    "answer": "-68"
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите \\(f\\left(12{,}5\\right)\\).",
+                    "answer": "-5",
+                    "image": "kot95.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите \\(f\\left(48\\right)\\).",
+                    "answer": "12",
+                    "image": "kot96.jpg"
                 }
-            ]
+            ],
+            "image": "kot91.jpg"
+        },
+        {
+            "desc": "\\(f(x)=k\\sqrt{x}\\): найти аргумент",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=k\\sqrt{x}. $$ Найдите значение \\(x\\), при котором $$ f(x)=3{,}5. $$",
+            "theory_sol": "По отмеченной точке \\(A(4;5)\\): $$ 5=k\\sqrt4. $$<br><br>Следовательно, $$ k=2{,}5. $$<br><br>По условию $$ 2{,}5\\sqrt{x}=3{,}5. $$<br><br>Тогда $$ \\sqrt{x}=1{,}4. $$<br><br>Возведём обе части в квадрат: $$ x=1{,}4^2=1{,}96. $$<br><br><b>Ответ:</b> \\(1{,}96\\)",
+            "tasks": [
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите значение \\(x\\), при котором \\(f(x)=3{,}5\\).",
+                    "answer": "1,96",
+                    "image": "kot98.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите значение \\(x\\), при котором \\(f(x)=-12\\).",
+                    "answer": "36",
+                    "image": "kot99.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите значение \\(x\\), при котором \\(f(x)=7\\).",
+                    "answer": "24,5",
+                    "image": "kot100.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите значение \\(x\\), при котором \\(f(x)=-8\\).",
+                    "answer": "32",
+                    "image": "kot101.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=k\\sqrt{x}\\). Найдите значение \\(x\\), при котором \\(f(x)=9\\).",
+                    "answer": "20,25",
+                    "image": "kot102.jpg"
+                }
+            ],
+            "image": "kot97.jpg"
+        },
+        {
+            "desc": "\\(f(x)=a\\cos x+b\\): найти \\(a\\)",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=a\\cos x+b. $$ Найдите \\(a\\).",
+            "theory_sol": "По графику $$ y_{\\max}=1, \\qquad y_{\\min}=-3. $$<br><br>Модуль коэффициента \\(a\\) равен половине разности наибольшего и наименьшего значений: $$ |a|= \\frac{1-(-3)}2 = 2. $$<br><br>При \\(x=0\\) график достигает максимума, а $$ \\cos0=1. $$<br><br>Следовательно, $$ a>0. $$<br><br>Значит, $$ a=2. $$<br><br><b>Ответ:</b> \\(2\\)",
+            "tasks": [
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\cos x+b\\). Найдите \\(a\\).",
+                    "answer": "3",
+                    "image": "kot104.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\cos x+b\\). Найдите \\(a\\).",
+                    "answer": "-2",
+                    "image": "kot105.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\cos x+b\\). Найдите \\(a\\).",
+                    "answer": "-3",
+                    "image": "kot106.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\cos x+b\\). Найдите \\(a\\).",
+                    "answer": "-3",
+                    "image": "kot107.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\cos x+b\\). Найдите \\(a\\).",
+                    "answer": "2",
+                    "image": "kot108.jpg"
+                }
+            ],
+            "image": "kot103.jpg"
+        },
+        {
+            "desc": "\\(f(x)=a\\tg x+b\\): найти \\(a\\)",
+            "theory_task": "На рисунке изображён график функции $$ f(x)=a\\tg x+b. $$ Найдите \\(a\\).",
+            "theory_sol": "При \\(x=0\\) $$ \\tg0=0. $$<br><br>Следовательно, $$ f(0)=b. $$<br><br>По графику $$ b=-2. $$<br><br>Отмеченная точка соответствует $$ x=\\frac{\\pi}{4}, \\qquad f\\left(\\frac{\\pi}{4}\\right)=1. $$<br><br>Поскольку $$ \\tg\\frac{\\pi}{4}=1, $$ получаем $$ 1=a-2. $$<br><br>Следовательно, $$ a=3. $$<br><br><b>Ответ:</b> \\(3\\)",
+            "tasks": [
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\tg x+b\\). Найдите \\(a\\).",
+                    "answer": "3",
+                    "image": "kot110.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\tg x+b\\). Найдите \\(a\\).",
+                    "answer": "-2",
+                    "image": "kot111.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\tg x+b\\). Найдите \\(a\\).",
+                    "answer": "-1",
+                    "image": "kot112.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\tg x+b\\). Найдите \\(a\\).",
+                    "answer": "-1",
+                    "image": "kot113.jpg"
+                },
+                {
+                    "text": "На рисунке изображён график функции \\(f(x)=a\\tg x+b\\). Найдите \\(a\\).",
+                    "answer": "1",
+                    "image": "kot114.jpg"
+                }
+            ],
+            "image": "kot109.jpg"
+        },
+        {
+            "desc": "Пересечение прямой и параболы: абсцисса",
+            "theory_task": "На рисунке изображены графики функций $$ f(x)=5x+9 \\quad\\text{и}\\quad g(x)=ax^2+bx+c, $$ которые пересекаются в точках \\(A\\) и \\(B\\). Найдите абсциссу точки \\(B\\).",
+            "theory_sol": "По трём отмеченным точкам параболы составляем систему для коэффициентов \\(a\\), \\(b\\) и \\(c\\).<br><br>После нахождения коэффициентов составляем уравнение пересечения: $$ g(x)=5x+9. $$<br><br>Полученное квадратное уравнение раскладывается на множители: $$ (x+2)(x+1)=0. $$<br><br>Отсюда $$ x=-2 \\quad\\text{или}\\quad x=-1. $$<br><br>По рисунку точке \\(A\\) соответствует $$ x_A=-2. $$<br><br>Следовательно, $$ x_B=-1. $$<br><br><b>Ответ:</b> \\(-1\\)",
+            "tasks": [
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=-4x+9\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите абсциссу точки \\(B\\).",
+                    "answer": "-8",
+                    "image": "kot116.jpg"
+                },
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=-3x+13\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите абсциссу точки \\(B\\).",
+                    "answer": "-3",
+                    "image": "kot117.jpg"
+                },
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=3x+5\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите абсциссу точки \\(B\\).",
+                    "answer": "-7",
+                    "image": "kot118.jpg"
+                },
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=-2x-4\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите абсциссу точки \\(B\\).",
+                    "answer": "6",
+                    "image": "kot119.jpg"
+                },
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=-3x-4\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите абсциссу точки \\(B\\).",
+                    "answer": "3",
+                    "image": "kot120.jpg"
+                }
+            ],
+            "image": "kot115.jpg"
+        },
+        {
+            "desc": "Пересечение двух парабол: ордината",
+            "theory_task": "На рисунке изображены графики функций $$ f(x)=4x^2-25x+41 \\quad\\text{и}\\quad g(x)=ax^2+bx+c, $$ которые пересекаются в точках \\(A\\) и \\(B\\). Найдите ординату точки \\(B\\).",
+            "theory_sol": "По трём отмеченным точкам второго графика находим коэффициенты \\(a\\), \\(b\\) и \\(c\\).<br><br>Затем составляем уравнение пересечения: $$ 4x^2-25x+41=ax^2+bx+c. $$<br><br>После решения квадратного уравнения получаем абсциссы точек \\(A\\) и \\(B\\).<br><br>Подставим абсциссу точки \\(B\\) в функцию $$ f(x)=4x^2-25x+41. $$<br><br>Получаем $$ y_B=2. $$<br><br><b>Ответ:</b> \\(2\\)",
+            "tasks": [
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=2x^2+11x+11\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите ординату точки \\(B\\).",
+                    "answer": "167",
+                    "image": "kot122.jpg"
+                },
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=4x^2+17x+14\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите ординату точки \\(B\\).",
+                    "answer": "56",
+                    "image": "kot123.jpg"
+                },
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=-2x^2+7x-2\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите ординату точки \\(B\\).",
+                    "answer": "-17",
+                    "image": "kot124.jpg"
+                },
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=-4x^2-23x-31\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите ординату точки \\(B\\).",
+                    "answer": "-37",
+                    "image": "kot125.jpg"
+                },
+                {
+                    "text": "На рисунке изображены графики функций \\(f(x)=-4x^2+17x-14\\) и \\(g(x)=ax^2+bx+c\\), которые пересекаются в точках \\(A\\) и \\(B\\). Найдите ординату точки \\(B\\).",
+                    "answer": "-29",
+                    "image": "kot126.jpg"
+                }
+            ],
+            "image": "kot121.jpg"
         }
     ]
 };
+
+    task12Extra.prototypes.forEach((prototype, prototypeIndex) => {
+        if (prototype.image) {
+            prototype.svg_code = imageHtml(prototype.image, `Рисунок к прототипу ${prototypeIndex + 1}`);
+        }
+        (prototype.tasks || []).forEach((task, taskIndex) => {
+            if (task.image) {
+                task.svg_code = imageHtml(task.image, `Рисунок к прототипу ${prototypeIndex + 1}, задача ${taskIndex + 1}`);
+            }
+        });
+    });
 
     window.extraDatabase[12] = task12Extra;
     window.extraDatabase["task12"] = task12Extra;
