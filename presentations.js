@@ -135,6 +135,11 @@ function generatePresentation1() {
     let showCorrectOnError = getShowCorrectOnErrorSetting();
 
     let topicsList = window.selectedBlockTitles.map(t => `<li style="margin-bottom: 10px;">${t}</li>`).join('');
+
+    // Размеры карточки первого шаблона. Раньше эти переменные не были объявлены,
+    // из-за чего generatePresentation1() падала с ReferenceError при клике.
+    const panelTop = '15%';
+    const panelBottom = '15%';
     
     let taskSlides = window.currentGeneratedTasks.map((t, i) => `
         <div class="slide task-slide" style="background-image: url('${window.getEmbeddedAssetUrl('p2.jpg')}')">
