@@ -2058,6 +2058,10 @@ body.auth-locked > *:not(#passwordGate) {
     window.randomVariantMode = false;
     window.randomVariantPicks = null;
     window.randomVariantNumber = null;
+    // Текущий план ручного варианта. Нужен для точечной замены одной задачи
+    // без пересборки остальных заданий. Каждый элемент хранит номер задания,
+    // источник (main/extra), прототип и конкретный аналог внутри прототипа.
+    window.manualVariantPlan = null;
 
     function getCurrentVariantTitle() {
         return window.randomVariantMode && window.randomVariantNumber
@@ -2176,6 +2180,50 @@ body.auth-locked > *:not(#passwordGate) {
         const num = parseInt(String(tid).replace(/\D/g, ''), 10);
         requestAnimationFrame(() => {
             const el = document.querySelector(`.generated-task-block[data-random-task-number="${num}"]`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
+
+
+    function replaceManualVariantTask(planIndex) {
+        const plan = Array.isArray(window.manualVariantPlan) ? window.manualVariantPlan : null;
+        const current = plan && plan[planIndex];
+        if (!current) return;
+
+        const data = getPrototypeData(current.tid, current.kind || 'main');
+        const proto = data && Array.isArray(data.prototypes) ? data.prototypes[current.protoIndex] : null;
+        const tasks = proto && Array.isArray(proto.tasks) ? proto.tasks : [];
+        if (tasks.length < 2) {
+            alert('В этом прототипе нет другого загруженного варианта задачи.');
+            return;
+        }
+
+        const currentKey = String(current.taskKey ?? '');
+        const candidates = tasks
+            .map((task, taskIndex) => ({
+                task,
+                taskIndex,
+                taskKey: String(task && (task.id ?? task.text ?? taskIndex))
+            }))
+            .filter(x => x.taskKey !== currentKey || x.taskIndex !== current.taskIndex);
+
+        if (!candidates.length) {
+            alert('В этом прототипе нет другого загруженного варианта задачи.');
+            return;
+        }
+
+        const next = candidates[Math.floor(Math.random() * candidates.length)];
+        const nextPlan = plan.map((item, idx) => idx === planIndex ? {
+            ...item,
+            taskIndex: next.taskIndex,
+            taskKey: next.taskKey
+        } : { ...item });
+
+        window.manualVariantPlan = nextPlan;
+        generateVariant({ manualPlan: nextPlan });
+
+        requestAnimationFrame(() => {
+            const el = document.querySelector(`.generated-task-block[data-manual-plan-index="${planIndex}"]`);
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
     }
@@ -2508,11 +2556,13 @@ body.auth-locked > *:not(#passwordGate) {
 
     function generateVariant(options = {}) {
         const useRandomPicks = !!(options && options.useRandomPicks && window.randomVariantPicks);
+        const useManualPlan = !useRandomPicks && !!(options && Array.isArray(options.manualPlan) && options.manualPlan.length);
         if (!useRandomPicks) {
             window.randomVariantMode = false;
             window.randomVariantPicks = null;
             window.randomVariantNumber = null;
             setRandomVariantButtonsVisible(false);
+            if (!useManualPlan) window.manualVariantPlan = null;
         }
         const infoBoard = document.getElementById('info-board');
         infoBoard.style.display = 'none';
@@ -2596,6 +2646,7 @@ body.auth-locked > *:not(#passwordGate) {
         };
 
         let sortedTaskIds = getUniqueTaskIds();
+        const manualPlanBuilt = [];
 
         let generationBlocks = [];
         if (useRandomPicks) {
@@ -2608,6 +2659,24 @@ body.auth-locked > *:not(#passwordGate) {
                 const randomPick = window.randomVariantPicks[tid];
                 if (data && randomPick) generationBlocks.push({ tid, kind: 'main', data, requiredCount: 1, randomPick });
             }
+        } else if (useManualPlan) {
+            // При точечной замене восстанавливаем весь уже собранный вариант
+            // из сохранённого плана, чтобы изменилось только нажатое задание.
+            const grouped = [];
+            options.manualPlan.forEach((pick, planIndex) => {
+                if (!pick || !pick.tid) return;
+                const kind = pick.kind || 'main';
+                let group = grouped[grouped.length - 1];
+                if (!group || group.tid !== pick.tid || group.kind !== kind) {
+                    const data = getPrototypeData(pick.tid, kind);
+                    if (!data) return;
+                    group = { tid: pick.tid, kind, data, requiredCount: 0, manualPicks: [] };
+                    grouped.push(group);
+                }
+                group.manualPicks.push({ ...pick, planIndex });
+                group.requiredCount++;
+            });
+            generationBlocks.push(...grouped);
         } else {
             sortedTaskIds.forEach(tid => {
                 const mainCountInput = document.getElementById(`count-${tid}`);
@@ -2633,112 +2702,120 @@ body.auth-locked > *:not(#passwordGate) {
             if (!data || !Array.isArray(data.prototypes)) continue;
 
             const randomPick = useRandomPicks ? block.randomPick : null;
-            let selectedProtos = randomPick
-                ? [data.prototypes[randomPick.protoIndex]].filter(Boolean)
-                : data.prototypes.filter((p, idx) => {
-                    const cb = document.getElementById(getPrototypeCheckboxId(tid, idx, kind));
-                    return cb && cb.checked;
-                });
-            if (selectedProtos.length === 0) continue;
-
+            const manualPicks = Array.isArray(block.manualPicks) ? block.manualPicks : null;
             const visibleBlockTitle = (kind === 'extra') ? 'Дополнительно' : data.title;
-            window.selectedBlockTitles.push(visibleBlockTitle);
             const isSecondPartBlock = Number(data.part || 1) >= 2;
-            let activePools = selectedProtos.map((p, selectedIndex) => {
-                const originalProtoIndex = randomPick ? randomPick.protoIndex : data.prototypes.indexOf(p);
-                const chosenTask = randomPick && p.tasks ? p.tasks[randomPick.taskIndex] : null;
-                const poolTasks = chosenTask ? [chosenTask] : shuffleArray([...p.tasks]);
-                return {
-                    tasks: poolTasks,
-                    allTasks: [...p.tasks],
-                    protoSvg: p.svg_code || "",
-                    theory: p,
-                    prototype: p,
-                    protoIndex: originalProtoIndex >= 0 ? originalProtoIndex : selectedIndex
-                };
-            });
             let finalTasks = [];
 
-            const availableCount = activePools.reduce((sum, pool) => sum + pool.tasks.length, 0);
-            const requestedCount = requiredCount;
-            // Если задач запрошено больше, чем уникальных доступно,
-            // не обрезаем количество: после первого круга пойдут повторы.
-            const actualCount = requiredCount;
-
-            if (availableCount === 0) {
-                infoBoard.innerHTML += `<div><b>${data.title}:</b> в выбранных прототипах нет доступных задач.</div>`;
-                infoBoard.style.display = 'block';
-                continue;
-            }
-
-            if (requestedCount > availableCount) {
-                infoBoard.innerHTML += `<div><b>${data.title}:</b> запрошено ${requestedCount}, уникальных задач в выбранных прототипах ${availableCount}. После первого круга задачи будут повторяться по новому кругу.</div>`;
-                infoBoard.style.display = 'block';
-            }
-
-            // Логика набора внутри одного номера задания:
-            // порядок прототипов зависит от галочки «Упорядочить задания»,
-            // но задачи ВНУТРИ каждого прототипа всегда перемешиваются.
-            // Поэтому при повторной генерации сохраняются те же типы/прототипы,
-            // а конкретные аналоги из каждого прототипа выбираются заново.
-            // Берём НЕ все задачи первого прототипа подряд, а по одной задаче
-            // из каждого выбранного прототипа. Когда дошли до конца прототипов,
-            // идём на следующий слой: снова по одной задаче из каждого прототипа.
-            // Только после того, как все уникальные задачи выбранных прототипов
-            // прошли по одному разу, начинается следующий большой круг повторов.
-            function buildPrototypeRound() {
-                let pools = activePools.map(pool => ({
-                    protoSvg: pool.protoSvg || "",
-                    theory: pool.theory,
-                    prototype: pool.prototype || pool.theory,
-                    protoIndex: pool.protoIndex,
-                    allTasks: [...(pool.allTasks || pool.tasks || [])],
-                    tasks: shuffleArray([...pool.tasks])
-                })).filter(pool => pool.tasks.length > 0);
-
-                if (!orderedTasks) {
-                    pools = shuffleArray(pools);
-                }
-
-                const maxTasksInProto = Math.max(...pools.map(pool => pool.tasks.length));
-                let roundTasks = [];
-
-                for (let layerIndex = 0; layerIndex < maxTasksInProto; layerIndex++) {
-                    let layerPools = pools.filter(pool => pool.tasks[layerIndex]);
-
-                    // В хаотичном режиме на каждом слое тасуем порядок прототипов,
-                    // но всё равно не берём вторую задачу из прототипа раньше,
-                    // чем прошли по одной из остальных доступных прототипов.
-                    if (!orderedTasks) {
-                        layerPools = shuffleArray(layerPools);
+            if (manualPicks) {
+                manualPicks.forEach(pick => {
+                    const proto = data.prototypes[pick.protoIndex];
+                    if (!proto || !Array.isArray(proto.tasks) || !proto.tasks.length) return;
+                    let task = proto.tasks[pick.taskIndex];
+                    const expectedKey = String(pick.taskKey ?? '');
+                    if (!task || String(task && (task.id ?? task.text ?? pick.taskIndex)) !== expectedKey) {
+                        const foundIndex = proto.tasks.findIndex((candidate, idx) => String(candidate && (candidate.id ?? candidate.text ?? idx)) === expectedKey);
+                        if (foundIndex >= 0) {
+                            task = proto.tasks[foundIndex];
+                            pick.taskIndex = foundIndex;
+                        }
                     }
-
-                    layerPools.forEach(pool => {
-                        const task = pool.tasks[layerIndex];
-                        roundTasks.push({
-                            ...task,
-                            svg: task.svg_code || pool.protoSvg || "",
-                            theory: pool.theory,
-                            prototype: pool.prototype || pool.theory,
-                            protoIndex: pool.protoIndex,
-                            allProtoTasks: [...(pool.allTasks || [])]
-                        });
+                    if (!task) return;
+                    finalTasks.push({
+                        ...task,
+                        svg: task.svg_code || proto.svg_code || "",
+                        theory: proto,
+                        prototype: proto,
+                        protoIndex: pick.protoIndex,
+                        sourceTaskIndex: pick.taskIndex,
+                        sourcePlanIndex: pick.planIndex,
+                        allProtoTasks: [...proto.tasks]
                     });
+                });
+            } else {
+                let selectedProtos = randomPick
+                    ? [data.prototypes[randomPick.protoIndex]].filter(Boolean)
+                    : data.prototypes.filter((p, idx) => {
+                        const cb = document.getElementById(getPrototypeCheckboxId(tid, idx, kind));
+                        return cb && cb.checked;
+                    });
+                if (selectedProtos.length === 0) continue;
+
+                let activePools = selectedProtos.map((p, selectedIndex) => {
+                    const originalProtoIndex = randomPick ? randomPick.protoIndex : data.prototypes.indexOf(p);
+                    const chosenTask = randomPick && p.tasks ? p.tasks[randomPick.taskIndex] : null;
+                    const poolTasks = chosenTask ? [chosenTask] : shuffleArray([...p.tasks]);
+                    return {
+                        tasks: poolTasks,
+                        allTasks: [...p.tasks],
+                        protoSvg: p.svg_code || "",
+                        theory: p,
+                        prototype: p,
+                        protoIndex: originalProtoIndex >= 0 ? originalProtoIndex : selectedIndex
+                    };
+                });
+
+                const availableCount = activePools.reduce((sum, pool) => sum + pool.tasks.length, 0);
+                const requestedCount = requiredCount;
+                const actualCount = requiredCount;
+
+                if (availableCount === 0) {
+                    infoBoard.innerHTML += `<div><b>${data.title}:</b> в выбранных прототипах нет доступных задач.</div>`;
+                    infoBoard.style.display = 'block';
+                    continue;
                 }
 
-                return roundTasks;
+                if (requestedCount > availableCount) {
+                    infoBoard.innerHTML += `<div><b>${data.title}:</b> запрошено ${requestedCount}, уникальных задач в выбранных прототипах ${availableCount}. После первого круга задачи будут повторяться по новому кругу.</div>`;
+                    infoBoard.style.display = 'block';
+                }
+
+                function buildPrototypeRound() {
+                    let pools = activePools.map(pool => ({
+                        protoSvg: pool.protoSvg || "",
+                        theory: pool.theory,
+                        prototype: pool.prototype || pool.theory,
+                        protoIndex: pool.protoIndex,
+                        allTasks: [...(pool.allTasks || pool.tasks || [])],
+                        tasks: shuffleArray([...pool.tasks])
+                    })).filter(pool => pool.tasks.length > 0);
+
+                    if (!orderedTasks) pools = shuffleArray(pools);
+
+                    const maxTasksInProto = Math.max(...pools.map(pool => pool.tasks.length));
+                    let roundTasks = [];
+                    for (let layerIndex = 0; layerIndex < maxTasksInProto; layerIndex++) {
+                        let layerPools = pools.filter(pool => pool.tasks[layerIndex]);
+                        if (!orderedTasks) layerPools = shuffleArray(layerPools);
+                        layerPools.forEach(pool => {
+                            const task = pool.tasks[layerIndex];
+                            const allTasks = pool.allTasks || [];
+                            const sourceTaskIndex = allTasks.indexOf(task);
+                            roundTasks.push({
+                                ...task,
+                                svg: task.svg_code || pool.protoSvg || "",
+                                theory: pool.theory,
+                                prototype: pool.prototype || pool.theory,
+                                protoIndex: pool.protoIndex,
+                                sourceTaskIndex: sourceTaskIndex >= 0 ? sourceTaskIndex : 0,
+                                allProtoTasks: [...allTasks]
+                            });
+                        });
+                    }
+                    return roundTasks;
+                }
+
+                let oneFullRound = buildPrototypeRound();
+                if (oneFullRound.length === 0) continue;
+                while (finalTasks.length < actualCount) {
+                    const cycleTasks = finalTasks.length === 0 ? [...oneFullRound] : buildPrototypeRound();
+                    const needNow = actualCount - finalTasks.length;
+                    finalTasks.push(...cycleTasks.slice(0, needNow));
+                }
             }
 
-            let oneFullRound = buildPrototypeRound();
-            if (oneFullRound.length === 0) {
-                continue;
-            }
-
-            while (finalTasks.length < actualCount) {
-                const cycleTasks = finalTasks.length === 0 ? [...oneFullRound] : buildPrototypeRound();
-                const needNow = actualCount - finalTasks.length;
-                finalTasks.push(...cycleTasks.slice(0, needNow));
-            }
+            if (finalTasks.length === 0) continue;
+            window.selectedBlockTitles.push(visibleBlockTitle);
             if (isSecondPartBlock) {
                 const selectedIdsByProto = {};
                 finalTasks.forEach(t => {
@@ -2842,6 +2919,21 @@ body.auth-locked > *:not(#passwordGate) {
                     }
                 }
 
+                const sourceTaskIndex = Number.isInteger(item.sourceTaskIndex)
+                    ? item.sourceTaskIndex
+                    : (item.prototype && Array.isArray(item.prototype.tasks) ? item.prototype.tasks.indexOf(item) : 0);
+                const taskKey = String(item && (item.id ?? item.text ?? sourceTaskIndex));
+                const manualPlanIndex = useRandomPicks ? -1 : manualPlanBuilt.length;
+                if (!useRandomPicks) {
+                    manualPlanBuilt.push({
+                        tid,
+                        kind,
+                        protoIndex: item.protoIndex,
+                        taskIndex: sourceTaskIndex >= 0 ? sourceTaskIndex : 0,
+                        taskKey
+                    });
+                }
+
                 window.currentGeneratedTasks.push({
                     text: item.text,
                     svg: mainSvg,
@@ -2857,6 +2949,11 @@ body.auth-locked > *:not(#passwordGate) {
                     instantCheck: instantCheck,
                     taskId: item.id ?? null,
                     taskTid: tid,
+                    taskKind: kind,
+                    protoIndex: item.protoIndex,
+                    sourceTaskIndex: sourceTaskIndex >= 0 ? sourceTaskIndex : 0,
+                    taskKey,
+                    manualPlanIndex,
                     randomVariant: useRandomPicks
                 });
                 
@@ -2930,8 +3027,11 @@ body.auth-locked > *:not(#passwordGate) {
                     ? `<div style="margin-top:15px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;clear:both;">${drawBtn}${secondPartButtons}<div class="second-part-final-answer" id="second-final-answer-${taskCounter}" style="display:none;width:100%;margin-top:8px;padding:12px 14px;background:#eef6ff;border-left:4px solid #003399;border-radius:6px;"><b>Ответ:</b> ${item.answer}</div></div>`
                     : `<div style="margin-top:15px; display:flex; align-items:center; flex-wrap:wrap; gap:10px; clear:both;"><input type="text" class="ans-box" id="ans-interactive-${taskCounter}" placeholder="Ответ..." data-ans="${item.answer}" style="padding:10px 15px; border:2px solid #ccc; border-radius:6px; font-size:16px; font-weight:bold; width:150px; outline:none; transition:0.3s;">${instantBtn}${drawBtn}${helpBtn}<span class="answer-feedback" id="feedback-${taskCounter}" style="font-weight:bold; font-size:15px; display:none;"></span></div>`;
                 const randomTaskNumber = parseInt(String(tid).replace(/\D/g, ''), 10);
-                const randomReplaceButton = useRandomPicks ? `<button type="button" class="random-replace-btn" onclick="replaceRandomVariantTask('${tid}')" title="Заменить только это задание, остальные оставить">🎲 Заменить</button>` : '';
-                currentInteractiveHTML += `<div class="generated-task-block ${isSecondPartBlock ? 'second-part-task' : 'first-part-task'}" data-part="${isSecondPartBlock ? 2 : 1}" data-random-task-number="${randomTaskNumber}" style="margin-bottom:30px; clear:both; overflow:visible; position:relative; border-bottom:1px dashed #ddd; padding:8px 0 20px;"><div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; overflow:visible;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0; overflow:visible;"><div style="flex-shrink:0; font-weight:bold; font-size:1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div class="generated-task-diagram" style="flex-shrink:0; min-width:150px; max-width:350px; padding:22px 8px 6px; box-sizing:border-box; overflow:visible;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div class="task-copy">${displayTaskText}</div>${taskActionArea}</div></div><div style="display:flex;align-items:flex-start;gap:8px;">${randomReplaceButton}${stickerHTMLInteractive}</div></div>${scratchpadHTML}</div>`;
+                const hasSamePrototypeAlternative = !useRandomPicks && Array.isArray(item.allProtoTasks) && item.allProtoTasks.length > 1;
+                const replaceButton = useRandomPicks
+                    ? `<button type="button" class="random-replace-btn" onclick="replaceRandomVariantTask('${tid}')" title="Заменить только это задание, остальные оставить">🎲 Заменить</button>`
+                    : (hasSamePrototypeAlternative ? `<button type="button" class="random-replace-btn" onclick="replaceManualVariantTask(${manualPlanIndex})" title="Заменить на другую задачу этого же прототипа">🔄 Заменить</button>` : '');
+                currentInteractiveHTML += `<div class="generated-task-block ${isSecondPartBlock ? 'second-part-task' : 'first-part-task'}" data-part="${isSecondPartBlock ? 2 : 1}" data-random-task-number="${randomTaskNumber}" data-manual-plan-index="${manualPlanIndex}" style="margin-bottom:30px; clear:both; overflow:visible; position:relative; border-bottom:1px dashed #ddd; padding:8px 0 20px;"><div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; overflow:visible;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0; overflow:visible;"><div style="flex-shrink:0; font-weight:bold; font-size:1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div class="generated-task-diagram" style="flex-shrink:0; min-width:150px; max-width:350px; padding:22px 8px 6px; box-sizing:border-box; overflow:visible;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div class="task-copy">${displayTaskText}</div>${taskActionArea}</div></div><div style="display:flex;align-items:flex-start;gap:8px;">${replaceButton}${stickerHTMLInteractive}</div></div>${scratchpadHTML}</div>`;
                 
                 currentPrintHTML += `<div class="task-print-block"><div class="task-print-flex"><div class="task-print-num">${taskCounter}</div>${mainSvg ? `<div class="task-print-img">${mainSvg}</div>` : ""}<div class="task-print-text"><div class="task-copy">${displayTaskText}</div>${isSecondPartBlock ? `<div class="task-print-answer" style="margin-top:10px;color:#777;">Решение выполняется с полным обоснованием.</div>` : `<div class="task-print-answer">Ответ: ______________________________</div>`}</div>${stickerHTMLPrint}</div></div>`;
                 
@@ -2943,6 +3043,7 @@ body.auth-locked > *:not(#passwordGate) {
         }
 
         if (hasContent) {
+            if (!useRandomPicks) window.manualVariantPlan = manualPlanBuilt.map(item => ({ ...item }));
             document.getElementById('output-section').style.display = 'block';
             document.getElementById('btn-group').style.display = 'flex';
             setRandomVariantButtonsVisible(useRandomPicks);
