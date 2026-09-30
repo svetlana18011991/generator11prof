@@ -47,18 +47,21 @@ function isFullEgePresentation(tasks) {
     tasks = Array.isArray(tasks) ? tasks : [];
     if (!tasks.length) return false;
 
-    // Кнопка «Сгенерировать случайный вариант» уже однозначно означает полный вариант.
+    // Кнопка «Сгенерировать случайный вариант» однозначно означает полный вариант.
     if (window.randomVariantMode || tasks.every(t => t && t.randomVariant)) return true;
 
-    // Если пользователь вручную собрал ровно стандартную структуру 1–20
-    // (по одной основной задаче каждого номера), считаем её полноценным вариантом тоже.
-    if (tasks.length !== 20) return false;
+    // Полный вариант может состоять из 19 или 20 основных заданий
+    // (в проекте встречаются обе структуры). Главное: по одному заданию
+    // каждого номера подряд, без дополнительных блоков и повторов.
+    if (tasks.length !== 19 && tasks.length !== 20) return false;
+    if (!tasks.every(t => !t.taskKind || t.taskKind === 'main')) return false;
+
     const nums = tasks.map(getPresentationTaskNumber).filter(Number.isFinite).sort((a, b) => a - b);
-    if (nums.length !== 20) return false;
-    for (let i = 0; i < 20; i++) {
+    if (nums.length !== tasks.length) return false;
+    for (let i = 0; i < nums.length; i++) {
         if (nums[i] !== i + 1) return false;
     }
-    return tasks.every(t => !t.taskKind || t.taskKind === 'main');
+    return true;
 }
 
 function shortPresentationTopic(rawTitle, taskNumber, kind) {
