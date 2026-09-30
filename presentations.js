@@ -24,6 +24,148 @@ function getShowCorrectOnErrorSetting() {
     return false;
 }
 
+// ==========================================
+// СТАРТОВЫЙ ЭКРАН ПРЕЗЕНТАЦИИ
+// Полный вариант ЕГЭ — короткая титульная заставка.
+// Произвольная подборка — компактная сводка по типам заданий.
+// ==========================================
+function escapePresHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getPresentationTaskNumber(task) {
+    const match = String(task && task.taskTid || '').match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+}
+
+function isFullEgePresentation(tasks) {
+    tasks = Array.isArray(tasks) ? tasks : [];
+    if (!tasks.length) return false;
+
+    // Кнопка «Сгенерировать случайный вариант» уже однозначно означает полный вариант.
+    if (window.randomVariantMode || tasks.every(t => t && t.randomVariant)) return true;
+
+    // Если пользователь вручную собрал ровно стандартную структуру 1–20
+    // (по одной основной задаче каждого номера), считаем её полноценным вариантом тоже.
+    if (tasks.length !== 20) return false;
+    const nums = tasks.map(getPresentationTaskNumber).filter(Number.isFinite).sort((a, b) => a - b);
+    if (nums.length !== 20) return false;
+    for (let i = 0; i < 20; i++) {
+        if (nums[i] !== i + 1) return false;
+    }
+    return tasks.every(t => !t.taskKind || t.taskKind === 'main');
+}
+
+function shortPresentationTopic(rawTitle, taskNumber, kind) {
+    let title = String(rawTitle || '').trim();
+    title = title.replace(/^Задание\s*\d+\s*[.\-–—:]?\s*/i, '');
+    title = title.replace(/\s*\([^)]*(?:Решу\s*ЕГЭ|сайт)[^)]*\)\s*/gi, ' ');
+    title = title.replace(/\s{2,}/g, ' ').trim();
+    if (!title || /^Дополнительно$/i.test(title)) {
+        return kind === 'extra' ? 'Дополнительные задания' : `Задание ${taskNumber || ''}`.trim();
+    }
+    return title;
+}
+
+function getPresentationStartInfo() {
+    const tasks = Array.isArray(window.currentGeneratedTasks) ? window.currentGeneratedTasks : [];
+    const fullVariant = isFullEgePresentation(tasks);
+    if (fullVariant) {
+        return { fullVariant: true, total: tasks.length, groups: [] };
+    }
+
+    const selectedTitles = Array.isArray(window.selectedBlockTitles) ? window.selectedBlockTitles : [];
+    const groups = [];
+    const byKey = new Map();
+    let titleCursor = 0;
+    let previousKey = null;
+
+    tasks.forEach(task => {
+        const num = getPresentationTaskNumber(task);
+        const kind = (task && task.taskKind) || 'main';
+        const key = `${task && task.taskTid || 'task'}|${kind}`;
+
+        if (key !== previousKey) {
+            previousKey = key;
+            titleCursor++;
+        }
+
+        let group = byKey.get(key);
+        if (!group) {
+            const titleFromSelection = selectedTitles[Math.max(0, titleCursor - 1)] || '';
+            const titleFromDatabase = task && task.taskTid && window.database && window.database[task.taskTid]
+                ? window.database[task.taskTid].title
+                : '';
+            const rawTitle = kind === 'extra' ? titleFromSelection : (titleFromDatabase || titleFromSelection);
+            group = {
+                key,
+                number: num,
+                kind,
+                title: shortPresentationTopic(rawTitle, num, kind),
+                count: 0
+            };
+            byKey.set(key, group);
+            groups.push(group);
+        }
+        group.count++;
+    });
+
+    // Фолбэк для старых сохранённых данных, где у задач ещё не было taskTid.
+    if (!groups.length && selectedTitles.length) {
+        selectedTitles.forEach((title, index) => {
+            const m = String(title).match(/Задание\s*(\d+)/i);
+            const num = m ? parseInt(m[1], 10) : null;
+            groups.push({ number: num, kind: 'main', title: shortPresentationTopic(title, num, 'main'), count: 1 });
+        });
+    }
+
+    return { fullVariant: false, total: tasks.length, groups };
+}
+
+function buildPresentationStartCardHtml(authorLine, accentColor) {
+    const info = getPresentationStartInfo();
+    const safeAccent = escapePresHtml(accentColor || '#ff8c00');
+    const authorHtml = authorLine
+        ? `<div class="pres-start-author">${authorLine}</div>`
+        : '';
+    const brandHtml = `<div class="pres-start-brand"><img src="${window.getEmbeddedAssetUrl('logo.png')}" class="logo-small" onerror="this.style.display='none'">Шкатулка математических интерактивов</div>`;
+
+    if (info.fullVariant) {
+        return `<div class="title-box pres-start-card pres-start-card-full" onclick="event.stopPropagation();">
+            <div class="pres-start-kicker">Профильная математика</div>
+            <h1 class="pres-start-main-title">Вариант ЕГЭ</h1>
+            <div class="pres-start-rule" style="background:${safeAccent};"></div>
+            ${authorHtml}
+            ${brandHtml}
+        </div>`;
+    }
+
+    const groups = info.groups || [];
+    const gridClass = groups.length >= 13 ? 'pres-topic-grid pres-topic-grid-dense'
+        : (groups.length >= 7 ? 'pres-topic-grid pres-topic-grid-mid' : 'pres-topic-grid');
+    const chips = groups.map(group => {
+        const number = Number.isFinite(group.number) ? `<b>№${group.number}</b> ` : '';
+        const suffix = group.count > 1 ? `<span class="pres-topic-count">×${group.count}</span>` : '';
+        const fullLabel = `${Number.isFinite(group.number) ? `№${group.number} ` : ''}${group.title}${group.count > 1 ? ` ×${group.count}` : ''}`;
+        return `<div class="pres-topic-chip" title="${escapePresHtml(fullLabel)}"><span>${number}${escapePresHtml(group.title)}</span>${suffix}</div>`;
+    }).join('');
+
+    const totalText = `${info.total} ${info.total % 10 === 1 && info.total % 100 !== 11 ? 'задание' : ([2,3,4].includes(info.total % 10) && ![12,13,14].includes(info.total % 100) ? 'задания' : 'заданий')}`;
+    return `<div class="title-box pres-start-card pres-start-card-selection" onclick="event.stopPropagation();">
+        <div class="pres-start-kicker">Профильная математика</div>
+        <h1 class="pres-start-selection-title">Подборка заданий</h1>
+        <div class="pres-start-meta" style="border-color:${safeAccent};color:${safeAccent};">${totalText}</div>
+        <div class="${gridClass}">${chips}</div>
+        ${authorHtml}
+        ${brandHtml}
+    </div>`;
+}
+
 
 
 // ==========================================
@@ -555,17 +697,42 @@ function updateCustomPresentationPreview() {
     }
 
     if (previewMode === 'start') {
-        const topics = (window.selectedBlockTitles || ['Тема 1', 'Тема 2']).slice(0, 4).map(t => `<li style="margin-bottom:4px;">${t}</li>`).join('');
+        const info = getPresentationStartInfo();
         const author = getCustomPresAuthorLine();
         preview.style.backgroundImage = `url('${startBg}')`;
-        preview.innerHTML = `
-            <div style="position:absolute;inset:0;background:rgba(255,255,255,.08);"></div>
-            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68%;max-height:76%;background:rgba(255,255,255,.94);border:2px solid ${accent};border-radius:${radius}px;box-shadow:0 10px 28px rgba(0,0,0,.20);padding:20px 24px;box-sizing:border-box;text-align:center;color:#333;overflow:hidden;">
-                <div style="font-weight:900;font-size:28px;color:#003399;border-bottom:2px solid ${accent};padding-bottom:10px;margin-bottom:10px;">Тренировочный вариант</div>
-                <ul style="text-align:left;margin:8px auto 0;max-width:78%;font-size:13px;line-height:1.25;padding-left:18px;color:#333;">${topics}</ul>
-                <div style="font-family:Caveat,cursive;font-size:21px;color:#003399;margin-top:12px;">${author || 'Вариант подготовила: ...'}</div>
-                <div style="font-family:Caveat,cursive;font-size:17px;color:#555;margin-top:12px;">Шкатулка математических интерактивов</div>
-            </div>`;
+
+        if (info.fullVariant) {
+            preview.innerHTML = `
+                <div style="position:absolute;inset:0;background:rgba(255,255,255,.05);"></div>
+                <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:62%;background:rgba(255,255,255,.94);border:2px solid ${accent};border-radius:${radius}px;box-shadow:0 10px 28px rgba(0,0,0,.20);padding:26px 28px 22px;box-sizing:border-box;text-align:center;color:#333;">
+                    <div style="font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#555;">Профильная математика</div>
+                    <div style="font-weight:900;font-size:38px;line-height:1.05;color:#003399;margin-top:8px;">Вариант ЕГЭ</div>
+                    <div style="width:68px;height:3px;border-radius:999px;background:${accent};margin:14px auto;"></div>
+                    ${author ? `<div style="font-family:Caveat,cursive;font-size:20px;color:#003399;">${author}</div>` : ''}
+                    <div style="font-family:Caveat,cursive;font-size:15px;color:#555;margin-top:12px;">Шкатулка математических интерактивов</div>
+                </div>`;
+        } else {
+            const groups = info.groups || [];
+            const previewGroups = groups.slice(0, 12);
+            const cols = previewGroups.length >= 7 ? 3 : 2;
+            const chips = previewGroups.map(group => {
+                const n = Number.isFinite(group.number) ? `№${group.number} ` : '';
+                const c = group.count > 1 ? ` ×${group.count}` : '';
+                return `<div style="min-width:0;padding:5px 7px;border:1px solid rgba(0,0,0,.10);border-radius:8px;background:rgba(255,255,255,.82);font-size:10px;line-height:1.1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><b style="color:#003399;">${n}</b>${escapePresHtml(group.title)}<b style="color:${accent};">${c}</b></div>`;
+            }).join('');
+            const more = groups.length > previewGroups.length ? `<div style="font-size:10px;color:#777;margin-top:6px;">+ ещё ${groups.length - previewGroups.length}</div>` : '';
+            preview.innerHTML = `
+                <div style="position:absolute;inset:0;background:rgba(255,255,255,.05);"></div>
+                <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78%;max-height:80%;background:rgba(255,255,255,.94);border:2px solid ${accent};border-radius:${radius}px;box-shadow:0 10px 28px rgba(0,0,0,.20);padding:15px 18px;box-sizing:border-box;text-align:center;color:#333;overflow:hidden;">
+                    <div style="font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#555;">Профильная математика</div>
+                    <div style="font-weight:900;font-size:24px;line-height:1.05;color:#003399;margin:4px 0 6px;">Подборка заданий</div>
+                    <div style="display:inline-block;border:1px solid ${accent};color:${accent};border-radius:999px;padding:3px 9px;font-size:10px;font-weight:800;margin-bottom:8px;">${info.total} заданий</div>
+                    <div style="display:grid;grid-template-columns:repeat(${cols},minmax(0,1fr));gap:5px;">${chips}</div>
+                    ${more}
+                    ${author ? `<div style="font-family:Caveat,cursive;font-size:16px;color:#003399;margin-top:8px;">${author}</div>` : ''}
+                    <div style="font-family:Caveat,cursive;font-size:13px;color:#555;margin-top:7px;">Шкатулка математических интерактивов</div>
+                </div>`;
+        }
     } else {
         preview.style.backgroundImage = `url('${taskBg}')`;
         preview.innerHTML = `
@@ -720,6 +887,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     }
     const resolvedBgTitle = resolvePresentationBgUrl(bgTitle);
     const resolvedBgMain = resolvePresentationBgUrl(bgMain);
+    const startCardHtml = buildPresentationStartCardHtml(authorLine, accentColor);
 
     let fullHTML = `<!DOCTYPE html>
 <html>
@@ -736,6 +904,33 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .slide.active { display: flex; }
         .title-box { background: rgba(255,255,255,0.95); padding: 40px 60px; border-radius: 20px; border: 3px solid ${accentColor}; text-align: center; max-width: 900px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
         .topics-list { text-align: left; margin: 20px 0; font-size: 1.3em; color: #333; line-height: 1.4; list-style-type: disc; padding-left: 20px;}
+        .pres-start-card { width: min(760px, calc(100vw - 160px)); box-sizing: border-box; }
+        .pres-start-card-full { padding: 48px 70px 38px; }
+        .pres-start-card-selection { padding: 28px 34px 24px; max-width: 980px; width: min(980px, calc(100vw - 150px)); max-height: calc(100vh - 150px); overflow: hidden; }
+        .pres-start-kicker { font-size: clamp(15px, 1.4vw, 20px); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #555; }
+        .pres-start-main-title { margin: 12px 0 0; color: #003399; font-size: clamp(48px, 6vw, 78px); line-height: 1; }
+        .pres-start-selection-title { margin: 6px 0 8px; color: #003399; font-size: clamp(30px, 3.3vw, 48px); line-height: 1.05; }
+        .pres-start-rule { width: 110px; height: 4px; border-radius: 999px; margin: 24px auto 20px; }
+        .pres-start-meta { display: inline-block; margin: 0 auto 18px; padding: 6px 14px; border: 1.5px solid currentColor; border-radius: 999px; font-weight: 800; font-size: 16px; background: rgba(255,255,255,.72); }
+        .pres-topic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; width: 100%; margin: 0 auto 14px; }
+        .pres-topic-grid-mid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 10px; }
+        .pres-topic-grid-dense { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px 8px; }
+        .pres-topic-chip { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 11px; border-radius: 12px; background: rgba(255,255,255,.82); border: 1px solid rgba(0,0,0,.10); color: #333; font-size: 15px; line-height: 1.15; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+        .pres-topic-grid-dense .pres-topic-chip { padding: 7px 9px; font-size: 13px; }
+        .pres-topic-chip > span:first-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pres-topic-chip b { color: #003399; }
+        .pres-topic-count { flex: 0 0 auto; font-weight: 900; color: ${accentColor}; background: rgba(255,255,255,.88); border-radius: 999px; padding: 2px 7px; }
+        .pres-start-author { font-family: 'Caveat', cursive; font-size: clamp(22px, 2.5vw, 34px); color: #003399; margin-top: 16px; }
+        .pres-start-brand { margin-top: 18px; font-size: 17px; color: #555; font-style: italic; display: flex; align-items: center; justify-content: center; }
+        @media (max-height: 700px) {
+            .pres-start-card-selection { padding: 18px 24px 16px; max-height: calc(100vh - 110px); }
+            .pres-start-selection-title { font-size: 31px; }
+            .pres-start-meta { margin-bottom: 10px; padding: 4px 11px; font-size: 14px; }
+            .pres-topic-grid { gap: 6px 8px; margin-bottom: 8px; }
+            .pres-topic-chip { padding: 6px 8px; font-size: 12px; }
+            .pres-start-author { margin-top: 8px; font-size: 23px; }
+            .pres-start-brand { margin-top: 8px; font-size: 14px; }
+        }
         .nav-btns { position: fixed; bottom: 40px; right: 70px; display: flex; gap: 20px; z-index: 100; }
         .nav-btn { background: #333; color: white; border: none; padding: 15px 35px; border-radius: 50px; cursor: pointer; font-size: 1.3em; opacity: 0.85; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .nav-btn:hover { opacity: 1; background: ${accentColor}; transform: translateY(-2px); }
@@ -799,15 +994,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
     <div id="pres-timer-box" class="pres-timer-box">⏱ 00:00</div>
 
     <div class="slide active" style="background-image: url('${resolvedBgTitle}')">
-        <div class="title-box" onclick="event.stopPropagation();">
-            <h1 style="color:#003399; margin:0; font-size: 3em; border-bottom: 3px solid ${accentColor}; padding-bottom: 20px;">Тренировочный вариант</h1>
-            <ul class="topics-list">${topicsList}</ul>
-            <div style="font-family:'Caveat'; font-size:35px; color:#003399; margin-top:30px;">${authorLine}</div>
-            <div style="margin-top:40px; font-size: 1.2em; color: #555; font-style: italic;">
-                <img src="${window.getEmbeddedAssetUrl('logo.png')}" class="logo-small" onerror="this.style.display='none'"> 
-                Шкатулка математических интерактивов
-            </div>
-        </div>
+        ${startCardHtml}
         <div class="nav-btns" id="start-nav"><button class="nav-btn" onclick="event.stopPropagation(); nextSlide()">Начать →</button></div>
     </div>
 
