@@ -180,42 +180,139 @@ const TOWER_TEMPLATE = `<!DOCTYPE html>
             if (!sourceEl) return;
             const visual = sourceEl.matches && sourceEl.matches('svg,img,picture,canvas') ? sourceEl : sourceEl.querySelector('svg,img,picture,canvas');
             if (!visual) return;
+
             let overlay = document.getElementById('draftVisualZoomOverlay');
             if (!overlay) {
                 overlay = document.createElement('div');
                 overlay.id = 'draftVisualZoomOverlay';
-                overlay.style.cssText = 'position:fixed;inset:0;z-index:1000000;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;';
-                overlay.innerHTML = '<div style="position:relative;width:min(1100px,96vw);height:min(820px,90vh);background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.55);overflow:hidden;display:flex;flex-direction:column;"><div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;background:#eef6ff;border-bottom:1px solid #c9dff2;"><button type="button" data-z="out" title="Уменьшить" style="font-size:20px;border:1px solid #90caf9;background:#fff;border-radius:8px;min-width:38px;height:36px;cursor:pointer;">−</button><button type="button" data-z="reset" title="Исходный размер" style="font-size:16px;border:1px solid #90caf9;background:#fff;border-radius:8px;height:36px;cursor:pointer;">100%</button><button type="button" data-z="in" title="Увеличить" style="font-size:20px;border:1px solid #90caf9;background:#fff;border-radius:8px;min-width:38px;height:36px;cursor:pointer;">+</button><button type="button" data-z="close" title="Закрыть" style="margin-left:auto;font-size:24px;border:1px solid #ffcc80;background:#fff3e0;color:#e65100;border-radius:8px;width:38px;height:36px;cursor:pointer;">×</button></div><div data-z="viewport" style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:28px;box-sizing:border-box;background:#fff;"><div data-z="content" style="transform-origin:center center;transition:transform .12s ease;"></div></div></div>';
+                overlay.style.cssText = 'position:fixed;inset:0;z-index:1000000;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;';
+                overlay.innerHTML = '<div data-z="dialog" style="position:relative;width:min(1180px,97vw);height:min(860px,94vh);background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.55);overflow:hidden;display:flex;flex-direction:column;"><div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:9px;background:#eef6ff;border-bottom:1px solid #c9dff2;flex:0 0 auto;"><button type="button" data-z="out" title="Уменьшить" style="font-size:20px;border:1px solid #90caf9;background:#fff;border-radius:8px;min-width:38px;height:36px;cursor:pointer;">−</button><button type="button" data-z="reset" title="Показать целиком" style="font-size:16px;border:1px solid #90caf9;background:#fff;border-radius:8px;height:36px;cursor:pointer;">100%</button><button type="button" data-z="in" title="Увеличить" style="font-size:20px;border:1px solid #90caf9;background:#fff;border-radius:8px;min-width:38px;height:36px;cursor:pointer;">+</button><button type="button" data-z="close" title="Закрыть" style="margin-left:auto;font-size:24px;border:1px solid #ffcc80;background:#fff3e0;color:#e65100;border-radius:8px;width:38px;height:36px;cursor:pointer;">×</button></div><div data-z="viewport" style="flex:1;min-height:0;overflow:auto;padding:18px;box-sizing:border-box;background:#fff;"><div data-z="stage" style="min-width:100%;min-height:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;"><div data-z="content" style="flex:0 0 auto;line-height:0;"></div></div></div></div>';
                 document.body.appendChild(overlay);
-                const close = () => { overlay.style.display = 'none'; document.body.style.overflow = overlay.dataset.oldOverflow || ''; };
-                overlay.addEventListener('click', e => { if (e.target === overlay || e.target.closest('[data-z="close"]')) close(); });
-                document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.style.display !== 'none') close(); });
-                overlay.querySelector('[data-z="in"]').addEventListener('click', () => { overlay._scale = Math.min(4, (overlay._scale || 1) + .25); overlay._apply(); });
-                overlay.querySelector('[data-z="out"]').addEventListener('click', () => { overlay._scale = Math.max(.5, (overlay._scale || 1) - .25); overlay._apply(); });
-                overlay.querySelector('[data-z="reset"]').addEventListener('click', () => { overlay._scale = 1; overlay._apply(); });
-                overlay.querySelector('[data-z="viewport"]').addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); overlay._scale = Math.max(.5, Math.min(4, (overlay._scale || 1) + (e.deltaY < 0 ? .15 : -.15))); overlay._apply(); }, {passive:false});
+
+                const close = () => {
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = overlay.dataset.oldOverflow || '';
+                };
+                overlay.addEventListener('click', e => {
+                    if (e.target === overlay || e.target.closest('[data-z="close"]')) close();
+                });
+                document.addEventListener('keydown', e => {
+                    if (e.key === 'Escape' && overlay.style.display !== 'none') close();
+                });
+
+                const changeScale = delta => {
+                    if (!overlay._apply) return;
+                    overlay._scale = Math.max(.5, Math.min(4, (overlay._scale || 1) + delta));
+                    overlay._apply();
+                };
+                overlay.querySelector('[data-z="in"]').addEventListener('click', () => changeScale(.25));
+                overlay.querySelector('[data-z="out"]').addEventListener('click', () => changeScale(-.25));
+                overlay.querySelector('[data-z="reset"]').addEventListener('click', () => {
+                    if (!overlay._apply) return;
+                    overlay._scale = 1;
+                    overlay._apply();
+                });
+                overlay.querySelector('[data-z="viewport"]').addEventListener('wheel', e => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    changeScale(e.deltaY < 0 ? .15 : -.15);
+                }, {passive:false});
+                window.addEventListener('resize', () => {
+                    if (overlay.style.display !== 'none' && overlay._refit) overlay._refit();
+                });
             }
+
             const content = overlay.querySelector('[data-z="content"]');
+            const stage = overlay.querySelector('[data-z="stage"]');
+            const viewport = overlay.querySelector('[data-z="viewport"]');
             content.innerHTML = '';
+
             let clone;
             if (visual.tagName && visual.tagName.toLowerCase() === 'canvas') {
                 clone = document.createElement('img');
-                try { clone.src = visual.toDataURL('image/png'); } catch(e) { return; }
-            } else clone = visual.cloneNode(true);
-            clone.removeAttribute && clone.removeAttribute('id');
-            clone.style.cssText = 'display:block;max-width:none!important;max-height:none!important;width:auto!important;height:auto!important;min-width:min(760px,82vw);object-fit:contain;margin:auto;';
-            if (clone.tagName && clone.tagName.toLowerCase() === 'svg') {
-                const vb = clone.getAttribute('viewBox');
-                if (!clone.getAttribute('width')) clone.setAttribute('width', vb ? Math.max(760, Number(vb.split(/\\s+/)[2]) * 2) : 900);
-                if (!clone.getAttribute('height') && vb) clone.setAttribute('height', Math.max(520, Number(vb.split(/\\s+/)[3]) * 2));
+                try {
+                    clone.src = visual.toDataURL('image/png');
+                } catch(e) {
+                    return;
+                }
+            } else {
+                clone = visual.cloneNode(true);
             }
+
+            clone.removeAttribute && clone.removeAttribute('id');
+            clone.style.cssText = 'display:block!important;max-width:none!important;max-height:none!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;object-fit:contain!important;margin:0!important;';
+
+            if (clone.tagName && clone.tagName.toLowerCase() === 'picture') {
+                const pictureImg = clone.querySelector('img');
+                if (pictureImg) {
+                    pictureImg.style.cssText = 'display:block!important;max-width:none!important;max-height:none!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;object-fit:contain!important;margin:0!important;';
+                }
+            }
+
             content.appendChild(clone);
+
+            const sourceRect = visual.getBoundingClientRect();
+            let ratio = sourceRect.width > 0 && sourceRect.height > 0 ? sourceRect.width / sourceRect.height : 1;
+            const tag = visual.tagName ? visual.tagName.toLowerCase() : '';
+
+            if (tag === 'img' && visual.naturalWidth > 0 && visual.naturalHeight > 0) {
+                ratio = visual.naturalWidth / visual.naturalHeight;
+            } else if (tag === 'canvas' && visual.width > 0 && visual.height > 0) {
+                ratio = visual.width / visual.height;
+            } else if (tag === 'svg' && visual.viewBox && visual.viewBox.baseVal && visual.viewBox.baseVal.width > 0 && visual.viewBox.baseVal.height > 0) {
+                ratio = visual.viewBox.baseVal.width / visual.viewBox.baseVal.height;
+            } else if (tag === 'picture') {
+                const sourceImg = visual.querySelector('img');
+                if (sourceImg && sourceImg.naturalWidth > 0 && sourceImg.naturalHeight > 0) {
+                    ratio = sourceImg.naturalWidth / sourceImg.naturalHeight;
+                }
+            }
+
+            if (!isFinite(ratio) || ratio <= 0) ratio = 1;
+            overlay._ratio = ratio;
             overlay._scale = 1;
-            overlay._apply = () => { content.style.transform = 'scale(' + overlay._scale + ')'; overlay.querySelector('[data-z="reset"]').textContent = Math.round(overlay._scale * 100) + '%'; };
-            overlay._apply();
+
+            overlay._apply = () => {
+                const scale = overlay._scale || 1;
+                const width = Math.max(1, (overlay._baseWidth || 1) * scale);
+                const height = Math.max(1, (overlay._baseHeight || 1) * scale);
+
+                content.style.width = width + 'px';
+                content.style.height = height + 'px';
+
+                const viewportWidth = Math.max(0, viewport.clientWidth - 36);
+                const viewportHeight = Math.max(0, viewport.clientHeight - 36);
+                stage.style.justifyContent = width <= viewportWidth + 1 ? 'center' : 'flex-start';
+                stage.style.alignItems = height <= viewportHeight + 1 ? 'center' : 'flex-start';
+
+                overlay.querySelector('[data-z="reset"]').textContent = Math.round(scale * 100) + '%';
+            };
+
+            overlay._refit = () => {
+                const styles = window.getComputedStyle(viewport);
+                const padX = (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0);
+                const padY = (parseFloat(styles.paddingTop) || 0) + (parseFloat(styles.paddingBottom) || 0);
+                const availableWidth = Math.max(120, viewport.clientWidth - padX);
+                const availableHeight = Math.max(120, viewport.clientHeight - padY);
+                const ratioNow = overlay._ratio || 1;
+
+                let baseWidth = availableWidth;
+                let baseHeight = baseWidth / ratioNow;
+                if (baseHeight > availableHeight) {
+                    baseHeight = availableHeight;
+                    baseWidth = baseHeight * ratioNow;
+                }
+
+                overlay._baseWidth = Math.max(1, Math.floor(baseWidth));
+                overlay._baseHeight = Math.max(1, Math.floor(baseHeight));
+                overlay._apply();
+            };
+
             overlay.dataset.oldOverflow = document.body.style.overflow || '';
             document.body.style.overflow = 'hidden';
             overlay.style.display = 'flex';
+
+            requestAnimationFrame(() => overlay._refit());
         };
 
         // Черновик: логика один-в-один как в презентациях, только панель открывается справа
