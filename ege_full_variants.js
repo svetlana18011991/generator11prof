@@ -230,41 +230,82 @@
     function buildPrintVariant(entry, index, withFields) {
         const source = document.createElement('div');
         source.innerHTML = entry.printHTML || '';
-        const tasks = [...source.querySelectorAll('.task-print-block')];
-        if (!tasks.length) throw Error('Не найдены задания для печати в варианте №' + (index + 1));
-        const items = tasks.map((task, i) => {
-            const taskNumber = Number(entry.tasks && entry.tasks[i] &&
-                String(entry.tasks[i].taskTid || '').replace(/\D/g, '')) || i + 1;
-            const second = taskNumber >= 14;
-            const fields = withFields ? `<div class="ege-exam-grid ${second ? 'ege-exam-grid-large' : ''}"></div>` : '';
-            return `<div class="ege-exam-unit"><section class="ege-exam-task" data-exam-task="${taskNumber}">${task.innerHTML}${fields}</section></div>`;
-        }).join('');
+        const taskNodes = [...source.querySelectorAll('.task-print-block')];
+        if (!taskNodes.length) throw Error('Не найдены задания для печати в варианте №' + (index + 1));
+
         const teacherInput = document.getElementById('teacher-name');
         const teacherName = teacherInput ? teacherInput.value.trim() : '';
         const signature = document.getElementById('toggle-signature')?.checked && teacherName
             ? `<span class="ege-exam-teacher">Подготовил(а): ${escapeHtml(teacherName)}</span>` : '';
         const heading = window.egeGenerationMode === 'full' ? `Вариант №${index + 1}` : 'Тренировочный набор';
+        const brand = '<span class="ege-exam-brand">Шкатулка математических интерактивов · <a href="https://shkatulka.sistema-math.ru/" target="_blank" rel="noopener noreferrer">shkatulka.sistema-math.ru</a></span>';
+        const headerHtml = `<header class="ege-exam-header"><strong>ЕГЭ · профильная математика</strong><strong>${heading}</strong></header>`;
+        const variantIntro = `<div class="ege-exam-variant-banner">${heading}</div>`;
+        const footerHtml = `${brand}${signature}<span class="ege-page-no">Лист 1</span>`;
+        const articleFooter = `<footer class="ege-exam-footer">${footerHtml}</footer>`;
+
+        const tasks = taskNodes.map((task, i) => {
+            const taskNumber = Number(entry.tasks && entry.tasks[i] &&
+                String(entry.tasks[i].taskTid || '').replace(/\D/g, '')) || i + 1;
+            const second = taskNumber >= 14;
+            let fields = '';
+            if (withFields) {
+                if (second) fields = '<div class="ege-exam-grid ege-exam-grid-solution"></div>';
+                else fields = '<div class="ege-exam-grid ege-exam-grid-answer"></div>';
+            }
+            return {
+                taskNumber,
+                second,
+                html: `<div class="ege-exam-unit${second ? ' ege-exam-unit-second' : ''}"><section class="ege-exam-task" data-exam-task="${taskNumber}">${task.innerHTML}${fields}</section></div>`
+            };
+        });
+
+        if (withFields) {
+            const firstPart = tasks.filter(task => !task.second).map(task => task.html).join('');
+            const firstArticle = firstPart ? `<article class="ege-exam-page ege-flow-page" data-variant="${index + 1}">
+                ${headerHtml}
+                ${variantIntro}
+                <div class="ege-exam-columns">
+                    <div class="ege-exam-column"><div class="ege-exam-column-content">${firstPart}</div></div>
+                    <div class="ege-exam-column"><div class="ege-exam-column-content"></div></div>
+                </div>
+                ${articleFooter}
+            </article>` : '';
+            const secondArticles = tasks.filter(task => task.second).map(task => `<article class="ege-exam-page ege-solution-page" data-variant="${index + 1}" data-task="${task.taskNumber}">
+                ${headerHtml}
+                ${variantIntro}
+                <div class="ege-solution-sheet">
+                    <div class="ege-solution-task-label">Задание ${task.taskNumber}</div>
+                    ${task.html}
+                </div>
+                ${articleFooter}
+            </article>`).join('');
+            return firstArticle + secondArticles;
+        }
+
+        const items = tasks.map(task => task.html).join('');
         return `<article class="ege-exam-page ege-flow-page" data-variant="${index + 1}">
-            <header class="ege-exam-header"><strong>ЕГЭ · профильная математика</strong><strong>${heading}</strong></header>
+            ${headerHtml}
+            ${variantIntro}
             <div class="ege-exam-columns">
                 <div class="ege-exam-column"><div class="ege-exam-column-content">${items}</div></div>
                 <div class="ege-exam-column"><div class="ege-exam-column-content"></div></div>
             </div>
-            <footer class="ege-exam-footer"><span>Шкатулка математических интерактивов</span>${signature}<span class="ege-page-no">Лист 1</span></footer>
+            ${articleFooter}
         </article>`;
     }
 
     function paginatePrintPages() {
-        function relocate(page, content, col, pages, original) {
+        function relocate(page, original) {
             const clone = original.cloneNode(true);
             clone.querySelectorAll('.ege-exam-column-content').forEach(x => { x.innerHTML=''; });
             page.after(clone);
-            pages.push(clone);
             return clone;
         }
         const allRoots = [...document.querySelectorAll('.ege-flow-page')];
         allRoots.forEach(root => {
             const first = root.querySelector('.ege-exam-column-content');
+            if (!first) return;
             const units = [...first.children];
             first.replaceChildren();
             const template = root.cloneNode(true);
@@ -277,7 +318,7 @@
             }
             function advance() {
                 if (columnIndex === 0) columnIndex = 1;
-                else { page = relocate(page, null, null, pages, template); columnIndex = 0; }
+                else { page = relocate(page, template); pages.push(page); columnIndex = 0; }
             }
             units.forEach(unit => {
                 getContent().appendChild(unit);
@@ -286,8 +327,6 @@
                 advance();
                 getContent().appendChild(unit);
                 if (fits()) return;
-                // Исключительно для необычно длинной задачи — равномерно уменьшаем
-                // шрифт и рисунок самой задачи, не обрезая содержимое.
                 const inner = unit.querySelector('.ege-exam-task');
                 for (const scale of [0.95, 0.9, 0.85, 0.8, 0.75]) {
                     if (fits()) break;
@@ -296,9 +335,14 @@
                 }
                 if (!fits()) console.warn('Печатное задание выше колонки: ', unit.dataset.examTask);
             });
-            pages.forEach((p, i) => {
-                p.classList.remove('ege-flow-page');
-                const label = p.querySelector('.ege-page-no');
+            pages.forEach(p => p.classList.remove('ege-flow-page'));
+        });
+
+        const variantIds = [...new Set([...document.querySelectorAll('.ege-exam-page[data-variant]')].map(page => page.dataset.variant))];
+        variantIds.forEach(variantId => {
+            const pages = [...document.querySelectorAll(`.ege-exam-page[data-variant="${variantId}"]`)];
+            pages.forEach((page, i) => {
+                const label = page.querySelector('.ege-page-no');
                 if (label) label.textContent = 'Лист ' + (i + 1);
             });
         });
@@ -326,7 +370,7 @@
                 <table><thead><tr><th>№ задания</th>${columnHeads}</tr></thead>
                 <tbody>${rows}</tbody></table>
                 <div class="ege-keys-note">В заданиях 14–20 приведены итоговые ответы, если они указаны в базе. Развёрнутое решение проверяет учитель.</div></section>
-                <footer class="ege-exam-footer"><span>Шкатулка математических интерактивов</span><span>Ключи ответов</span></footer>
+                <footer class="ege-exam-footer"><span class="ege-exam-brand">Шкатулка математических интерактивов · <a href="https://shkatulka.sistema-math.ru/" target="_blank" rel="noopener noreferrer">shkatulka.sistema-math.ru</a></span><span>Ключи ответов</span></footer>
             </article>`);
         }
         return sheets.join('');
@@ -335,17 +379,20 @@
     function buildPrintDocument(entries, withFields) {
         const pages = entries.map((entry, i) => buildPrintVariant(entry, i, withFields)).join('\n') + buildPrintKeys(entries);
         const printCSS = `
-            @page{size:A4 landscape;margin:9mm 10mm;}
+            @page{size:A4 landscape;margin:9mm 10mm 12mm;}
             *{box-sizing:border-box;}
             html,body{margin:0;padding:0;background:white;color:#111;font-family:"Times New Roman",Times,serif;}
-            .ege-exam-page{width:277mm;height:190mm;max-height:190mm;margin:0;overflow:hidden;display:flex;flex-direction:column;break-after:page;page-break-after:always;}
+            .ege-exam-page{width:277mm;height:187mm;max-height:187mm;margin:0;overflow:hidden;display:flex;flex-direction:column;break-after:page;page-break-after:always;}
             .ege-exam-page:last-child{break-after:auto;page-break-after:auto;}
-            .ege-exam-header{height:9mm;flex:0 0 9mm;display:flex;justify-content:space-between;align-items:center;border-bottom:.4pt solid #555;margin:0 0 2mm;font-size:10.5pt;}
-            .ege-exam-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:9mm;height:171mm;flex:0 0 171mm;align-items:start;}
-            .ege-exam-column{height:171mm;min-width:0;overflow:hidden;}
+            .ege-exam-header{height:9mm;flex:0 0 9mm;display:flex;justify-content:space-between;align-items:center;border-bottom:.4pt solid #555;margin:0 0 1.8mm;font-size:10.5pt;}
+            .ege-exam-variant-banner{flex:0 0 auto;text-align:center;font-size:14.5pt;font-weight:700;letter-spacing:.3px;margin:0 0 2.4mm;}
+            .ege-exam-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:9mm;height:164mm;flex:0 0 164mm;align-items:start;}
+            .ege-exam-column{height:164mm;min-width:0;overflow:hidden;}
             .ege-exam-column-content{display:flow-root;min-width:0;}
-            .ege-exam-footer{height:6mm;flex:0 0 6mm;margin-top:1mm;border-top:.3pt solid #ddd;display:flex;align-items:center;justify-content:space-between;font-size:8pt;color:#777;gap:3mm;}
-            .ege-exam-teacher{max-width:130mm;overflow-wrap:anywhere;}
+            .ege-exam-footer{height:7mm;flex:0 0 7mm;margin-top:1mm;border-top:.3pt solid #ddd;display:flex;align-items:center;justify-content:space-between;font-size:8.1pt;color:#666;gap:3mm;}
+            .ege-exam-brand{white-space:nowrap;}
+            .ege-exam-footer a{color:inherit;text-decoration:underline;pointer-events:auto;}
+            .ege-exam-teacher{flex:1 1 auto;text-align:center;overflow-wrap:anywhere;}
             .ege-exam-unit{break-inside:avoid;page-break-inside:avoid;display:flow-root;margin-bottom:2.1mm;}
             .ege-exam-task{font:var(--ege-task-font,10.6pt)/1.24 "Times New Roman",Times,serif;max-width:100%;overflow-wrap:break-word;}
             .ege-exam-task .task-print-flex{display:flex;align-items:flex-start;gap:2mm;min-width:0;}
@@ -365,8 +412,15 @@
             .ege-exam-task table{font-size:8.5pt;border-collapse:collapse;max-width:100%;}
             .ege-exam-task td,.ege-exam-task th{padding:.6mm;border:1px solid #777;}
             .ege-exam-task mjx-container{max-width:100%;font-size:97%!important;}
-            .ege-exam-grid{height:12mm;border:1px solid #c4d6e5;border-radius:2px;margin:2mm 0 0 7mm;background-size:5mm 5mm;background-image:linear-gradient(to right,#d4e4f0 .3pt,transparent .3pt),linear-gradient(to bottom,#d4e4f0 .3pt,transparent .3pt);}
-            .ege-exam-grid-large{height:32mm;}
+            .ege-exam-grid{position:relative;border:1px solid #9fb8ca;border-radius:1px;margin:2mm 0 0 7mm;background-color:#fff;background-image:repeating-linear-gradient(to right, #d8e6f0 0, #d8e6f0 .35pt, transparent .35pt, transparent 5mm),repeating-linear-gradient(to bottom, #d8e6f0 0, #d8e6f0 .35pt, transparent .35pt, transparent 5mm);}
+            .ege-exam-grid-answer{height:14mm;}
+            .ege-solution-page{padding-bottom:0;}
+            .ege-solution-sheet{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
+            .ege-solution-task-label{text-align:center;font-size:12.2pt;font-weight:700;margin:0 0 2.2mm;}
+            .ege-solution-sheet .ege-exam-unit{margin-bottom:0;display:flex;flex-direction:column;min-height:0;flex:1 1 auto;}
+            .ege-solution-sheet .ege-exam-task{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;}
+            .ege-solution-sheet .task-print-flex{flex:0 0 auto;}
+            .ege-exam-grid-solution{margin:3mm 0 0 7mm;flex:1 1 auto;min-height:110mm;}
             .ege-keys-content{flex:1 1 auto;min-height:0;padding:3mm 10mm 0;overflow:hidden;}
             .ege-keys-content h1{text-align:center;font-size:14pt;margin:0 0 2mm;}
             .ege-keys-content p{text-align:center;font-size:10pt;margin:0 0 3mm;}
@@ -410,7 +464,7 @@
             <h2 id="ege-print-title" style="font-size:22px;margin:0 0 9px;color:#263849;">Как подготовить варианты к печати?</h2>
             <p style="margin:0 0 18px;color:#526474">Горизонтальный формат A4, две колонки, задания без разрывов. В пачке печатаются все варианты.</p>
             <button data-ege-print="compact" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #ffcc80;border-radius:9px;background:#fff7e9;padding:13px 15px;margin-bottom:10px;font:inherit"><b>Компактный PDF — без полей для решения</b><small style="display:block;color:#666;margin-top:5px">Условия, чертежи и строки для ответов, как в компактной печати ОГЭ.</small></button>
-            <button data-ege-print="fields" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #b6cde0;border-radius:9px;background:#f4f9fe;padding:13px 15px;font:inherit"><b>С полями для решения</b><small style="display:block;color:#666;margin-top:5px">Дополнительные клетчатые поля под каждым заданием.</small></button>
+            <button data-ege-print="fields" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #b6cde0;border-radius:9px;background:#f4f9fe;padding:13px 15px;font:inherit"><b>С полями для решения</b><small style="display:block;color:#666;margin-top:5px">Для заданий 1–13 добавляются клетчатые поля, а задания 14–20 печатаются на отдельных листах с большим полем для решения.</small></button>
             <div style="text-align:right;margin-top:14px"><button data-ege-cancel style="border:0;background:transparent;color:#526474;cursor:pointer;padding:7px;">Отмена</button></div></div>`;
         const close = () => {document.removeEventListener('keydown', onKey); overlay.remove();};
         const onKey = ev => {if (ev.key === 'Escape') close();};
