@@ -241,16 +241,21 @@
         const brand = '<span class="ege-exam-brand">Шкатулка математических интерактивов · <a href="https://shkatulka.sistema-math.ru/" target="_blank" rel="noopener noreferrer">https://shkatulka.sistema-math.ru/</a></span>';
         const headerHtml = `<header class="ege-exam-header"><strong>ЕГЭ · профильная математика</strong><span>Тренировочная работа</span></header>`;
         const variantIntro = `<div class="ege-exam-variant-banner">${heading}</div>`;
-        // SVG is true vector artwork, printed as a drawing rather than a background.
-        // This avoids thick or missing lines when "Print backgrounds" is switched off.
+
         function makeGrid(taskNumber, solution) {
             const gridId = `ege-grid-${index + 1}-${taskNumber}`;
+            const viewW = 1000;
+            const viewH = solution ? 620 : 96;
+            const step = 18.9; // ≈ 5 мм при печати в 96 dpi
             return `<div class="ege-exam-grid ${solution ? 'ege-exam-grid-solution' : 'ege-exam-grid-answer'}">
-                <svg class="ege-grid-art" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" aria-hidden="true">
-                    <defs><pattern id="${gridId}" patternUnits="userSpaceOnUse" width="15.1181" height="15.1181">
-                        <path d="M0 0 H15.1181 M0 0 V15.1181" stroke="#bbc7d0" stroke-width="0.55" fill="none"/>
-                    </pattern></defs>
-                    <rect x="0" y="0" width="100%" height="100%" fill="url(#${gridId})"/>
+                <svg class="ege-grid-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewW} ${viewH}" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                        <pattern id="${gridId}" patternUnits="userSpaceOnUse" width="${step}" height="${step}">
+                            <path d="M ${step} 0 L 0 0 0 ${step}" fill="none" stroke="#c9dff0" stroke-width="1.1"/>
+                        </pattern>
+                    </defs>
+                    <rect x="0.75" y="0.75" width="${viewW - 1.5}" height="${viewH - 1.5}" rx="2.5" ry="2.5" fill="white" stroke="#a7c8e0" stroke-width="1.65"/>
+                    <rect x="1.5" y="1.5" width="${viewW - 3}" height="${viewH - 3}" rx="2" ry="2" fill="url(#${gridId})"/>
                 </svg>
             </div>`;
         }
@@ -261,10 +266,7 @@
             const taskNumber = Number(entry.tasks && entry.tasks[i] &&
                 String(entry.tasks[i].taskTid || '').replace(/\D/g, '')) || i + 1;
             const second = taskNumber >= 14;
-            let fields = '';
-            if (withFields) {
-                fields = makeGrid(taskNumber, second);
-            }
+            const fields = withFields ? makeGrid(taskNumber, second) : '';
             return {
                 taskNumber,
                 second,
@@ -273,7 +275,9 @@
         });
 
         if (withFields) {
-            const firstPart = tasks.some(task => !task.second) ? variantIntro + tasks.filter(task => !task.second).map(task => task.html).join('') : '';
+            const firstTasks = tasks.filter(task => !task.second);
+            const secondTasks = tasks.filter(task => task.second);
+            const firstPart = firstTasks.length ? variantIntro + firstTasks.map(task => task.html).join('') : '';
             const firstArticle = firstPart ? `<article class="ege-exam-page ege-flow-page" data-variant="${index + 1}">
                 ${headerHtml}
                 <div class="ege-exam-columns">
@@ -282,16 +286,25 @@
                 </div>
                 ${articleFooter}
             </article>` : '';
-            const secondArticles = tasks.filter(task => task.second).map(task => `<article class="ege-exam-page ege-solution-page" data-variant="${index + 1}" data-task="${task.taskNumber}">
-                ${headerHtml}
-                <div class="ege-solution-sheet">
-                    ${!firstPart && task === tasks.find(x => x.second) ? variantIntro : ''}
-                    <div class="ege-solution-task-label">Задание ${task.taskNumber}</div>
-                    ${task.html}
-                </div>
-                ${articleFooter}
-            </article>`).join('');
-            return firstArticle + secondArticles;
+
+            const secondArticles = [];
+            for (let i = 0; i < secondTasks.length; i += 2) {
+                const pair = secondTasks.slice(i, i + 2);
+                const panels = [0, 1].map(slot => {
+                    const task = pair[slot];
+                    if (!task) return '<div class="ege-solution-panel ege-solution-empty"></div>';
+                    return `<div class="ege-solution-panel" data-task="${task.taskNumber}">
+                        <div class="ege-solution-task-label">Задание ${task.taskNumber}</div>
+                        ${task.html}
+                    </div>`;
+                }).join('');
+                secondArticles.push(`<article class="ege-exam-page ege-solution-spread" data-variant="${index + 1}" data-task-range="${pair.map(t => t.taskNumber).join('-')}">
+                    ${headerHtml}
+                    <div class="ege-exam-columns ege-solution-columns">${panels}</div>
+                    ${articleFooter}
+                </article>`);
+            }
+            return firstArticle + secondArticles.join('');
         }
 
         const items = variantIntro + tasks.map(task => task.html).join('');
@@ -312,6 +325,30 @@
             page.after(clone);
             return clone;
         }
+        function rebalanceDrafts(page) {
+            page.querySelectorAll('.ege-exam-column').forEach(column => {
+                const content = column.querySelector('.ege-exam-column-content');
+                if (!content) return;
+                const grids = [...content.querySelectorAll('.ege-exam-grid-answer')];
+                if (!grids.length) return;
+                grids.forEach(grid => grid.style.height = '');
+                const free = column.clientHeight - content.scrollHeight;
+                if (free <= 6) return;
+                const share = Math.floor(free / grids.length);
+                grids.forEach((grid, idx) => {
+                    const base = grid.getBoundingClientRect().height;
+                    const extra = share + (idx === grids.length - 1 ? free - share * grids.length : 0);
+                    grid.style.height = Math.max(base + extra, base) + 'px';
+                });
+                const overflow = content.scrollHeight - column.clientHeight;
+                if (overflow > 0) {
+                    const last = grids[grids.length - 1];
+                    const h = last.getBoundingClientRect().height;
+                    last.style.height = Math.max(36, h - overflow - 2) + 'px';
+                }
+            });
+        }
+
         const allRoots = [...document.querySelectorAll('.ege-flow-page')];
         allRoots.forEach(root => {
             const first = root.querySelector('.ege-exam-column-content');
@@ -345,7 +382,10 @@
                 }
                 if (!fits()) console.warn('Печатное задание выше колонки: ', unit.dataset.examTask);
             });
-            pages.forEach(p => p.classList.remove('ege-flow-page'));
+            pages.forEach(p => {
+                p.classList.remove('ege-flow-page');
+                rebalanceDrafts(p);
+            });
         });
 
         const variantIds = [...new Set([...document.querySelectorAll('.ege-exam-page[data-variant]')].map(page => page.dataset.variant))];
@@ -424,18 +464,20 @@
             .ege-exam-task td,.ege-exam-task th{padding:.6mm;border:1px solid #777;}
             .ege-exam-task mjx-container{max-width:100%;font-size:97%!important;}
             /* Лёгкая тетрадная клетка 4 × 4 мм, векторная, без рамок и заливок. */
-            .ege-exam-grid{position:relative;display:block;min-width:0;overflow:hidden;border:0;border-radius:0;margin:3mm 0 0 7mm;background:transparent;}
+            .ege-exam-grid{position:relative;display:block;min-width:0;overflow:hidden;border:0;border-radius:0;margin:2.2mm 0 0 7mm;background:transparent;}
             .ege-exam-grid>.ege-grid-art{position:absolute;inset:0;display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;overflow:hidden;}
-            .ege-exam-grid-answer{height:23mm;}
-            .ege-solution-page{padding-bottom:11mm;}
-            .ege-solution-sheet{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
-            .ege-solution-task-label{text-align:left;font-size:12.4pt;font-weight:700;color:#253946;margin:0 0 3.5mm;padding-bottom:2mm;border-bottom:.35pt solid #e1e5e9;}
-            .ege-solution-sheet .ege-exam-unit{margin-bottom:0;display:flex;flex-direction:column;min-height:0;flex:1 1 auto;}
-            .ege-solution-sheet .ege-exam-task{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;}
-            .ege-solution-sheet .task-print-flex{flex:0 0 auto;}
-            .ege-solution-sheet .task-print-num{display:none;}
-            .ege-solution-sheet .ege-exam-task .task-print-text{font-size:11pt;line-height:1.35;}
-            .ege-exam-grid-solution{margin:5mm 0 0;flex:1 1 auto;min-height:20mm;}
+            .ege-exam-grid-answer{height:16.8mm;}
+            .ege-solution-spread{padding-bottom:11mm;}
+            .ege-solution-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:9mm;flex:1 1 auto;min-height:0;align-items:stretch;}
+            .ege-solution-panel{display:flex;flex-direction:column;min-height:0;min-width:0;height:100%;}
+            .ege-solution-panel .ege-exam-unit{margin-bottom:0;display:flex;flex-direction:column;min-height:0;flex:1 1 auto;}
+            .ege-solution-panel .ege-exam-task{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;}
+            .ege-solution-panel .task-print-flex{flex:0 0 auto;}
+            .ege-solution-panel .task-print-num{display:none;}
+            .ege-solution-panel .ege-exam-task .task-print-text{font-size:10.8pt;line-height:1.34;}
+            .ege-solution-empty{border:0;min-height:0;}
+            .ege-solution-task-label{text-align:left;font-size:12.2pt;font-weight:700;color:#253946;margin:0 0 3.2mm;padding-bottom:2mm;border-bottom:.35pt solid #e1e5e9;}
+            .ege-exam-grid-solution{margin:4mm 0 0;flex:1 1 auto;min-height:36mm;}
             .ege-keys-content{flex:1 1 auto;min-height:0;padding:3mm 10mm 0;overflow:hidden;}
             .ege-keys-content h1{text-align:center;font-size:14pt;margin:0 0 2mm;}
             .ege-keys-content p{text-align:center;font-size:10pt;margin:0 0 3mm;}
@@ -479,7 +521,7 @@
             <h2 id="ege-print-title" style="font-size:22px;margin:0 0 9px;color:#263849;">Как подготовить варианты к печати?</h2>
             <p style="margin:0 0 18px;color:#526474">Горизонтальный формат A4, две колонки, задания без разрывов. В пачке печатаются все варианты.</p>
             <button data-ege-print="compact" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #ffcc80;border-radius:9px;background:#fff7e9;padding:13px 15px;margin-bottom:10px;font:inherit"><b>Компактный PDF — без полей для решения</b><small style="display:block;color:#666;margin-top:5px">Условия, чертежи и строки для ответов, как в компактной печати ОГЭ.</small></button>
-            <button data-ege-print="fields" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #b6cde0;border-radius:9px;background:#f4f9fe;padding:13px 15px;font:inherit"><b>С полями для решения</b><small style="display:block;color:#666;margin-top:5px">Для заданий 1–13 — удобные поля в ровную клетку 4 мм без рамок. Каждому заданию 14–20 — отдельный лист с большим полем для решения.</small></button>
+            <button data-ege-print="fields" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #b6cde0;border-radius:9px;background:#f4f9fe;padding:13px 15px;font:inherit"><b>С полями для решения</b><small style="display:block;color:#666;margin-top:5px">Для заданий 1–13 поля автоматически распределяются по странице. Задания 14–20 печатаются по два на лист: одно слева, второе справа, с большим полем для решения до низа страницы.</small></button>
             <div style="text-align:right;margin-top:14px"><button data-ege-cancel style="border:0;background:transparent;color:#526474;cursor:pointer;padding:7px;">Отмена</button></div></div>`;
         const close = () => {document.removeEventListener('keydown', onKey); overlay.remove();};
         const onKey = ev => {if (ev.key === 'Escape') close();};
