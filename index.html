@@ -365,6 +365,22 @@
         .btn-generate { display: block; width: 100%; background: transparent; color: #ff8c00; border: 2px solid #ff8c00; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 25px; transition: 0.3s; }
         .btn-generate:hover { background: #ff8c00; color: #121212; box-shadow: 0 0 15px rgba(255, 140, 0, 0.4); }
         .random-variant-panel { margin: 0 0 22px; padding: 18px 20px; border: 1px solid rgba(255,140,0,.55); border-radius: 12px; background: linear-gradient(135deg, rgba(255,140,0,.13), rgba(255,196,75,.04)); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+
+        /* Панель полной пачки — расположение и логика как в генераторе ОГЭ. */
+        .ege-generation-row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;margin:15px 0 12px;}
+        .ege-variant-count-label{color:#ffb347;font-weight:700;font-size:16px;}
+        #ege-variant-count{width:85px;padding:11px 9px;border:2px solid #ff8c00;border-radius:9px;background:#201e1a;color:#fff;font-size:18px;text-align:center;font-weight:700;}
+        .random-variant-panel .ege-fast-btn{flex:1 1 270px;width:auto;margin:0;padding:12px 15px;font-size:1.03em;}
+        .ege-fast-manual-tip{font-size:12px;line-height:1.45;color:#bbb;margin-top:6px;}
+        .ege-manual-generation{display:flex;flex-direction:column;gap:8px;scroll-margin-top:110px;margin:20px 0;}
+        .ege-manual-generation .btn-generate{margin:0;}
+        .ege-manual-hint{font-size:12px;text-align:center;color:#bbb;}
+        .ege-manual-hint a{color:#ffb347;}
+        .ege-variant-switch{display:none;margin:12px 0 20px;padding:14px 18px;border-radius:12px;background:rgba(255,140,0,.12);border:1px solid rgba(255,140,0,.5);text-align:center;color:#ffe5cc;}
+        .ege-variant-switch label{font-weight:700;margin-right:12px;}
+        .ege-variant-switch select{background:#29231f;color:white;border:1px solid #ff8c00;padding:9px 13px;border-radius:8px;font-weight:700;}
+        .ege-variant-switch .ege-switch-note{font-size:13px;margin-top:7px;opacity:.9;}
+        @media(max-width:640px){.random-variant-panel{padding:13px}.ege-generation-row{gap:8px}.random-variant-panel .ege-fast-btn{flex-basis:100%;}}
         .random-variant-panel-title { color:#ffb347; font-size:1.12em; font-weight:800; margin-bottom:6px; }
         .random-variant-panel-note { color:#c8c8c8; font-size:.92em; line-height:1.45; margin-bottom:13px; }
         .btn-random-variant { width:100%; border:2px solid #ff8c00; background:#ff8c00; color:#161616; border-radius:9px; padding:13px 15px; font-size:1.05em; font-weight:900; cursor:pointer; transition:.22s; }
@@ -1109,16 +1125,16 @@ body.auth-locked > *:not(#passwordGate) {
 
             <p>Генератор позволяет собирать тренировочные варианты по заданиям <strong>1–20 ЕГЭ профильного уровня</strong>. Можно настроить вариант вручную или за один клик получить полный случайный вариант, а затем скачать интерактивную версию, файл для печати, ключи, презентацию или игру.</p>
 
-            <h3>1. Быстрый случайный вариант</h3>
-            <p>В верхней части страницы находится кнопка <strong>«🎲 Сгенерировать случайный вариант»</strong>. Она автоматически выбирает <strong>по одному заданию каждого номера 1–20</strong>.</p>
+            <h3>1. Быстрые полные варианты</h3>
+            <p>В верхней панели укажите <strong>количество полных вариантов от 1 до 40</strong> и нажмите <strong>«🎲 Сгенерировать полные варианты»</strong>. В каждый вариант автоматически попадёт <strong>по одному заданию каждого номера 1–20</strong>.</p>
             <ul>
                 <li>для заданий <strong>1–13</strong> в случайный вариант попадают только основные задачи; дополнительные задачи первой части не используются;</li>
                 <li>для заданий <strong>14–20</strong> используется полная текущая база;</li>
-                <li>сначала случайно выбирается прототип, а затем случайная задача внутри этого прототипа — так разные типы заданий получают более равные шансы;</li>
-                <li>кнопка <strong>«🎲 Другой вариант»</strong> полностью пересобирает случайный вариант;</li>
+                <li>прототипы каждого номера сначала проходят без повторов, а затем перемешиваются для следующего круга; задачи внутри прототипов также перебираются по очереди;</li>
+                <li>после сборки нескольких вариантов появляется переключатель, с помощью которого можно просматривать любой готовый вариант;</li>
                 <li>кнопка <strong>«🎲 Заменить»</strong> возле отдельного задания меняет только его, остальные задания остаются прежними.</li>
             </ul>
-            <p>Для случайного варианта используется общая кнопка <strong>«🔑 Ключи (Ответы)»</strong>. Если отдельное задание было заменено, ключ формируется уже для обновлённого варианта.</p>
+            <p>Кнопка <strong>«🔑 Ключи (Ответы)»</strong> создаёт общую таблицу ответов ко всей пачке. Если отдельное задание было заменено, в таблице будет его обновлённый ответ.</p>
 
             <h3>2. Ручная сборка варианта</h3>
             <p>Если нужен не полный случайный вариант, а собственный набор, задайте количество задач у нужных номеров.</p>
@@ -1159,13 +1175,13 @@ body.auth-locked > *:not(#passwordGate) {
             <p><strong>Таймер.</strong> Можно задать ограничение по времени. Значение 0 работает как обычный секундомер и показывает, сколько времени ученик затратил на выполнение.</p>
 
             <h3>7. Сгенерируйте вариант</h3>
-            <p>Для ручного набора после выбора заданий и настроек нажмите <strong>«Сгенерировать вариант»</strong>. Для полного случайного варианта используйте верхнюю кнопку <strong>«🎲 Сгенерировать случайный вариант»</strong>.</p>
+            <p>Для ручного набора после выбора заданий и настроек нажмите <strong>«Сгенерировать выбранные задания»</strong>. Для полного набора из 1–20 заданий укажите количество (1–40) и используйте верхнюю кнопку <strong>«🎲 Сгенерировать полные варианты»</strong>.</p>
 
             <h3>8. Скачайте нужный формат</h3>
             <p>После генерации доступны несколько форматов.</p>
             <p><strong>💻 Интерактивный вариант.</strong> Ученик решает задания прямо в браузере. Доступны проверка, черновики, разборы и тренировка на аналогах — в зависимости от выбранных настроек.</p>
-            <p><strong>🖨️ Файл для печати (PDF).</strong> Аккуратная версия для распечатки, самостоятельной или контрольной работы.</p>
-            <p><strong>🔑 Ключи (Ответы).</strong> Отдельный файл с ответами к текущему сгенерированному варианту. Эта же функция используется и для случайного варианта.</p>
+            <p><strong>🖨️ Файл для печати (PDF).</strong> Выберите компактную горизонтальную печать A4 в две колонки или формат с полями для решения. Все полные варианты печатаются подряд, после них добавляются общие ключи. Откройте скачанный HTML и выберите «Сохранить в PDF» в окне печати.</p>
+            <p><strong>🔑 Ключи (Ответы).</strong> Для пачки полных вариантов создаётся таблица ответов ко всем вариантам; для ручной подборки — отдельные ответы.</p>
             <p><strong>🎬 Презентация.</strong> Вариант можно оформить как презентацию: выбрать готовый дизайн или использовать собственное оформление.</p>
             <p><strong>🎮 Игра.</strong> Задания можно использовать в игровых форматах для урока, повторения или командной работы.</p>
 
@@ -1218,10 +1234,15 @@ body.auth-locked > *:not(#passwordGate) {
         <h2 style="margin: 0 0 8px 0; text-align: center;">Генератор вариантов</h2>
         <div style="text-align: center; color: #bbb; font-size: 1.05em; margin-bottom: 25px; border-bottom: 1px dashed #555; padding-bottom: 15px;">Генератор вариантов - ЕГЭ профильный</div>
 
-        <div class="random-variant-panel">
-            <div class="random-variant-panel-title">🎲 Быстрый случайный вариант</div>
-            <div class="random-variant-panel-note">По одному заданию каждого номера 1–20. Для заданий 1–13 используются только основные задачи; дополнительные блоки первой части в случайный вариант не попадают. Сначала случайно выбирается прототип, затем задача внутри него.</div>
-            <button type="button" class="btn-random-variant" onclick="generateRandomVariant(event)">🎲 Сгенерировать случайный вариант</button>
+        <div id="ege-fast-variant-panel" class="random-variant-panel">
+            <div class="random-variant-panel-title">🎲 Быстрый полный вариант ЕГЭ</div>
+            <div class="random-variant-panel-note">По одному заданию каждого номера <b>1–20</b>, без предварительного выбора. Задания №1–13 берутся из основной базы, №14–20 — из соответствующих заданий второй части. При создании нескольких вариантов прототипы каждого номера сначала проходят без повторений, затем перемешиваются для следующего круга.</div>
+            <div class="ege-generation-row">
+                <label for="ege-variant-count" class="ege-variant-count-label">Количество вариантов</label>
+                <input id="ege-variant-count" type="number" min="1" max="40" step="1" value="1" inputmode="numeric" onblur="egeNormalizeVariantCount()" title="От 1 до 40 вариантов" aria-label="Количество вариантов">
+                <button type="button" class="btn-random-variant ege-fast-btn" onclick="safeGenerateVariant(event,'full')">🎲 Сгенерировать полные варианты</button>
+            </div>
+            <div class="ege-fast-manual-tip">Нужны только отдельные задания? Отметьте их ниже и нажмите «Сгенерировать выбранные задания» под настройками. Количество вариантов наверху действует <b>только для полных вариантов 1–20</b>.</div>
         </div>
         
         <div class="task-row">
@@ -1310,14 +1331,15 @@ body.auth-locked > *:not(#passwordGate) {
 
         <div id="dynamic-tasks"></div>
 
-        <div id="generation-controls" style="scroll-margin-top: 110px;">
-            <button class="btn-generate" onclick="safeGenerateVariant(event)">Сгенерировать вариант</button>
+        <div id="generation-controls" class="ege-manual-generation">
+            <button type="button" class="btn-generate" onclick="safeGenerateVariant(event,'manual')">Сгенерировать выбранные задания</button>
+            <div class="ege-manual-hint">Собирает только отмеченные задания, в одном экземпляре. <a href="#ege-fast-variant-panel">Полный вариант 1–20 — наверху ↑</a></div>
         </div>
+        <div id="ege-variant-switch" class="ege-variant-switch" aria-live="polite"></div>
         
         <div id="info-board"></div>
         
         <div id="btn-group" class="btn-group">
-            <button id="random-reroll-btn" class="btn-dl" style="display:none;background:#ef6c00;" onclick="generateRandomVariant(event)">🎲 Другой вариант</button>
             <button class="btn-dl btn-html" onclick="downloadStudentHTML()">💻 Интерактивный вариант</button>
             <button class="btn-dl btn-pdf" onclick="downloadPrintPDF()">🖨️ Файл для печати (PDF)</button>
             <button class="btn-dl btn-ans" onclick="downloadAnswers()">🔑 Ключи (Ответы)</button>
@@ -3044,10 +3066,15 @@ body.auth-locked > *:not(#passwordGate) {
 
         if (hasContent) {
             if (!useRandomPicks) window.manualVariantPlan = manualPlanBuilt.map(item => ({ ...item }));
-            document.getElementById('output-section').style.display = 'block';
-            document.getElementById('btn-group').style.display = 'flex';
-            setRandomVariantButtonsVisible(useRandomPicks);
-            renderPreview();
+            // При сборке пачки 1–40 не отрисовываем интерактивный лист 40 раз.
+            // Готовые HTML и задачи сохраняются, а предпросмотр строится один раз
+            // для первого варианта после завершения полной пачки.
+            if (!options.silent) {
+                document.getElementById('output-section').style.display = 'block';
+                document.getElementById('btn-group').style.display = 'flex';
+                setRandomVariantButtonsVisible(useRandomPicks);
+                renderPreview();
+            }
         }
     }
 
@@ -4520,5 +4547,6 @@ body.auth-locked > *:not(#passwordGate) {
 })();
 </script>
 
+<script src="ege_full_variants.js?v=20261102-1"></script>
 </body>
 </html>
