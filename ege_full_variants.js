@@ -311,6 +311,55 @@
             page.after(clone);
             return clone;
         }
+        function renderNotebookGrid(grid) {
+            const width = Math.max(20, Math.round(grid.clientWidth));
+            const height = Math.max(20, Math.round(grid.clientHeight));
+            const step = 19; // около 5 мм в браузерных px
+            grid.innerHTML = '';
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'ege-grid-art');
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            svg.setAttribute('aria-hidden', 'true');
+            svg.setAttribute('preserveAspectRatio', 'none');
+            svg.setAttribute('shape-rendering', 'crispEdges');
+
+            const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            bg.setAttribute('x', '0.5');
+            bg.setAttribute('y', '0.5');
+            bg.setAttribute('width', String(width - 1));
+            bg.setAttribute('height', String(height - 1));
+            bg.setAttribute('rx', '2');
+            bg.setAttribute('ry', '2');
+            bg.setAttribute('fill', 'white');
+            bg.setAttribute('stroke', '#a7c8e0');
+            bg.setAttribute('stroke-width', '1');
+            svg.appendChild(bg);
+
+            for (let x = step; x < width - 1; x += step) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', String(x));
+                line.setAttribute('y1', '1');
+                line.setAttribute('x2', String(x));
+                line.setAttribute('y2', String(height - 1));
+                line.setAttribute('stroke', '#c4ddf0');
+                line.setAttribute('stroke-width', '1');
+                svg.appendChild(line);
+            }
+            for (let y = step; y < height - 1; y += step) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', '1');
+                line.setAttribute('y1', String(y));
+                line.setAttribute('x2', String(width - 1));
+                line.setAttribute('y2', String(y));
+                line.setAttribute('stroke', '#c4ddf0');
+                line.setAttribute('stroke-width', '1');
+                svg.appendChild(line);
+            }
+            grid.appendChild(svg);
+        }
+
         function rebalanceDrafts(page) {
             const columns = [...page.querySelectorAll('.ege-exam-column')];
             if (columns.length === 2) {
@@ -338,7 +387,7 @@
                 if (!content) return;
                 const grids = [...content.querySelectorAll('.ege-exam-grid-answer')];
                 if (!grids.length) return;
-                grids.forEach(grid => grid.style.height = '');
+                grids.forEach(grid => { grid.style.height = ''; grid.innerHTML = ''; });
                 let free = column.clientHeight - content.scrollHeight;
                 if (free > 6) {
                     const share = Math.floor(free / grids.length);
@@ -355,6 +404,7 @@
                     last.style.height = Math.max(42, h - overflow - 2) + 'px';
                 }
             });
+            page.querySelectorAll('.ege-exam-grid').forEach(renderNotebookGrid);
         }
 
         const allRoots = [...document.querySelectorAll('.ege-flow-page')];
@@ -458,12 +508,12 @@
             .ege-exam-task .task-print-num{font-size:11pt;font-weight:700;flex:0 0 7mm;width:7mm;white-space:nowrap;}
             .ege-exam-task .task-print-num::after{content:".";}
             .ege-exam-task .task-print-text{min-width:0;flex:1 1 auto;font-size:inherit;line-height:inherit;overflow-wrap:break-word;}
-            .ege-exam-task .task-print-text p{margin:0 0 1.1mm;line-height:inherit;}
+            .ege-exam-task .task-print-text p{margin:0 0 .85mm;line-height:inherit;}
             .ege-exam-task .task-print-text div{max-width:100%;}
-            .ege-exam-task .task-print-answer{font-size:9pt;margin:1.3mm 0 0!important;color:#444!important;}
+            .ege-exam-task .task-print-answer{font-size:8.6pt;margin:.8mm 0 0!important;color:#444!important;}
             .ege-exam-task .task-print-img{flex:0 0 28%;width:28%;max-width:40mm;min-width:0;display:block;overflow:visible;}
-            .ege-exam-task .task-print-img img,.ege-exam-task .task-print-img svg{display:block;width:100%;height:auto;max-width:100%;max-height:var(--ege-img-height,36mm);object-fit:contain;overflow:visible;}
-            .ege-exam-task .task-print-text img,.ege-exam-task .task-print-text svg{display:block;max-width:100%!important;max-height:var(--ege-img-height,36mm)!important;width:auto!important;height:auto!important;object-fit:contain;margin:1mm auto;overflow:visible;}
+            .ege-exam-task .task-print-img img,.ege-exam-task .task-print-img svg{display:block;width:100%;height:auto;max-width:100%;max-height:var(--ege-img-height,32mm);object-fit:contain;overflow:visible;}
+            .ege-exam-task .task-print-text img,.ege-exam-task .task-print-text svg{display:block;max-width:100%!important;max-height:var(--ege-img-height,32mm)!important;width:auto!important;height:auto!important;object-fit:contain;margin:.8mm auto;overflow:visible;}
             .ege-exam-task img,.ege-exam-task svg{max-width:100%;}
             .ege-exam-task .sticker-print{position:static!important;transform:none!important;flex:0 0 18mm!important;width:18mm!important;max-width:18mm!important;min-width:0!important;margin:0!important;}
             .ege-exam-task .sticker-print img{width:100%;max-height:17mm;object-fit:contain;}
@@ -472,9 +522,10 @@
             .ege-exam-task td,.ege-exam-task th{padding:.6mm;border:1px solid #777;}
             .ege-exam-task mjx-container{max-width:100%;font-size:97%!important;}
             /* Лёгкая тетрадная клетка 4 × 4 мм, векторная, без рамок и заливок. */
-            .ege-exam-grid{display:block;box-sizing:border-box;min-width:0;overflow:hidden;border:1px solid #a5c6df;border-radius:2px;margin:2.2mm 0 0 7mm;background-color:#fff;background-size:5mm 5mm;background-position:0 0;background-image:linear-gradient(to right,#cfe2f1 .45pt,transparent .45pt),linear-gradient(to bottom,#cfe2f1 .45pt,transparent .45pt);background-repeat:repeat;}
+            .ege-exam-grid{position:relative;display:block;box-sizing:border-box;min-width:0;overflow:hidden;border:0;border-radius:2px;margin:2.2mm 0 0 7mm;background:#fff;}
+            .ege-grid-art{position:absolute;inset:0;display:block;width:100%;height:100%;}
             
-            .ege-exam-grid-answer{height:17.5mm;}
+            .ege-exam-grid-answer{height:17.8mm;}
             .ege-solution-spread{padding-bottom:11mm;}
             .ege-solution-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:9mm;flex:1 1 auto;min-height:0;align-items:stretch;}
             .ege-solution-panel{display:flex;flex-direction:column;min-height:0;min-width:0;height:100%;}
@@ -482,10 +533,10 @@
             .ege-solution-panel .ege-exam-task{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;}
             .ege-solution-panel .task-print-flex{flex:0 0 auto;}
             .ege-solution-panel .task-print-num{display:none;}
-            .ege-solution-panel .ege-exam-task .task-print-text{font-size:10.8pt;line-height:1.34;}
+            .ege-solution-panel .ege-exam-task .task-print-text{font-size:10pt;line-height:1.22;}
             .ege-solution-empty{border:0;min-height:0;}
-            .ege-solution-task-label{text-align:left;font-size:12.2pt;font-weight:700;color:#253946;margin:0 0 3.2mm;padding-bottom:2mm;border-bottom:.35pt solid #e1e5e9;}
-            .ege-exam-grid-solution{margin:4mm 0 0;flex:1 1 auto;min-height:36mm;background-size:5mm 5mm;background-image:linear-gradient(to right,#cfe2f1 .45pt,transparent .45pt),linear-gradient(to bottom,#cfe2f1 .45pt,transparent .45pt);}
+            .ege-solution-task-label{text-align:left;font-size:12pt;font-weight:700;color:#253946;margin:0 0 2.2mm;padding-bottom:1.4mm;border-bottom:.35pt solid #e1e5e9;}
+            .ege-exam-grid-solution{margin:2.6mm 0 0;flex:1 1 auto;min-height:48mm;}
             .ege-keys-content{flex:1 1 auto;min-height:0;padding:3mm 10mm 0;overflow:hidden;}
             .ege-keys-content h1{text-align:center;font-size:14pt;margin:0 0 2mm;}
             .ege-keys-content p{text-align:center;font-size:10pt;margin:0 0 3mm;}
