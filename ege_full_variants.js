@@ -242,8 +242,20 @@
         const headerHtml = `<header class="ege-exam-header"><strong>ЕГЭ · профильная математика</strong><span>Тренировочная работа</span></header>`;
         const variantIntro = `<div class="ege-exam-variant-banner">${heading}</div>`;
 
+        // Статическая векторная сетка: полностью готова ДО пагинации и печати.
+        // SVG без viewBox сохраняет настоящие квадратные клетки 5x5 мм при любой высоте поля.
         function makeGrid(taskNumber, solution) {
-            return `<div class="ege-exam-grid ${solution ? 'ege-exam-grid-solution' : 'ege-exam-grid-answer'}"></div>`;
+            const id = `ege-squares-${index + 1}-${taskNumber}`;
+            const cell = '18.897638'; // 5 мм при 96 CSS px / inch
+            return `<div class="ege-exam-grid ${solution ? 'ege-exam-grid-solution' : 'ege-exam-grid-answer'}" aria-label="Клетчатое поле для решения">
+                <svg class="ege-grid-art" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" aria-hidden="true">
+                    <defs><pattern id="${id}" width="${cell}" height="${cell}" patternUnits="userSpaceOnUse">
+                        <path d="M ${cell} 0 H 0 V ${cell}" fill="none" stroke="#a9cee8" stroke-width="0.75"/>
+                    </pattern></defs>
+                    <rect x="0.5" y="0.5" width="99.9%" height="99.9%" fill="white" stroke="none" rx="1.5"/>
+                    <rect x="1" y="1" width="99.65%" height="99.65%" fill="url(#${id})"/>
+                </svg>
+            </div>`;
         }
         const footerHtml = `${brand}${signature}<span class="ege-page-no">Лист 1</span>`;
         const articleFooter = `<footer class="ege-exam-footer">${footerHtml}</footer>`;
@@ -311,55 +323,6 @@
             page.after(clone);
             return clone;
         }
-        function renderNotebookGrid(grid) {
-            const width = Math.max(20, Math.round(grid.clientWidth));
-            const height = Math.max(20, Math.round(grid.clientHeight));
-            const step = 19; // около 5 мм в браузерных px
-            grid.innerHTML = '';
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('class', 'ege-grid-art');
-            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-            svg.setAttribute('width', width);
-            svg.setAttribute('height', height);
-            svg.setAttribute('aria-hidden', 'true');
-            svg.setAttribute('preserveAspectRatio', 'none');
-            svg.setAttribute('shape-rendering', 'crispEdges');
-
-            const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            bg.setAttribute('x', '0.5');
-            bg.setAttribute('y', '0.5');
-            bg.setAttribute('width', String(width - 1));
-            bg.setAttribute('height', String(height - 1));
-            bg.setAttribute('rx', '2');
-            bg.setAttribute('ry', '2');
-            bg.setAttribute('fill', 'white');
-            bg.setAttribute('stroke', '#a7c8e0');
-            bg.setAttribute('stroke-width', '1');
-            svg.appendChild(bg);
-
-            for (let x = step; x < width - 1; x += step) {
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', String(x));
-                line.setAttribute('y1', '1');
-                line.setAttribute('x2', String(x));
-                line.setAttribute('y2', String(height - 1));
-                line.setAttribute('stroke', '#c4ddf0');
-                line.setAttribute('stroke-width', '1');
-                svg.appendChild(line);
-            }
-            for (let y = step; y < height - 1; y += step) {
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', '1');
-                line.setAttribute('y1', String(y));
-                line.setAttribute('x2', String(width - 1));
-                line.setAttribute('y2', String(y));
-                line.setAttribute('stroke', '#c4ddf0');
-                line.setAttribute('stroke-width', '1');
-                svg.appendChild(line);
-            }
-            grid.appendChild(svg);
-        }
-
         function rebalanceDrafts(page) {
             const columns = [...page.querySelectorAll('.ege-exam-column')];
             if (columns.length === 2) {
@@ -387,7 +350,7 @@
                 if (!content) return;
                 const grids = [...content.querySelectorAll('.ege-exam-grid-answer')];
                 if (!grids.length) return;
-                grids.forEach(grid => { grid.style.height = ''; grid.innerHTML = ''; });
+                grids.forEach(grid => { grid.style.height = ''; });
                 let free = column.clientHeight - content.scrollHeight;
                 if (free > 6) {
                     const share = Math.floor(free / grids.length);
@@ -404,7 +367,6 @@
                     last.style.height = Math.max(42, h - overflow - 2) + 'px';
                 }
             });
-            page.querySelectorAll('.ege-exam-grid').forEach(renderNotebookGrid);
         }
 
         const allRoots = [...document.querySelectorAll('.ege-flow-page')];
@@ -446,7 +408,6 @@
             });
         });
 
-        document.querySelectorAll('.ege-solution-spread .ege-exam-grid, .ege-keys-page .ege-exam-grid').forEach(renderNotebookGrid);
 
         const variantIds = [...new Set([...document.querySelectorAll('.ege-exam-page[data-variant]')].map(page => page.dataset.variant))];
         variantIds.forEach(variantId => {
@@ -523,9 +484,9 @@
             .ege-exam-task table{font-size:8.5pt;border-collapse:collapse;max-width:100%;}
             .ege-exam-task td,.ege-exam-task th{padding:.6mm;border:1px solid #777;}
             .ege-exam-task mjx-container{max-width:100%;font-size:97%!important;}
-            /* Лёгкая тетрадная клетка 4 × 4 мм, векторная, без рамок и заливок. */
-            .ege-exam-grid{position:relative;display:block;box-sizing:border-box;min-width:0;overflow:hidden;border:0;border-radius:2px;margin:2.2mm 0 0 7mm;background:#fff;}
-            .ege-grid-art{position:absolute;inset:0;display:block;width:100%;height:100%;}
+            /* Надёжная векторная клетка 5 × 5 мм — SVG находится в исходной HTML-разметке. */
+            .ege-exam-grid{position:relative;display:block;box-sizing:border-box;min-width:0;overflow:hidden;border:1px solid #9bc2df;border-radius:2px;margin:2.2mm 0 0 7mm;background:white;}
+            .ege-exam-grid > svg.ege-grid-art{position:absolute;inset:0;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;overflow:hidden!important;}
             
             .ege-exam-grid-answer{height:17.8mm;}
             .ege-solution-spread{padding-bottom:11mm;}
