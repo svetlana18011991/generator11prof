@@ -2533,7 +2533,8 @@ body.auth-locked > *:not(#passwordGate) {
         const protectedHtml = html.replace(
             mathWithPunctuation,
             '<span style="white-space:nowrap;">$1$2</span>'
-        );
+        ).replace(/(\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\$[^$]*\$)/g,
+            formula => formula.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
 
         const template = document.createElement('template');
         template.innerHTML = protectedHtml;
