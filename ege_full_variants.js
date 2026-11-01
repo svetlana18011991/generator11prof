@@ -446,6 +446,8 @@
             });
         });
 
+        document.querySelectorAll('.ege-solution-spread .ege-exam-grid, .ege-keys-page .ege-exam-grid').forEach(renderNotebookGrid);
+
         const variantIds = [...new Set([...document.querySelectorAll('.ege-exam-page[data-variant]')].map(page => page.dataset.variant))];
         variantIds.forEach(variantId => {
             const pages = [...document.querySelectorAll(`.ege-exam-page[data-variant="${variantId}"]`)];
