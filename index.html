@@ -3748,6 +3748,14 @@ body.auth-locked > *:not(#passwordGate) {
     function addSelectivePrintFields(sourceHTML) {
         const host = document.createElement('div');
         host.innerHTML = sourceHTML;
+        // В основной карточке формулы специально обёрнуты в nowrap-span.
+        // В печати Chromium / Яндекс.Браузер иногда разносит такие формулы
+        // по отдельным строкам: возвращаем стандартные inline-формулы MathJax.
+        host.querySelectorAll('.task-copy span[style]').forEach(span => {
+            if (span.style.whiteSpace === 'nowrap' && /\$|\\\(/.test(span.textContent || '')) {
+                span.replaceWith(...Array.from(span.childNodes));
+            }
+        });
         // Номер в синем кружке — порядковый в подборке (11, 12...), а не номер ЕГЭ.
         // Настоящий номер берём из сгенерированных заданий и заголовка группы.
         const generated = Array.isArray(window.currentGeneratedTasks) ? window.currentGeneratedTasks : [];
@@ -4088,8 +4096,9 @@ body.auth-locked > *:not(#passwordGate) {
                 page-break-inside:avoid !important;
                 break-inside:avoid !important;
             }
-            .task-print-text img,
-            .task-print-text svg {
+            ${withFields
+                ? '.task-print-text > img, .task-print-text > svg, .task-copy > img, .task-copy > svg, .task-copy > p > img, .task-copy > p > svg'
+                : '.task-print-text img, .task-print-text svg'} {
                 display:block !important;
                 max-width:min(100%, 68mm) !important;
                 max-height:42mm !important;
@@ -4128,6 +4137,28 @@ body.auth-locked > *:not(#passwordGate) {
 
             img { max-width:100% !important; page-break-inside:avoid; }
             svg { overflow:visible; }${withFields ? `
+            /* Печатные формулы должны оставаться частью текста, а не рисунками или блоками. */
+            .ege-selective-print-unit .task-copy {
+                display:block!important;
+                text-wrap:wrap!important;
+                white-space:normal!important;
+                overflow-wrap:normal!important;
+                word-break:normal!important;
+            }
+            .ege-selective-print-unit .task-copy mjx-container:not([display="true"]) {
+                display:inline-block!important;
+                vertical-align:baseline!important;
+                width:auto!important;
+                max-width:none!important;
+                margin:0 .07em!important;
+                white-space:nowrap!important;
+            }
+            .ege-selective-print-unit .task-copy mjx-container svg {
+                max-width:none!important;
+                max-height:none!important;
+                margin:0!important;
+                object-fit:fill!important;
+            }
             .ege-selective-write-grid {
                 height:20mm;
                 margin:3mm 0 .4mm 0 !important;
@@ -4223,13 +4254,30 @@ body.auth-locked > *:not(#passwordGate) {
         ${window.CANVAS_LOGIC_SCRIPT}
         ${withFields ? `setTimeout(async function(){
             try {
+                // Пагинацию выполняем ПОСЛЕ MathJax, шрифтов и изображений:
+                // иначе формулы пересчитываются после разбиения на листы и ломают строки.
                 if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
-                    await Promise.race([window.MathJax.startup.promise.catch(function(){}), new Promise(r => setTimeout(r, 700))]);
+                    await Promise.race([
+                        window.MathJax.startup.promise.catch(function(){}),
+                        new Promise(resolve => setTimeout(resolve, 10000))
+                    ]);
                 }
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    await Promise.race([
+                        window.MathJax.typesetPromise(Array.from(document.querySelectorAll('.task-copy'))).catch(function(e){console.error(e);}),
+                        new Promise(resolve => setTimeout(resolve, 7000))
+                    ]);
+                }
+                if (document.fonts && document.fonts.ready) {
+                    await Promise.race([document.fonts.ready, new Promise(resolve => setTimeout(resolve, 4000))]);
+                }
+                await Promise.all(Array.from(document.images).map(img => img.complete ? Promise.resolve() :
+                    Promise.race([new Promise(resolve => {img.addEventListener('load', resolve, {once:true});img.addEventListener('error', resolve, {once:true});}), new Promise(resolve => setTimeout(resolve, 2000))])));
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
                 (${layoutSelectiveFieldsForPrint.toString()})();
             } catch(e) { console.error('Ошибка компоновки выборочной печати', e); }
             window.print();
-        }, 1300);` : 'setTimeout(function(){ window.print(); }, 1500);'}
+        }, 350);` : 'setTimeout(function(){ window.print(); }, 1500);'}
     ${window.SCRIPT_END}
 </body>
 </html>`;
