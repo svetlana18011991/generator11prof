@@ -3743,7 +3743,171 @@ body.auth-locked > *:not(#passwordGate) {
         let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Интерактивный_вариант.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
     }
 
-    function downloadPrintPDF() {
+    // Выборочная сборка сохраняет прежний портретный печатный макет.
+    // В режиме с полями только дополняем те же карточки клетчатыми черновиками.
+    function addSelectivePrintFields(sourceHTML) {
+        const host = document.createElement('div');
+        host.innerHTML = sourceHTML;
+        // Номер в синем кружке — порядковый в подборке (11, 12...), а не номер ЕГЭ.
+        // Настоящий номер берём из сгенерированных заданий и заголовка группы.
+        const generated = Array.isArray(window.currentGeneratedTasks) ? window.currentGeneratedTasks : [];
+        let sectionNumber = 0;
+        let taskIndex = 0;
+        const nodes = [...host.querySelectorAll('h3, .task-print-block')];
+        nodes.forEach(node => {
+            if (node.matches('h3')) {
+                const match = (node.textContent || '').match(/Задани[ея]\s*[№#]?\s*(\d{1,2})(?!\d)/i);
+                if (match) sectionNumber = Number(match[1]);
+                return;
+            }
+            const task = node;
+            const info = generated[taskIndex] || {};
+            const match = String(info.taskTid || '').match(/(?:task)?(\d{1,2})$/i);
+            const examNumber = (match ? Number(match[1]) : sectionNumber) || 0;
+            const isSecondPart = Number(info.part) === 2 || info.isSecondPart === true || examNumber >= 14;
+            task.dataset.egeExamNumber = String(examNumber);
+            task.dataset.egeSecondPart = isSecondPart ? '1' : '0';
+            const id = 'ege-selective-grid-' + taskIndex;
+            const field = document.createElement('div');
+            field.className = 'ege-selective-write-grid' + (isSecondPart ? ' ege-selective-long-grid' : '');
+            field.setAttribute('aria-label', 'Клетчатое поле для решения задания ' + (examNumber || taskIndex + 1));
+            field.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="ege-selective-grid-art" width="100%" height="100%" aria-hidden="true">
+                <defs><pattern id="${id}" patternUnits="userSpaceOnUse" width="18.897638" height="18.897638">
+                    <path d="M 18.897638 0 H 0 V 18.897638" fill="none" stroke="#b1d3ea" stroke-width="0.8"/>
+                </pattern></defs>
+                <rect x="0" y="0" width="100%" height="100%" fill="url(#${id})"/>
+            </svg>`;
+            task.appendChild(field);
+            taskIndex++;
+        });
+        return host.innerHTML;
+    }
+
+    // Только выборочная печать С ПОЛЯМИ: осмысленное распределение карточек
+    // и клетчатых черновиков по вертикальному A4. Печать без полей не затрагиваем.
+    function layoutSelectiveFieldsForPrint() {
+        const main = document.querySelector('main.print-page');
+        if (!main || main.dataset.packed === '1') return;
+        const all = Array.from(main.children);
+        const firstHeader = all.find(el => el.classList.contains('print-header'));
+        const units = [];
+        let pending = [];
+        for (const element of all) {
+            if (element === firstHeader) continue;
+            if (element.matches('h3') || (!element.querySelector('.task-print-block') && !element.matches('.task-print-block'))) {
+                pending.push(element);
+                continue;
+            }
+            const tasks = element.matches('.task-print-block') ? [element] : Array.from(element.querySelectorAll('.task-print-block'));
+            for (const task of tasks) {
+                const unit = document.createElement('div');
+                unit.className = 'ege-selective-print-unit';
+                pending.forEach(node => unit.appendChild(node));
+                pending = [];
+                unit.appendChild(task);
+                const examNumber = Number(task.dataset.egeExamNumber) || 0;
+                unit.dataset.taskNumber = String(examNumber);
+                unit.dataset.secondPart = task.dataset.egeSecondPart === '1' ? '1' : '0';
+                units.push(unit);
+            }
+        }
+        if (pending.length) {
+            const finalUnit = document.createElement('div');
+            finalUnit.className = 'ege-selective-print-unit';
+            pending.forEach(node => finalUnit.appendChild(node));
+            units.push(finalUnit);
+        }
+        main.replaceChildren();
+        main.dataset.packed = '1';
+        const mm = 96 / 25.4;
+        function makeSheet(first) {
+            const sheet = document.createElement('section');
+            sheet.className = 'ege-selective-sheet';
+            const body = document.createElement('div');
+            body.className = 'ege-selective-sheet-content';
+            sheet.appendChild(body);
+            main.appendChild(sheet);
+            if (first && firstHeader) body.appendChild(firstHeader);
+            return body;
+        }
+        let content = makeSheet(true);
+        const minField = (grid) => grid.classList.contains('ege-selective-long-grid') ? 28 * mm : 13 * mm;
+        const baseField = (grid) => grid.classList.contains('ege-selective-long-grid') ? 48 * mm : 20 * mm;
+        function fields(parent) { return Array.from(parent.querySelectorAll('.ege-selective-write-grid')); }
+        function fillBase(parent) {
+            fields(parent).forEach(g => {g.style.height = baseField(g) + 'px';});
+        }
+        function usedHeight(parent) {
+            const top = parent.getBoundingClientRect().top;
+            const children = Array.from(parent.children);
+            return children.length ? Math.max(0, Math.max(...children.map(el => el.getBoundingClientRect().bottom)) - top) : 0;
+        }
+        function shrinkToFit(parent) {
+            const area = parent.clientHeight;
+            let overflow = usedHeight(parent) - area;
+            if (overflow <= 1) return true;
+            const gs = fields(parent).filter(g => g.getBoundingClientRect().height > minField(g) + 1);
+            const capacity = gs.reduce((sum,g) => sum + Math.max(0,g.getBoundingClientRect().height - minField(g)), 0);
+            if (capacity + 1 < overflow) return false;
+            for (const g of gs) {
+                const old = g.getBoundingClientRect().height;
+                const reduction = overflow * ((old - minField(g)) / capacity);
+                g.style.height = Math.max(minField(g), old - reduction - 1) + 'px';
+            }
+            return usedHeight(parent) <= area + 2;
+        }
+        function occupySpace(parent) {
+            const gs = fields(parent);
+            if (!gs.length) return;
+            const empty = parent.clientHeight - usedHeight(parent) - 12;
+            if (empty <= 2) return;
+            // Вместо полупустого листа выделяем оставшуюся площадь на решения.
+            // Если сетка одна, всё свободное пространство достаётся ей.
+            const extra = (empty - 2) / gs.length;
+            gs.forEach(g => g.style.height = (g.getBoundingClientRect().height + extra) + 'px');
+        }
+        function hasPrintedUnits(parent) {
+            return !!parent.querySelector('.ege-selective-print-unit');
+        }
+        for (let i = 0; i < units.length; i++) {
+            const unit = units[i];
+            const secondPart = unit.dataset.secondPart === '1';
+
+            if (secondPart && hasPrintedUnits(content)) {
+                occupySpace(content);
+                content = makeSheet(false);
+            }
+
+            content.appendChild(unit);
+            fillBase(unit);
+
+            if (secondPart) {
+                if (usedHeight(content) > content.clientHeight + 1) {
+                    shrinkToFit(content);
+                }
+                occupySpace(content);
+                if (i < units.length - 1) {
+                    content = makeSheet(false);
+                }
+                continue;
+            }
+
+            if (usedHeight(content) <= content.clientHeight + 1) continue;
+            if (shrinkToFit(content)) continue;
+            unit.remove();
+            occupySpace(content);
+            content = makeSheet(false);
+            content.appendChild(unit);
+            fillBase(unit);
+            if (usedHeight(content) > content.clientHeight + 1) {
+                // Для длинного условия по возможности уменьшаем поле, но не текст.
+                shrinkToFit(content);
+            }
+        }
+        occupySpace(content);
+    }
+
+    function downloadPrintPDF(withFields = false) {
         if (!currentPrintHTML) { alert("Сначала сгенерируйте вариант!"); return; }
         const variantTitle = getCurrentVariantTitle();
 
@@ -3753,6 +3917,8 @@ body.auth-locked > *:not(#passwordGate) {
             let verb = (document.getElementById('teacher-gender').value === 'male') ? 'подготовил' : 'подготовила';
             sigPrint = `<div class="print-author">Вариант ${verb}: ${teacherName}</div>`;
         }
+
+        const selectivePrintHTML = withFields ? addSelectivePrintFields(currentPrintHTML) : currentPrintHTML;
 
         let printHtml = `<!DOCTYPE html>
 <html lang="ru">
@@ -3766,7 +3932,7 @@ body.auth-locked > *:not(#passwordGate) {
     <style>
         :root { --blue:#003399; --orange:#ff8c00; --line:#d8e5f3; --soft:#f4f8ff; }
         * { box-sizing: border-box; }
-        @media print {
+        ${withFields ? '@media print, screen' : '@media print'} {
             @page { margin: 12mm 12mm 16mm 12mm; size: A4; }
             body {
                 background:#fff !important;
@@ -3961,7 +4127,30 @@ body.auth-locked > *:not(#passwordGate) {
             }
 
             img { max-width:100% !important; page-break-inside:avoid; }
-            svg { overflow:visible; }
+            svg { overflow:visible; }${withFields ? `
+            .ege-selective-write-grid {
+                height:20mm;
+                margin:3mm 0 .4mm 0 !important;
+                border:1px solid #9fc4df !important;
+                border-radius:2px;
+                background:white;
+                position:relative;
+                overflow:hidden !important;
+                break-inside:avoid;
+                page-break-inside:avoid;
+            }
+            .ege-selective-long-grid { height:48mm; }
+            .ege-selective-write-grid > svg.ege-selective-grid-art {
+                display:block !important;
+                position:absolute !important;
+                inset:0;
+                width:100% !important;
+                height:100% !important;
+                max-width:none !important;
+                max-height:none !important;
+                overflow:hidden !important;
+            }
+            ` : ''}
         }
 
         @media screen {
@@ -3990,7 +4179,34 @@ body.auth-locked > *:not(#passwordGate) {
                 color:rgba(0,0,0,0.5);
                 pointer-events:none;
             }
+        }${withFields ? `
+        /* Только выборочная печать с полями: страницы фиксированного A4. */
+        .ege-selective-sheet {
+            height:269mm;
+            width:100%;
+            margin:0;
+            padding:0;
+            break-after:page;
+            page-break-after:always;
+            overflow:hidden;
+            box-sizing:border-box;
         }
+        .ege-selective-sheet:last-child {break-after:auto;page-break-after:auto;}
+        .ege-selective-sheet-content {height:252mm; width:100%; overflow:hidden; box-sizing:border-box;}
+        .ege-selective-print-unit {break-inside:avoid;page-break-inside:avoid;font-size:16px;}
+        .ege-selective-print-unit > h3 {margin-top:3mm !important;margin-bottom:2mm !important;padding:2mm 3mm !important;}
+        .ege-selective-print-unit > .task-print-block {margin-bottom:2.6mm !important;padding:2.5mm 3mm 2.5mm !important;}
+        .ege-selective-write-grid {height:20mm;min-height:0!important;}
+        .ege-selective-long-grid {height:48mm;}
+        @media screen {
+            html,body {background:#eef3f8!important;}
+            body {margin:0!important;padding:12px!important;}
+            .print-page {max-width:none!important;width:186mm!important; padding:0!important;margin:0 auto!important;box-shadow:none!important;background:transparent!important;}
+            .ege-selective-sheet {background:#fff;box-shadow:0 3px 12px #0002;margin:0 0 10mm;}
+            #print-footer-fixed {display:none!important;}
+        }
+        @media print { .print-page {width:100%!important;} }
+        ` : ''}
     </style>
 </head>
 <body>
@@ -4001,11 +4217,19 @@ body.auth-locked > *:not(#passwordGate) {
             <div class="print-subtitle">ЕГЭ профильная математика · ${window.randomVariantMode ? 'полный вариант 1–20' : 'тренировочный набор'}</div>
             ${sigPrint}
         </header>
-        ${currentPrintHTML}
+        ${selectivePrintHTML}
     </main>
     <script>
         ${window.CANVAS_LOGIC_SCRIPT}
-        setTimeout(function(){ window.print(); }, 1500);
+        ${withFields ? `setTimeout(async function(){
+            try {
+                if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+                    await Promise.race([window.MathJax.startup.promise.catch(function(){}), new Promise(r => setTimeout(r, 700))]);
+                }
+                (${layoutSelectiveFieldsForPrint.toString()})();
+            } catch(e) { console.error('Ошибка компоновки выборочной печати', e); }
+            window.print();
+        }, 1300);` : 'setTimeout(function(){ window.print(); }, 1500);'}
     ${window.SCRIPT_END}
 </body>
 </html>`;

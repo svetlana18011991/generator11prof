@@ -534,16 +534,21 @@
         setTimeout(() => URL.revokeObjectURL(url), 60000);
     }
 
+    const originalSelectiveDownloadPrintPDF = window.downloadPrintPDF;
+
     function choosePrintMode() {
         document.getElementById('ege-print-dialog')?.remove();
         const overlay = document.createElement('div');
         overlay.id = 'ege-print-dialog';
         overlay.style.cssText = 'position:fixed;inset:0;z-index:2147482000;background:#07111bc0;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+        const selective = window.egeGenerationMode !== 'full' || !window.egeVariantBatch.length;
         overlay.innerHTML = `<div role="dialog" aria-modal="true" aria-labelledby="ege-print-title" style="background:white;color:#192b3c;width:min(510px,96vw);padding:25px;border:2px solid #ffb347;border-radius:14px;box-shadow:0 15px 55px #0006;font:15px/1.4 Arial,sans-serif;">
             <h2 id="ege-print-title" style="font-size:22px;margin:0 0 9px;color:#263849;">Как подготовить варианты к печати?</h2>
-            <p style="margin:0 0 18px;color:#526474">Горизонтальный формат A4, две колонки, задания без разрывов. В пачке печатаются все варианты.</p>
-            <button data-ege-print="compact" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #ffcc80;border-radius:9px;background:#fff7e9;padding:13px 15px;margin-bottom:10px;font:inherit"><b>Компактный PDF — без полей для решения</b><small style="display:block;color:#666;margin-top:5px">Условия, чертежи и строки для ответов, как в компактной печати ОГЭ.</small></button>
-            <button data-ege-print="fields" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #b6cde0;border-radius:9px;background:#f4f9fe;padding:13px 15px;font:inherit"><b>С полями для решения</b><small style="display:block;color:#666;margin-top:5px">Для заданий 1–13 поля автоматически распределяются по странице и заполняют свободное место аккуратно. Задания 14–20 печатаются по два на лист: одно слева, второе справа, с большим клетчатым полем для решения до низа страницы.</small></button>
+            <p style="margin:0 0 18px;color:#526474">${selective
+                ? 'Выборочная сборка: прежний вертикальный A4 и исходное расположение заданий. С полями и без полей — одинаковый макет.'
+                : 'Быстрые полные варианты: горизонтальный формат A4, две колонки, печать всей пачки.'}</p>
+            <button data-ege-print="compact" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #ffcc80;border-radius:9px;background:#fff7e9;padding:13px 15px;margin-bottom:10px;font:inherit"><b>${selective ? 'Исходный вариант — без полей' : 'Компактный PDF — без полей для решения'}</b><small style="display:block;color:#666;margin-top:5px">${selective ? 'Прежняя выборочная печать без изменения ориентации и оформления.' : 'Компактная печать полных вариантов ЕГЭ.'}</small></button>
+            <button data-ege-print="fields" style="display:block;width:100%;text-align:left;cursor:pointer;border:1px solid #b6cde0;border-radius:9px;background:#f4f9fe;padding:13px 15px;font:inherit"><b>С полями для решения</b><small style="display:block;color:#666;margin-top:5px">${selective ? 'Тот же вертикальный макет выборочной сборки: под выбранными заданиями добавляются квадратные клетчатые поля.' : 'Для 1–13 поля распределяются автоматически, а для 14–20 — по два задания на горизонтальной странице с большими клетчатыми полями.'}</small></button>
             <div style="text-align:right;margin-top:14px"><button data-ege-cancel style="border:0;background:transparent;color:#526474;cursor:pointer;padding:7px;">Отмена</button></div></div>`;
         const close = () => {document.removeEventListener('keydown', onKey); overlay.remove();};
         const onKey = ev => {if (ev.key === 'Escape') close();};
@@ -565,6 +570,11 @@
             alert('Сначала сгенерируйте вариант!'); return;
         }
         if (mode !== 'compact' && mode !== 'fields') {choosePrintMode(); return;}
+        // Ручная/выборочная сборка: неизменный исходный портретный шаблон.
+        // Вторая кнопка лишь добавляет поля, но не переключает на макет пачки.
+        if (window.egeGenerationMode !== 'full' || !window.egeVariantBatch.length) {
+            return originalSelectiveDownloadPrintPDF(mode === 'fields');
+        }
         try {
             const entries = getPrintEntries();
             const html = buildPrintDocument(entries, mode === 'fields');
