@@ -449,6 +449,8 @@
 
     function buildPrintDocument(entries, withFields) {
         const pages = entries.map((entry, i) => buildPrintVariant(entry, i, withFields)).join('\n') + buildPrintKeys(entries);
+        const generatorAssetsBase = new URL('./', window.location.href).href
+            .replace(/&/g, '&amp;').replace(/"/g, '&quot;');
         const printCSS = `
             @page{size:A4 landscape;margin:9mm 10mm 15mm;}
             *{box-sizing:border-box;}
@@ -514,7 +516,7 @@
             @media print{body{background:#fff;padding:0;print-color-adjust:exact;-webkit-print-color-adjust:exact;}.ege-exam-page{box-shadow:none!important;margin:0!important;}}
         `;
         return `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>ЕГЭ · варианты для печати</title>
-            <base href="https://svetlana18011991.github.io/generator11prof/">
+            <base href="${generatorAssetsBase}">
             <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],processEscapes:true,macros:{tg:'\\\\operatorname{tg}',ctg:'\\\\operatorname{ctg}',arctg:'\\\\operatorname{arctg}',arcctg:'\\\\operatorname{arcctg}'}},chtml:{adaptiveCSS:false}};<\/script>
             <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
             <style>${printCSS}</style></head><body class="${withFields ? 'ege-with-fields' : 'ege-compact'}">

@@ -3928,12 +3928,18 @@ body.auth-locked > *:not(#passwordGate) {
 
         const selectivePrintHTML = withFields ? addSelectivePrintFields(currentPrintHTML) : currentPrintHTML;
 
+        // Важно при локальном запуске через file://: скачанный печатный HTML
+        // должен искать рисунки в папке исходного генератора, а не на GitHub Pages.
+        // При запуске с сайта URL автоматически остаётся адресом сайта.
+        const generatorAssetsBase = new URL('./', window.location.href).href
+            .replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+
         let printHtml = `<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Печать варианта</title>
-    <base href="https://svetlana18011991.github.io/generator11prof/">
+    <base href="${generatorAssetsBase}">
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
     <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],processEscapes:true,macros:{tg:'\\\\operatorname{tg}',ctg:'\\\\operatorname{ctg}',arctg:'\\\\operatorname{arctg}',arcctg:'\\\\operatorname{arcctg}'}}};${window.SCRIPT_END}
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${window.SCRIPT_END}
@@ -4277,7 +4283,18 @@ body.auth-locked > *:not(#passwordGate) {
                 (${layoutSelectiveFieldsForPrint.toString()})();
             } catch(e) { console.error('Ошибка компоновки выборочной печати', e); }
             window.print();
-        }, 350);` : 'setTimeout(function(){ window.print(); }, 1500);'}
+        }, 350);` : `(async function(){
+            try {
+                // Не печатаем, пока не загрузились рисунки и математические шрифты.
+                if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise)
+                    await Promise.race([window.MathJax.startup.promise.catch(function(){}), new Promise(r=>setTimeout(r, 8000))]);
+                await Promise.all(Array.from(document.images).map(img => img.complete ? Promise.resolve() :
+                    Promise.race([new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});}),new Promise(resolve=>setTimeout(resolve,6000))])));
+                if (document.fonts && document.fonts.ready)
+                    await Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,2000))]);
+            } catch(e){console.warn('Печать: ожидание ресурсов', e);}
+            window.print();
+        })();`}
     ${window.SCRIPT_END}
 </body>
 </html>`;
