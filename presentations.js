@@ -962,7 +962,18 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .task-right-side > div { min-height: 0 !important; height: 100% !important; justify-content: flex-start !important; overflow: hidden !important; }
         .svg-wrapper { flex: 1 1 auto !important; min-height: 0 !important; max-height: 54% !important; width: 100% !important; overflow: hidden !important; margin-bottom: 10px !important; }
         .svg-wrapper img, .svg-wrapper svg { max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; object-fit: contain !important; display: block !important; margin: 0 auto !important; }
-        .task-text { font-size: clamp(16px, 1.5vw, 23px) !important; line-height: 1.22 !important; max-height: 28% !important; min-height: 0 !important; flex: 0 1 auto !important; overflow: hidden !important; padding: 0 8px !important; margin-bottom: 10px !important; box-sizing: border-box !important; text-align: center !important; }
+        /* Условие прокручивается вместо обрезки; кнопки проверки всегда снаружи области прокрутки. */
+        .task-text { font-size: clamp(16px, 1.5vw, 23px) !important; line-height: 1.22 !important; max-height: 28% !important; min-height: 0 !important; flex: 0 1 auto !important; overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #9c9c9c #f1f1f1; padding: 0 8px !important; margin-bottom: 10px !important; box-sizing: border-box !important; text-align: center !important; overflow-wrap: anywhere; }
+        .task-text::-webkit-scrollbar { width: 9px; }
+        .task-text::-webkit-scrollbar-thumb { background: #aaa; border-radius: 12px; border: 2px solid #f6f6f6; }
+        .task-text::-webkit-scrollbar-track { background: #f6f6f6; border-radius: 12px; }
+        .pres-expand-task-btn { display: inline-block; flex: 0 0 auto; align-self: center; padding: 3px 11px; margin: -2px 0 7px; font-size: 14px; font-weight: 650; line-height: 1.3; color: #003399; background: rgba(232, 241, 255, .95); border: 1px solid #9bb9eb; border-radius: 8px; cursor: pointer; }
+        .pres-expand-task-btn[hidden] { display: none !important; }
+        .pres-expand-task-btn:hover { background: #dbe9ff; }
+        .pres-expanded-task-modal { width: min(1050px, 94vw) !important; max-width: min(1050px, 94vw) !important; max-height: 90vh !important; box-sizing: border-box; }
+        .pres-expanded-task-text { font-size: clamp(19px, 2vw, 27px); line-height: 1.4; text-align: left; overflow-wrap: anywhere; padding: 8px 8px 20px; }
+        .pres-expanded-task-visual { max-height: 40vh; display: flex; align-items: center; justify-content: center; margin: 10px auto 16px; }
+        .pres-expanded-task-visual svg, .pres-expanded-task-visual img { display: block; width: auto; height: auto; max-width: 100%; max-height: 38vh; }
         .task-card-visual .task-text mjx-container { font-size: 108% !important; }
         .pres-check-zone { flex: 0 0 auto !important; margin-top: auto !important; gap: 10px !important; }
         .pres-input { max-width: 180px !important; box-sizing: border-box !important; }
@@ -983,7 +994,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         /* РЕЖИМ ДЛЯ ЗАДАНИЙ БЕЗ ЧЕРТЕЖА */
         .task-card-text-only { width: min(58vw, 780px) !important; min-height: 230px !important; height: auto !important; max-height: 68vh !important; top: 50% !important; bottom: auto !important; right: 7% !important; transform: translateY(-50%) !important; padding: 24px 34px !important; justify-content: center !important; }
         .task-card-text-only > div { justify-content: center !important; min-height: 0 !important; height: auto !important; overflow: hidden !important; }
-        .task-card-text-only .task-text { font-size: clamp(19px, 1.72vw, 27px) !important; line-height: 1.28 !important; max-height: 44vh !important; overflow: hidden !important; text-align: center !important; margin: 0 0 22px 0 !important; padding: 0 6px !important; color: #222 !important; }
+        .task-card-text-only .task-text { font-size: clamp(19px, 1.72vw, 27px) !important; line-height: 1.28 !important; max-height: 44vh !important; overflow-y: auto !important; overflow-x: hidden !important; text-align: center !important; margin: 0 0 22px 0 !important; padding: 0 6px !important; color: #222 !important; }
         .task-card-text-only .task-text mjx-container { font-size: 104% !important; }
         .task-card-text-only .pres-check-zone { margin-top: 0 !important; gap: 14px !important; }
         .task-card-text-only .pres-input { width: 190px !important; font-size: 1.15em !important; }
@@ -992,6 +1003,17 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         @media (max-height: 760px), (max-width: 1200px) {
             .task-card-text-only { width: min(64vw, 760px) !important; min-height: 210px !important; max-height: 70vh !important; padding: 18px 24px !important; }
             .task-card-text-only .task-text { font-size: clamp(16px, 1.65vw, 24px) !important; max-height: 46vh !important; line-height: 1.22 !important; margin-bottom: 18px !important; }
+        }
+        /* Длинные задания: используем максимальную высоту ПОД табличкой с номером. */
+        .task-card-text-only.pres-long-task { top: 24% !important; bottom: 7% !important; height: 69vh !important; max-height: none !important; transform: none !important; }
+        .task-card-text-only.pres-long-task > div { min-height: 0 !important; height: 100% !important; max-height: 100% !important; justify-content: flex-start !important; overflow: hidden !important; }
+        .task-card-text-only.pres-long-task .task-text { min-height: 0 !important; max-height: none !important; flex: 1 1 auto !important; margin-bottom: 8px !important; }
+        .task-card-text-only.pres-long-task .pres-check-zone { flex: 0 0 auto !important; margin-top: auto !important; }
+        .task-card-visual.pres-long-task .svg-wrapper { max-height: 40% !important; }
+        .task-card-visual.pres-long-task .task-text { min-height: 0 !important; max-height: none !important; flex: 1 1 auto !important; }
+        @media (max-height: 700px) {
+            .task-card-text-only.pres-long-task { top: 20% !important; bottom: 5% !important; height: 75vh !important; }
+            .pres-expand-task-btn { font-size: 12px; margin-bottom: 3px; }
         }
     </style>
 </head>
@@ -1113,48 +1135,86 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             }
         }
 
+        function isPresTextClipped(el) {
+            return !!el && (el.scrollHeight > el.clientHeight + 3 || el.scrollWidth > el.clientWidth + 3);
+        }
+
         function fitTextToBox(textEl, maxPx, minPx) {
             if (!textEl) return;
-            textEl.style.fontSize = maxPx + 'px';
-            textEl.style.overflow = 'hidden';
-
+            // CSS шаблона использует !important: меняем размер с тем же приоритетом.
+            // Не уменьшаем шрифт до нечитаемых 13px: дальше будет прокрутка.
+            textEl.style.removeProperty('line-height');
+            textEl.style.setProperty('font-size', maxPx + 'px', 'important');
             let size = maxPx;
-            let safety = 0;
-            while (safety < 80 && size > minPx && (textEl.scrollHeight > textEl.clientHeight + 2 || textEl.scrollWidth > textEl.clientWidth + 2)) {
+            while (size > minPx && isPresTextClipped(textEl)) {
                 size -= 1;
-                textEl.style.fontSize = size + 'px';
-                safety++;
+                textEl.style.setProperty('font-size', size + 'px', 'important');
             }
-
-            if (textEl.scrollHeight > textEl.clientHeight + 3 && size <= minPx) {
-                textEl.style.lineHeight = '1.12';
+            if (size === minPx && isPresTextClipped(textEl)) {
+                textEl.style.setProperty('line-height', '1.18', 'important');
             }
         }
 
         function chooseTextOnlyMax(textEl) {
-            const plain = (textEl.textContent || '').replace(/\\s+/g, ' ').trim();
+            const plain = (textEl.textContent || '').replace(/\s+/g, ' ').trim();
             const len = plain.length;
-            if (len > 520) return 19;
-            if (len > 420) return 21;
-            if (len > 300) return 23;
+            if (len > 520) return 20;
+            if (len > 420) return 22;
+            if (len > 300) return 24;
             if (len > 200) return 25;
             return 27;
         }
 
-        function fitCurrentSlideText() {
-            let slide = slides[currentSlide];
-            if (!slide) return;
-            slide.querySelectorAll('.task-right-side').forEach(card => {
-                let textEl = card.querySelector('.task-text');
-                if (!textEl) return;
-                if (card.classList.contains('task-card-text-only')) {
-                    fitTextToBox(textEl, chooseTextOnlyMax(textEl), 13);
-                } else {
-                    fitTextToBox(textEl, 23, 14);
-                }
-            });
+        function openFullPresentationTask(button) {
+            const card = button.closest('.task-right-side');
+            const textEl = card && card.querySelector('.task-text');
+            const content = document.getElementById('modal-content-box');
+            const overlay = document.getElementById('modal-overlay');
+            if (!textEl || !content || !overlay) return;
+            const titleEl = card.closest('.task-slide')?.querySelector('.header-plate h3');
+            const visual = card.querySelector('.svg-wrapper');
+            const heading = titleEl ? titleEl.textContent.trim() : 'Задание ' + currentSlide;
+            content.innerHTML = '<h2 style="margin:0 38px 14px 0;color:#003399;">' + heading + '</h2>' +
+                (visual ? '<div class="pres-expanded-task-visual">' + visual.innerHTML + '</div>' : '') +
+                '<div class="pres-expanded-task-text">' + textEl.innerHTML + '</div>';
+            const modal = overlay.querySelector('.modal-box');
+            if (modal) modal.classList.add('pres-expanded-task-modal');
+            overlay.style.display = 'flex';
+            if (modal) modal.scrollTop = 0;
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([content]).catch(() => {});
         }
 
+        function fitCurrentSlideText() {
+            const slide = slides[currentSlide];
+            if (!slide) return;
+            slide.querySelectorAll('.task-right-side').forEach(card => {
+                const textEl = card.querySelector('.task-text');
+                if (!textEl) return;
+                const textOnly = card.classList.contains('task-card-text-only');
+                const max = textOnly ? chooseTextOnlyMax(textEl) : 23;
+                const min = textOnly ? 17 : 16;
+                card.classList.remove('pres-long-task');
+                fitTextToBox(textEl, max, min);
+                if (isPresTextClipped(textEl)) {
+                    card.classList.add('pres-long-task');
+                    fitTextToBox(textEl, max, min);
+                }
+                let expand = card.querySelector('.pres-expand-task-btn');
+                if (!expand) {
+                    expand = document.createElement('button');
+                    expand.type = 'button';
+                    expand.className = 'pres-expand-task-btn';
+                    expand.textContent = '↗ Показать условие полностью';
+                    expand.title = 'Открыть весь текст задания в большом окне';
+                    expand.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openFullPresentationTask(expand);
+                    });
+                    textEl.insertAdjacentElement('afterend', expand);
+                }
+                expand.hidden = !isPresTextClipped(textEl);
+            });
+        }
 
         function fitPresentationDraftDiagrams() {
             document.querySelectorAll('.pres-draft-diagram').forEach(card => {
@@ -1338,6 +1398,8 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         function openTheoryModalLocal(dataId) {
             let el = document.getElementById(dataId);
             if(el) {
+                const modal = document.querySelector('#modal-overlay .modal-box');
+                if (modal) modal.classList.remove('pres-expanded-task-modal');
                 document.getElementById('modal-content-box').innerHTML = decodeURIComponent(el.textContent);
                 document.getElementById('modal-overlay').style.display = 'flex';
                 if (window.MathJax) MathJax.typesetPromise([document.getElementById('modal-overlay')]);
