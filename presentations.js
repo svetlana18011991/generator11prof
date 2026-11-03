@@ -198,6 +198,7 @@ function buildPresentationControls(task, index, options) {
         return `<div class="pres-check-zone pres-second-part-zone" style="display:flex;gap:12px;justify-content:center;align-items:center;width:100%;flex-wrap:wrap;flex-shrink:0;">
             ${instantCheck ? `<button type="button" id="pres-second-answer-btn-${index}" onclick="event.stopPropagation(); showSecondPartPresAnswer(${index})" style="background:#e8f5e9;color:#1b5e20;border:1px solid #4CAF50;border-radius:10px;font-size:16px;font-weight:bold;padding:9px 13px;cursor:pointer;">Показать ответ</button>` : ''}
             <button type="button" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-${index}')" style="background:#e3f2fd;color:#003399;border:1px solid #90caf9;border-radius:10px;font-size:16px;font-weight:bold;padding:9px 13px;cursor:pointer;">🔁 Аналоги</button>
+            <button type="button" class="pres-next-btn" onclick="event.stopPropagation(); nextSlide()" style="background:${accent};color:#fff;border:none;border-radius:10px;font-size:18px;font-weight:bold;padding:10px 24px;cursor:pointer;">Далее →</button>
             ${drawButton}
             <div id="pres-second-answer-${index}" style="display:none;width:100%;margin-top:4px;padding:10px 12px;background:#eef6ff;border-left:4px solid #003399;border-radius:7px;color:#222;text-align:left;"><b>Ответ:</b> ${task.answer || ''}</div>
         </div><div id="pres-status-${index}" class="pres-status" style="margin-top:10px;min-height:28px;font-size:18px;font-weight:bold;text-align:center;"></div>`;
