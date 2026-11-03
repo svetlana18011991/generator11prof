@@ -944,6 +944,7 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         .results-table th { background: #f5f5f5; color: #333; }
         .row-correct { background-color: #e8f5e9; color: #2e7d32; }
         .row-incorrect { background-color: #ffebee; color: #c62828; }
+        .row-self-check { background-color: #eef3ff; color: #334c87; }
         .pres-footer { position: absolute; bottom: 30px; left: 70px; font-family: 'Caveat'; font-size: 26px; color: #555; }
         .logo-small { height: 50px; vertical-align: middle; margin-right: 15px; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
@@ -1052,6 +1053,8 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
         const showSolutions = ${showSolutions};
         const showCorrectOnError = ${showCorrectOnError};
         const instantCheck = ${instantCheck};
+        // Задания второй части не подлежат автоматической проверке.
+        const secondPartFlags = ${JSON.stringify((window.currentGeneratedTasks || []).map(isSecondPartPresentationTask))};
 
         function normalizeAnswer(value) {
             return String(value == null ? '' : value).trim().replace(',', '.');
@@ -1285,16 +1288,23 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
             let totalTimeBox = document.getElementById('results-total-time');
             let html = '';
             let correctCount = 0;
+            let autoCheckedCount = 0;
+            let selfCheckCount = 0;
 
             userResults
                 .sort((a, b) => a.taskNum - b.taskNum)
                 .forEach((res, idx) => {
-                    let isCorrect = (normalizeAnswer(res.userAns) === normalizeAnswer(res.correctAns));
-                    if (isCorrect) correctCount++;
-                    let rowClass = isCorrect ? 'row-correct' : 'row-incorrect';
+                    const isSelfCheck = !!secondPartFlags[res.taskNum - 1];
+                    const isCorrect = !isSelfCheck && (normalizeAnswer(res.userAns) === normalizeAnswer(res.correctAns));
+                    if (isSelfCheck) selfCheckCount++;
+                    else {
+                        autoCheckedCount++;
+                        if (isCorrect) correctCount++;
+                    }
+                    let rowClass = isSelfCheck ? 'row-self-check' : (isCorrect ? 'row-correct' : 'row-incorrect');
                     let displayAns = res.userAns === "" ? "—" : res.userAns;
-                    let resultText = isCorrect ? '✅ Верно' : '❌ Неверно';
-                    let correctCell = showCorrectOnError ? \`<td>\${res.correctAns}</td>\` : '';
+                    let resultText = isSelfCheck ? '📝 Самопроверка' : (isCorrect ? '✅ Верно' : '❌ Неверно');
+                    let correctCell = showCorrectOnError ? \`<td>\${isSelfCheck ? '—' : res.correctAns}</td>\` : '';
                     let solutionCell = showSolutions ? \`<td><button class="help-btn" onclick="event.stopPropagation(); window.openTheoryModalLocal('theory-pres-\${res.taskNum - 1}')">Смотреть</button></td>\` : '';
 
                     html += \`<tr class="\${rowClass}">
@@ -1308,7 +1318,12 @@ function generateAndDownloadPresentationHTML(taskSlides, hiddenTheories, authorL
                 });
 
             if (summary) {
-                summary.textContent = 'Верно: ' + correctCount + ' из ' + userResults.length;
+                if (autoCheckedCount > 0) {
+                    summary.textContent = 'Верно: ' + correctCount + ' из ' + autoCheckedCount +
+                        (selfCheckCount > 0 ? ' · Самопроверка: ' + selfCheckCount : '');
+                } else {
+                    summary.textContent = 'Самопроверка: ' + selfCheckCount;
+                }
             }
 
             if (workEndTime === null) workEndTime = Date.now();
