@@ -7,6 +7,16 @@
     window.egeActiveVariantIndex = 0;
     window.egeGenerationMode = 'manual';
     let batchInProgress = false;
+    let generationTimer = null;
+    let cancelGeneration = null;
+
+    window.egeResetVariants = function () {
+        if (cancelGeneration) cancelGeneration();
+        window.egeVariantBatch = [];
+        window.egeActiveVariantIndex = 0;
+        window.egeGenerationMode = 'manual';
+        showBatchSwitcher();
+    };
 
     function shuffledIndexes(length) {
         const result = Array.from({length}, (_, i) => i);
@@ -147,11 +157,16 @@
         let current = 0;
 
         function finish() {
+            clearTimeout(generationTimer);
+            generationTimer = null;
+            cancelGeneration = null;
             batchInProgress = false;
             if (button) { button.disabled = false; button.textContent = originalLabel; }
         }
+        cancelGeneration = finish;
 
         function makeNext() {
+            generationTimer = null;
             try {
                 if (!full) {
                     generateVariant({useRandomPicks:false});
@@ -183,7 +198,7 @@
                 current++;
                 if (current < count) {
                     if (button) button.textContent = `Генерирую ${current + 1} из ${count}…`;
-                    setTimeout(makeNext, 0);
+                    generationTimer = setTimeout(makeNext, 0);
                 } else {
                     // Показываем первый вариант, как в панели ОГЭ. Соседние варианты
                     // сохраняются и печатаются в том же порядке.
@@ -198,7 +213,7 @@
                 }
             } catch (err) {finish(); showGenerationError(err); showBatchSwitcher();}
         }
-        setTimeout(makeNext, 0);
+        generationTimer = setTimeout(makeNext, 0);
     };
 
     window.generateRandomVariant = function (event) {

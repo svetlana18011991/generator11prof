@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Генератор вариантов - ЕГЭ профильный</title>
+    <script>
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet"><script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], processEscapes: true, macros: { tg: '\\operatorname{tg}', ctg: '\\operatorname{ctg}', arctg: '\\operatorname{arctg}', arcctg: '\\operatorname{arcctg}' } } };</script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -2313,9 +2318,38 @@ body.auth-locked > *:not(#passwordGate) {
     }
 
     function resetTaskCounts() {
+        if (typeof window.egeResetVariants === 'function') window.egeResetVariants();
         document.querySelectorAll('input[id^="count-"]').forEach(input => {
             input.value = 0;
         });
+
+        document.querySelectorAll('#dynamic-tasks input[type="checkbox"]').forEach(input => {
+            input.checked = false;
+            input.indeterminate = false;
+        });
+
+        window.randomVariantMode = false;
+        window.randomVariantPicks = null;
+        window.randomVariantNumber = null;
+        window.manualVariantPlan = null;
+        window.currentGeneratedTasks = [];
+        window.selectedBlockTitles = [];
+        window.mainCanvases = {};
+        currentInteractiveHTML = '';
+        currentPrintHTML = '';
+        currentAnswersHTML = '';
+        setRandomVariantButtonsVisible(false);
+
+        ['output-section', 'info-board', 'ege-variant-switch'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.innerHTML = '';
+                element.style.display = 'none';
+            }
+        });
+        const buttons = document.getElementById('btn-group');
+        if (buttons) buttons.style.display = 'none';
+        hideTooltip();
 
         updateTaskTotal();
 
@@ -4837,6 +4871,6 @@ body.auth-locked > *:not(#passwordGate) {
 })();
 </script>
 
-<script src="ege_full_variants.js?v=20261102-grid-v10"></script>
+<script src="ege_full_variants.js?v=20261106-reset-v1"></script>
 </body>
 </html>
