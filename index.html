@@ -2050,11 +2050,31 @@ body.auth-locked > *:not(#passwordGate) {
     }
 
 
+    function getTaskCountTarget(input) {
+        const key = input.id.slice('count-'.length);
+        const kind = key.startsWith('extra-') ? 'extra' : 'main';
+        const tid = kind === 'extra' ? key.slice('extra-'.length) : key;
+        return { tid, kind };
+    }
+
     function updateTaskTotal() {
         let total = 0;
         document.querySelectorAll('input[id^="count-"]').forEach(input => {
             let value = parseInt(input.value, 10);
-            if (!isNaN(value) && value > 0) total += value;
+            const previousCount = parseInt(input.dataset.previousCount, 10) || 0;
+            if (!isNaN(value) && value > 0) {
+                total += value;
+                if (previousCount <= 0) {
+                    const { tid, kind } = getTaskCountTarget(input);
+                    const data = getPrototypeData(tid, kind);
+                    const hasSelection = data && Array.isArray(data.prototypes) && data.prototypes.some((p, idx) => {
+                        const checkbox = document.getElementById(getPrototypeCheckboxId(tid, idx, kind));
+                        return checkbox && checkbox.checked;
+                    });
+                    if (!hasSelection) toggleAllProtos(tid, true, kind);
+                }
+            }
+            input.dataset.previousCount = !isNaN(value) && value > 0 ? String(value) : '0';
         });
 
         let totalEl = document.getElementById('task-total-count');
@@ -2614,6 +2634,22 @@ body.auth-locked > *:not(#passwordGate) {
     function generateVariant(options = {}) {
         const useRandomPicks = !!(options && options.useRandomPicks && window.randomVariantPicks);
         const useManualPlan = !useRandomPicks && !!(options && Array.isArray(options.manualPlan) && options.manualPlan.length);
+        if (!useRandomPicks && !useManualPlan) {
+            document.querySelectorAll('input[id^="count-"]').forEach(input => {
+                if (!(parseInt(input.value, 10) > 0)) return;
+                const { tid, kind } = getTaskCountTarget(input);
+                const data = getPrototypeData(tid, kind);
+                const hasSelection = data && Array.isArray(data.prototypes) && data.prototypes.some((p, idx) => {
+                    const checkbox = document.getElementById(getPrototypeCheckboxId(tid, idx, kind));
+                    return checkbox && checkbox.checked;
+                });
+                if (!hasSelection) {
+                    const title = (data && data.title) || tid;
+                    const label = kind === 'extra' ? `${window.database[tid]?.title || tid} — дополнительно` : title;
+                    throw new Error(`В блоке «${label}» не выбраны темы. Откройте «Настроить» и отметьте нужные темы.`);
+                }
+            });
+        }
         if (!useRandomPicks) {
             window.randomVariantMode = false;
             window.randomVariantPicks = null;
