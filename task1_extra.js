@@ -1050,8 +1050,8 @@
                     "svg_code": "<svg width=\"260\" height=\"170\" viewBox=\"0 0 260 170\" overflow=\"visible\"><path d=\"M35,140 L225,140 L185,70 L75,70 L35,140\" fill=\"none\" stroke=\"black\" stroke-width=\"1.7\" /><text x=\"22\" y=\"155\" font-family=\"Times New Roman\" font-size=\"16\" font-style=\"italic\">A</text><text x=\"230\" y=\"155\" font-family=\"Times New Roman\" font-size=\"16\" font-style=\"italic\">B</text><text x=\"190\" y=\"65\" font-family=\"Times New Roman\" font-size=\"16\" font-style=\"italic\">C</text><text x=\"62\" y=\"65\" font-family=\"Times New Roman\" font-size=\"16\" font-style=\"italic\">D</text></svg>"
                 },
                 {
-                    "text": "Основание трапеции равно $12$, высота равна $6$, а площадь равна $72$. Найдите второе основание.",
-                    "answer": "12",
+                    "text": "Основание трапеции равно $12$, высота равна $6$, а площадь равна $84$. Найдите второе основание.",
+                    "answer": "16",
                     "svg_code": "<svg width=\"260\" height=\"170\" viewBox=\"0 0 260 170\" overflow=\"visible\"><path d=\"M35,140 L225,140 L185,70 L75,70 L35,140\" fill=\"none\" stroke=\"black\" stroke-width=\"1.7\" /><text x=\"22\" y=\"155\" font-family=\"Times New Roman\" font-size=\"16\" font-style=\"italic\">A</text><text x=\"230\" y=\"155\" font-family=\"Times New Roman\" font-size=\"16\" font-style=\"italic\">B</text><text x=\"190\" y=\"65\" font-family=\"Times New Roman\" font-size=\"16\" font-style=\"italic\">C</text><text x=\"62\" y=\"65\" font-family=\"Times New Roman\" font-size=\"16\" font-style=\"italic\">D</text></svg>"
                 },
                 {
