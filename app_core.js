@@ -2624,7 +2624,39 @@
         occupySpace(content);
     }
 
-    function downloadPrintPDF(withFields = false) {
+    // В печатный HTML помещаем байты контрастных графиков, а не ссылки на папку сайта.
+    // Отдельный JS подключаем только при экспорте (работает даже с генератором file://).
+    let egeDerivativePrintAssetsLoading = null;
+    function egeLoadDerivativePrintAssets() {
+        if (window.EGE_DERIVATIVE_PRINT_ASSETS) return Promise.resolve(window.EGE_DERIVATIVE_PRINT_ASSETS);
+        if (!egeDerivativePrintAssetsLoading) {
+            egeDerivativePrintAssetsLoading = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'derivative_print_assets.js?v=20261109-portable1';
+                script.onload = () => {
+                    if (window.EGE_DERIVATIVE_PRINT_ASSETS) resolve(window.EGE_DERIVATIVE_PRINT_ASSETS);
+                    else reject(new Error('Не удалось прочитать изображения для печати задания 9'));
+                };
+                script.onerror = () => reject(new Error('Не найден файл derivative_print_assets.js в папке генератора'));
+                document.head.appendChild(script);
+            }).catch(error => { egeDerivativePrintAssetsLoading = null; throw error; });
+        }
+        return egeDerivativePrintAssetsLoading;
+    }
+    async function egeEmbedDerivativePrintImages(html) {
+        if (!/img8\/print\/img\d+\.png/.test(html)) return html;
+        const images = await egeLoadDerivativePrintAssets();
+        const missing = [];
+        const result = html.replace(/img8\/print\/(img\d+\.png)/g, (source, name) => {
+            if (!images[name]) { missing.push(name); return source; }
+            return 'data:image/png;base64,' + images[name];
+        });
+        if (missing.length) throw new Error('Нет печатных рисунков: ' + [...new Set(missing)].join(', '));
+        return result;
+    }
+    window.egeEmbedDerivativePrintImages = egeEmbedDerivativePrintImages;
+
+    async function downloadPrintPDF(withFields = false) {
         if (!currentPrintHTML) { alert("Сначала сгенерируйте вариант!"); return; }
         const variantTitle = getCurrentVariantTitle();
 
@@ -3008,6 +3040,14 @@
 </body>
 </html>`;
 
+        // HTML будет переносимым: графики доступны даже после перемещения в «Загрузки».
+        try {
+            printHtml = await egeEmbedDerivativePrintImages(printHtml);
+        } catch (error) {
+            console.error('Не удалось встроить графики производных в печатный файл', error);
+            alert('Не удалось подготовить рисунки для печати: ' + error.message + '\nПроверьте, что файл derivative_print_assets.js добавлен на сайт.');
+            return;
+        }
         let b = new Blob([printHtml], { type: "text/html;charset=utf-8" });
         let a = document.createElement("a");
         a.href = URL.createObjectURL(b);
