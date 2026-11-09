@@ -542,6 +542,41 @@
             })();<\/script></body></html>`;
     }
 
+    // Автономная защита полной печати: работает и при устаревшем app_core.js.
+    // Задание 9 всегда сохраняется с PNG внутри HTML, а не с URL на сайте.
+    async function egeFullEmbedDerivativeImages(html) {
+        if (typeof window.egeEmbedDerivativePrintImagesV3 === 'function') {
+            return window.egeEmbedDerivativePrintImagesV3(html);
+        }
+        const imgTag = /(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)\2/gi;
+        const imagePath = /(?:^|[\\/])img8[\\/](?:print[\\/])?(img\d+\.png)(?:[?#].*)?$/i;
+        if (![...html.matchAll(imgTag)].some(match => imagePath.test(match[3]))) return html;
+        const loadAsset = () => new Promise((resolve, reject) => {
+            if (window.EGE_DERIVATIVE_PRINT_ASSETS) { resolve(window.EGE_DERIVATIVE_PRINT_ASSETS); return; }
+            const script = document.createElement('script');
+            script.src = 'derivative_print_assets.js?v=20261109-printproof3';
+            script.onload = () => window.EGE_DERIVATIVE_PRINT_ASSETS
+                ? resolve(window.EGE_DERIVATIVE_PRINT_ASSETS)
+                : reject(new Error('Файл печатных графиков пуст'));
+            script.onerror = () => reject(new Error('На сайте не найден derivative_print_assets.js'));
+            document.head.appendChild(script);
+        });
+        const images = await loadAsset();
+        let replaced = 0;
+        const result = html.replace(imgTag, (whole, prefix, quote, src) => {
+            const match = src.match(imagePath);
+            if (!match) return whole;
+            const data = images[match[1].toLowerCase()];
+            if (!data || !data.startsWith('iVBORw0KGgo')) throw new Error('Нет рисунка ' + match[1]);
+            replaced++;
+            return prefix + quote + 'data:image/png;base64,' + data + quote;
+        });
+        if (!replaced || [...result.matchAll(imgTag)].some(match => imagePath.test(match[3]))) {
+            throw new Error('Графики задания №9 не встроились в HTML');
+        }
+        return result.replace('</head>', '<meta name="ege-derivative-graphics" content="embedded-v3"></head>');
+    }
+
     function printDownload(html, filename) {
         const file = new Blob([html], {type:'text/html;charset=utf-8'});
         const url = URL.createObjectURL(file);
@@ -597,8 +632,10 @@
             const html = buildPrintDocument(entries, mode === 'fields');
             // Встраиваем печатные графики непосредственно в скачиваемый HTML.
             // Асинхронную подготовку запускаем только после выбора режима печати.
-            window.egeEmbedDerivativePrintImages(html).then(readyHtml => {
-                printDownload(readyHtml, 'ЕГЭ_Варианты_' + (mode === 'compact' ? 'Компактно' : 'С_полями') + '.html');
+            egeFullEmbedDerivativeImages(html).then(readyHtml => {
+                // Отдельное имя подтверждает, что пользователь скачал новый файл,
+                // а не повторно открыл старый HTML из папки «Загрузки».
+                printDownload(readyHtml, 'ЕГЭ_Варианты_' + (mode === 'compact' ? 'Компактно' : 'С_полями') + '_Графики_OK.html');
             }).catch(err => {
                 console.error('Печать: невозможно встроить графики производных', err);
                 alert('Не удалось подготовить рисунки для печати: ' + err.message + '\nПроверьте, что файл derivative_print_assets.js добавлен на сайт.');

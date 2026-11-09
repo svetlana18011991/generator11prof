@@ -2643,17 +2643,36 @@
         }
         return egeDerivativePrintAssetsLoading;
     }
+    // Поддержка двух исторических путей к рисункам задания 9:
+    // img8/imgNN.png и img8/print/imgNN.png. Вставляем внутрь HTML,
+    // чтобы файлы из папки «Загрузки» не ссылались на сайт или диск.
     async function egeEmbedDerivativePrintImages(html) {
-        if (!/img8\/print\/img\d+\.png/.test(html)) return html;
+        const imgTagWithSrc = /(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)\2/gi;
+        const imageFilename = /(?:^|[\\/])img8[\\/](?:print[\\/])?(img\d+\.png)(?:[?#].*)?$/i;
+        const matches = [...html.matchAll(imgTagWithSrc)].filter(match => imageFilename.test(match[3]));
+        if (!matches.length) return html;
         const images = await egeLoadDerivativePrintAssets();
         const missing = [];
-        const result = html.replace(/img8\/print\/(img\d+\.png)/g, (source, name) => {
-            if (!images[name]) { missing.push(name); return source; }
-            return 'data:image/png;base64,' + images[name];
+        let changed = 0;
+        const result = html.replace(imgTagWithSrc, (tag, beginning, quote, src) => {
+            const match = src.match(imageFilename);
+            if (!match) return tag;
+            const name = match[1].toLowerCase();
+            const png = images[name];
+            if (typeof png !== 'string' || !png.startsWith('iVBORw0KGgo')) {
+                missing.push(name);
+                return tag;
+            }
+            changed++;
+            return beginning + quote + 'data:image/png;base64,' + png + quote;
         });
-        if (missing.length) throw new Error('Нет печатных рисунков: ' + [...new Set(missing)].join(', '));
-        return result;
+        if (missing.length) throw new Error('Отсутствуют рисунки для печати: ' + [...new Set(missing)].join(', '));
+        if (changed !== matches.length) throw new Error('Не все графики задания 9 встроились в печатный файл');
+        const unembedded = [...result.matchAll(imgTagWithSrc)].filter(match => imageFilename.test(match[3]));
+        if (unembedded.length) throw new Error('В печатном файле остались внешние рисунки задания 9');
+        return result.replace('</head>', '<meta name="ege-derivative-graphics" content="embedded-v3"></head>');
     }
+    window.egeEmbedDerivativePrintImagesV3 = egeEmbedDerivativePrintImages;
     window.egeEmbedDerivativePrintImages = egeEmbedDerivativePrintImages;
 
     async function downloadPrintPDF(withFields = false) {
@@ -3051,7 +3070,7 @@
         let b = new Blob([printHtml], { type: "text/html;charset=utf-8" });
         let a = document.createElement("a");
         a.href = URL.createObjectURL(b);
-        a.download = "Вариант_Печать.html";
+        a.download = "Вариант_Печать_Графики_OK.html";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
