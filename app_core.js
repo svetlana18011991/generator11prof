@@ -2707,7 +2707,7 @@
         :root { --blue:#003399; --orange:#ff8c00; --line:#d8e5f3; --soft:#f4f8ff; }
         * { box-sizing: border-box; }
         ${withFields ? '@media print, screen' : '@media print'} {
-            @page { margin: 12mm 12mm 16mm 12mm; size: A4; }
+            @page { margin: 0; size: A4; } /* Автоматически скрываем дату, заголовок и путь file:/// в Edge/Chrome. */
             body {
                 background:#fff !important;
                 margin:0 !important;
@@ -3004,6 +3004,26 @@
         }
         @media print { .print-page {width:100%!important;} }
         ` : ''}
+        /* Отступы перенесены внутрь каждой печатной страницы. Они не зависят
+           от галочки «Колонтитулы» в браузере коллег. */
+        ${withFields ? `
+        @media print {
+            .print-page{width:210mm!important;max-width:none!important;margin:0!important;padding:0!important;}
+            .ege-selective-sheet{box-sizing:border-box!important;width:210mm!important;height:297mm!important;padding:12mm 12mm 16mm!important;margin:0!important;}
+            .ege-selective-sheet-content{height:252mm!important;}
+            #print-footer-fixed{bottom:21mm!important;}
+        }` : `
+        @media print {
+            .print-page{
+                box-sizing:border-box!important;
+                width:210mm!important;max-width:none!important;
+                margin:0!important;padding:12mm 12mm 16mm!important;
+                box-decoration-break:clone!important;
+                -webkit-box-decoration-break:clone!important;
+            }
+            #print-footer-fixed{bottom:21mm!important;}
+        }`}
+
     </style>
 </head>
 <body>

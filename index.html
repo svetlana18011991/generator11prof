@@ -588,15 +588,23 @@
             #print-container, #print-footer-fixed { display: none !important; } 
         }
         @media print {
-            @page { margin: 12mm 12mm 16mm 12mm; size: A4; } 
+            @page { margin: 0; size: A4; } /* Без служебных колонтитулов браузера. */ 
             body { background: #fff !important; margin: 0 !important; padding: 0 !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .layout-wrapper, #game-modal, #pres-modal, #proto-tooltip, .modal-overlay, .generator-starfield { display: none !important; }
-            #print-container { display: block !important; width: 100%; }
+            #print-container {
+                display:block!important;
+                box-sizing:border-box!important;
+                width:210mm!important;
+                margin:0!important;
+                padding:12mm 12mm 16mm!important;
+                box-decoration-break:clone!important;
+                -webkit-box-decoration-break:clone!important;
+            }
 
             #print-footer-fixed {
                 display: block !important;
                 position: fixed;
-                bottom: 5mm;
+                bottom: 21mm;
                 left: 0;
                 right: 0;
                 text-align: center;
