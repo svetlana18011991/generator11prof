@@ -578,6 +578,10 @@
     }
 
     function printDownload(html, filename) {
+        if (typeof window.egeDownloadReadyPrintPdf === 'function') {
+            // Direct PDF: Edge cannot add date, path, or browser title to an already-made PDF.
+            return window.egeDownloadReadyPrintPdf(html, filename.replace(/\.html?$/i, '.pdf'));
+        }
         const file = new Blob([html], {type:'text/html;charset=utf-8'});
         const url = URL.createObjectURL(file);
         const a = document.createElement('a');
