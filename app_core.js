@@ -3087,21 +3087,21 @@
             alert('Не удалось подготовить рисунки для печати: ' + error.message + '\nПроверьте, что файл derivative_print_assets.js добавлен на сайт.');
             return;
         }
-        if (typeof window.egeDownloadReadyPrintPdf === 'function') {
-            return window.egeDownloadReadyPrintPdf(printHtml, 'Вариант_Печать_Графики_OK.pdf');
-        }
-        alert('PDF-экспорт не загружен. HTML для печати не создаётся: проверьте файл pdf_no_browser_headers.js на сайте.');
-        return false;
+        let b = new Blob([printHtml], { type: "text/html;charset=utf-8" });
+        let a = document.createElement("a");
+        a.href = URL.createObjectURL(b);
+        a.download = "Вариант_Печать_Графики_OK.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
     }
 
     function downloadAnswers() {
         if (!currentAnswersHTML) return;
         let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ответы</title><base href="https://svetlana18011991.github.io/generator11prof/"><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],processEscapes:true,macros:{tg:'\\\\operatorname{tg}',ctg:'\\\\operatorname{ctg}',arctg:'\\\\operatorname{arctg}',arcctg:'\\\\operatorname{arcctg}'}}};${window.SCRIPT_END}<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">${window.SCRIPT_END}</head><body style="padding:40px;font-family:sans-serif;"><h2>Ключи</h2>${currentAnswersHTML}</body></html>`;
-        if (typeof window.egeDownloadReadyPrintPdf === 'function') {
-            return window.egeDownloadReadyPrintPdf(html, 'Ответы.pdf');
-        }
-        alert('PDF-экспорт не загружен. HTML для печати не создаётся: проверьте файл pdf_no_browser_headers.js на сайте.');
-        return false;
+        let blob = new Blob([html], {type:"text/html;charset=utf-8"});
+        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Ответы.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
     }
 
     function getGameEligibleTasks() {
