@@ -1673,24 +1673,25 @@ body.auth-locked > *:not(#passwordGate) {
    Libraries load on demand; the existing HTML print remains a fallback. */
 (function () {
   'use strict';
-  const CDNS = [
-    ['html2canvas', 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'],
-    ['jspdf', 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js']
-  ];
-  const loaded = new Map();
-  function ensureLibrary(key, url) {
-    if (key === 'html2canvas' && typeof window.html2canvas === 'function') return Promise.resolve();
-    if (key === 'jspdf' && window.jspdf && window.jspdf.jsPDF) return Promise.resolve();
-    if (loaded.has(key)) return loaded.get(key);
-    const promise = new Promise((resolve, reject) => {
+  // Bundle served from this same website; never depends on CDN availability.
+  // Loaded only on the first PDF download, not at initial page load.
+  const PDF_VENDOR_URL = 'pdf_local_bundle.js?v=20261111-offline1';
+  let pdfVendorLoad = null;
+  function ensurePdfVendor() {
+    if (typeof window.html2canvas === 'function' && window.jspdf && typeof window.jspdf.jsPDF === 'function') return Promise.resolve();
+    if (pdfVendorLoad) return pdfVendorLoad;
+    pdfVendorLoad = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = url; script.async = true;
-      script.onload = resolve;
-      script.onerror = () => reject(new Error('Не удалось загрузить библиотеку PDF: ' + key));
+      script.src = PDF_VENDOR_URL;
+      script.async = true;
+      script.onload = () => {
+        if (typeof window.html2canvas === 'function' && window.jspdf && typeof window.jspdf.jsPDF === 'function') resolve();
+        else reject(new Error('Локальный PDF-движок загружен не полностью'));
+      };
+      script.onerror = () => reject(new Error('Не найден файл pdf_local_bundle.js в корне сайта'));
       document.head.appendChild(script);
-    });
-    loaded.set(key, promise);
-    return promise;
+    }).catch(err => { pdfVendorLoad = null; throw err; });
+    return pdfVendorLoad;
   }
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
   async function waitAssets(doc) {
@@ -1774,7 +1775,7 @@ body.auth-locked > *:not(#passwordGate) {
     const indicator = statusView();
     let frame = null;
     try {
-      await Promise.all(CDNS.map(([key, url]) => ensureLibrary(key, url)));
+      await ensurePdfVendor();
       if (!window.jspdf || !window.jspdf.jsPDF || !window.html2canvas)
         throw new Error('Библиотеки PDF не загрузились');
       // Override the generated document's automatic browser printing before its scripts run.
