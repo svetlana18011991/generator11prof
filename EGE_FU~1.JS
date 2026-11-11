@@ -582,12 +582,8 @@
             // Direct PDF: Edge cannot add date, path, or browser title to an already-made PDF.
             return window.egeDownloadReadyPrintPdf(html, filename.replace(/\.html?$/i, '.pdf'));
         }
-        const file = new Blob([html], {type:'text/html;charset=utf-8'});
-        const url = URL.createObjectURL(file);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        alert('PDF-экспорт не загружен. Файл HTML не будет создан, чтобы в печати не появились дата и путь. Обновите сайт (Ctrl+F5) и проверьте наличие pdf_no_browser_headers.js в корне.');
+        return false;
     }
 
     const originalSelectiveDownloadPrintPDF = window.downloadPrintPDF;

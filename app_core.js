@@ -3090,14 +3090,8 @@
         if (typeof window.egeDownloadReadyPrintPdf === 'function') {
             return window.egeDownloadReadyPrintPdf(printHtml, 'Вариант_Печать_Графики_OK.pdf');
         }
-        let b = new Blob([printHtml], { type: "text/html;charset=utf-8" });
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(b);
-        a.download = "Вариант_Печать_Графики_OK.html";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
+        alert('PDF-экспорт не загружен. HTML для печати не создаётся: проверьте файл pdf_no_browser_headers.js на сайте.');
+        return false;
     }
 
     function downloadAnswers() {
@@ -3106,8 +3100,8 @@
         if (typeof window.egeDownloadReadyPrintPdf === 'function') {
             return window.egeDownloadReadyPrintPdf(html, 'Ответы.pdf');
         }
-        let blob = new Blob([html], {type:"text/html;charset=utf-8"});
-        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Ответы.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+        alert('PDF-экспорт не загружен. HTML для печати не создаётся: проверьте файл pdf_no_browser_headers.js на сайте.');
+        return false;
     }
 
     function getGameEligibleTasks() {
