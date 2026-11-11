@@ -467,7 +467,7 @@
         const generatorAssetsBase = new URL('./', window.location.href).href
             .replace(/&/g, '&amp;').replace(/"/g, '&quot;');
         const printCSS = `
-            @page{size:A4 landscape;margin:9mm 10mm 15mm;}
+            @page{size:A4 landscape;margin:0;} /* Служебные колонтитулы Edge/Chrome не помещаются в нулевые поля. */
             *{box-sizing:border-box;}
             html,body{margin:0;padding:0;background:white;color:#111;font-family:"Times New Roman",Times,serif;}
             .ege-exam-page{width:277mm;height:181mm;max-height:181mm;margin:0;padding:0 0 11mm;overflow:hidden;position:relative;display:flex;flex-direction:column;break-after:page;page-break-after:always;}
@@ -528,7 +528,7 @@
             .ege-keys-note{font-size:8pt;margin-top:3mm;color:#555;}
             .ege-print-ready .ege-exam-page{visibility:visible;}
             @media screen{body{background:#eef2f5;padding:15px;}.ege-exam-page{background:#fff;margin:0 auto 14px;box-shadow:0 5px 24px #0002;}}
-            @media print{body{background:#fff;padding:0;print-color-adjust:exact;-webkit-print-color-adjust:exact;}.ege-exam-page{box-shadow:none!important;margin:0!important;}}
+            @media print{body{background:#fff;padding:0;print-color-adjust:exact;-webkit-print-color-adjust:exact;}.ege-exam-page{box-shadow:none!important;box-sizing:border-box!important;width:297mm!important;height:210mm!important;max-height:210mm!important;margin:0!important;padding:9mm 10mm 31mm!important;}.ege-exam-page .ege-exam-footer{left:10mm!important;right:10mm!important;bottom:22mm!important;} /* Внешние поля нулевые, внутренний макет 277×170 мм сохранён. */}
         `;
         return `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>ЕГЭ · варианты для печати</title>
             <base href="${generatorAssetsBase}">
@@ -542,13 +542,48 @@
             })();<\/script></body></html>`;
     }
 
+    // Автономная защита полной печати: работает и при устаревшем app_core.js.
+    // Задание 9 всегда сохраняется с PNG внутри HTML, а не с URL на сайте.
+    async function egeFullEmbedDerivativeImages(html) {
+        if (typeof window.egeEmbedDerivativePrintImagesV3 === 'function') {
+            return window.egeEmbedDerivativePrintImagesV3(html);
+        }
+        const imgTag = /(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']+)\2/gi;
+        const imagePath = /(?:^|[\\/])img8[\\/](?:print[\\/])?(img\d+\.png)(?:[?#].*)?$/i;
+        if (![...html.matchAll(imgTag)].some(match => imagePath.test(match[3]))) return html;
+        const loadAsset = () => new Promise((resolve, reject) => {
+            if (window.EGE_DERIVATIVE_PRINT_ASSETS) { resolve(window.EGE_DERIVATIVE_PRINT_ASSETS); return; }
+            const script = document.createElement('script');
+            script.src = 'derivative_print_assets.js?v=20261109-printproof3';
+            script.onload = () => window.EGE_DERIVATIVE_PRINT_ASSETS
+                ? resolve(window.EGE_DERIVATIVE_PRINT_ASSETS)
+                : reject(new Error('Файл печатных графиков пуст'));
+            script.onerror = () => reject(new Error('На сайте не найден derivative_print_assets.js'));
+            document.head.appendChild(script);
+        });
+        const images = await loadAsset();
+        let replaced = 0;
+        const result = html.replace(imgTag, (whole, prefix, quote, src) => {
+            const match = src.match(imagePath);
+            if (!match) return whole;
+            const data = images[match[1].toLowerCase()];
+            if (!data || !data.startsWith('iVBORw0KGgo')) throw new Error('Нет рисунка ' + match[1]);
+            replaced++;
+            return prefix + quote + 'data:image/png;base64,' + data + quote;
+        });
+        if (!replaced || [...result.matchAll(imgTag)].some(match => imagePath.test(match[3]))) {
+            throw new Error('Графики задания №9 не встроились в HTML');
+        }
+        return result.replace('</head>', '<meta name="ege-derivative-graphics" content="embedded-v3"></head>');
+    }
+
     function printDownload(html, filename) {
-        const file = new Blob([html], {type:'text/html;charset=utf-8'});
-        const url = URL.createObjectURL(file);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        if (typeof window.egeDownloadReadyPrintPdf === 'function') {
+            // Direct PDF: Edge cannot add date, path, or browser title to an already-made PDF.
+            return window.egeDownloadReadyPrintPdf(html, filename.replace(/\.html?$/i, '.pdf'));
+        }
+        alert('PDF-экспорт не загружен. Файл HTML не будет создан, чтобы в печати не появились дата и путь. Обновите страницу (Ctrl+F5) и проверьте, что загружен новый index.html.');
+        return false;
     }
 
     const originalSelectiveDownloadPrintPDF = window.downloadPrintPDF;
@@ -595,7 +630,16 @@
         try {
             const entries = getPrintEntries();
             const html = buildPrintDocument(entries, mode === 'fields');
-            printDownload(html, 'ЕГЭ_Варианты_' + (mode === 'compact' ? 'Компактно' : 'С_полями') + '.html');
+            // Встраиваем печатные графики непосредственно в скачиваемый HTML.
+            // Асинхронную подготовку запускаем только после выбора режима печати.
+            egeFullEmbedDerivativeImages(html).then(readyHtml => {
+                // Отдельное имя подтверждает, что пользователь скачал новый файл,
+                // а не повторно открыл старый HTML из папки «Загрузки».
+                printDownload(readyHtml, 'ЕГЭ_Варианты_' + (mode === 'compact' ? 'Компактно' : 'С_полями') + '_Графики_OK.html');
+            }).catch(err => {
+                console.error('Печать: невозможно встроить графики производных', err);
+                alert('Не удалось подготовить рисунки для печати: ' + err.message + '\nПроверьте, что файл derivative_print_assets.js добавлен на сайт.');
+            });
         } catch(err) {showGenerationError(err);}
     };
 
@@ -619,7 +663,7 @@
             htmlRows.push(`<section><h2>Ответы к вариантам №${start + 1}–${start + slice.length}</h2><table><thead><tr><th>№</th>${columns}</tr></thead><tbody>${rows}</tbody></table></section>`);
         }
         const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>ЕГЭ · ключи</title>
-            <style>@page{size:A4 landscape;margin:12mm}body{font:12pt/1.25 'Times New Roman',serif;color:#111;margin:15px}section{break-after:page;page-break-after:always}section:last-child{break-after:auto}h2{text-align:center;font-size:16pt}table{border-collapse:collapse;width:100%;table-layout:fixed}th,td{border:.6pt solid #888;padding:2mm;overflow-wrap:anywhere;text-align:center}thead th{background:#eee}td{font-size:10pt}</style></head><body>${htmlRows.join('')}<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};<\/script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script></body></html>`;
+            <style>@page{size:A4 landscape;margin:0}html,body{margin:0;padding:0}body{font:12pt/1.25 'Times New Roman',serif;color:#111}section{box-sizing:border-box;width:297mm;padding:12mm 16mm 12mm;break-after:page;page-break-after:always}section:last-child{break-after:auto}h2{text-align:center;font-size:16pt}table{border-collapse:collapse;width:100%;table-layout:fixed}th,td{border:.6pt solid #888;padding:1.4mm 2mm;overflow-wrap:anywhere;text-align:center}thead th{background:#eee}td{font-size:10pt}</style></head><body>${htmlRows.join('')}<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]}};<\/script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script></body></html>`;
         printDownload(html, 'ЕГЭ_Ключи_к_' + batch.length + '_вариантам.html');
     };
 })();
