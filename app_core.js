@@ -977,13 +977,10 @@
 
     function buildInlineScratchpadHTML(draftId, isSecondPart = false, diagramHTML = "") {
         // Один общий шаблон черновика для обычной задачи, задач для отработки и аналогов.
-        // Во второй части рабочая область ровно в 3 раза выше видимого окна: 320 × 3 = 960 px.
-        // Это сохраняет прокрутку для длинного решения, но не создаёт тяжёлый canvas 2880 px,
-        // из-за которого письмо в аналогах могло заметно подвисать.
-        const scratchViewportStyle = isSecondPart
-            ? "height:320px;overflow-y:auto;overflow-x:hidden;border:2px solid #bbdefb;border-radius:8px;background:#fff;"
-            : "height:320px;overflow:hidden;border:2px solid #bbdefb;border-radius:8px;background:#fff;";
-        const scratchWorkspaceHeight = isSecondPart ? 960 : 320;
+        // Для обеих частей: окно 320 px и прокручиваемая область вдвое длиннее
+        // прежнего черновика второй части: 960 × 2 = 1920 px.
+        const scratchViewportStyle = "height:320px;overflow-y:auto;overflow-x:hidden;border:2px solid #bbdefb;border-radius:8px;background:#fff;";
+        const scratchWorkspaceHeight = 1920;
 
         return `<div id="draw-wrapper-${draftId}" class="${isSecondPart ? 'second-part-scratchpad' : ''}" style="display:none; margin-top:20px; width:100%; transition:all 0.3s ease; clear:both;">
             <div style="display:flex; gap:10px; align-items:center; margin-bottom:5px; background:#e3f2fd; padding:8px 15px; border-radius:8px; border:1px solid #bbdefb; color:#333;">
