@@ -221,9 +221,9 @@
     };
 
     const originalReplaceRandom = window.replaceRandomVariantTask;
-    window.replaceRandomVariantTask = function (tid) {
+    window.replaceRandomVariantTask = function (tid, mode = 'inside') {
         if (typeof originalReplaceRandom !== 'function') return;
-        originalReplaceRandom(tid);
+        originalReplaceRandom(tid, mode);
         syncActiveEntry();
     };
 

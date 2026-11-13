@@ -707,10 +707,64 @@
         }, 0);
     }
 
-    function replaceRandomVariantTask(tid) {
+    function getVariantReplacementPrototypes(tid, kind, protoIndex, mode, selectedOnly = false) {
+        const data = getPrototypeData(tid, kind);
+        if (!data || !Array.isArray(data.prototypes)) return [];
+        return data.prototypes.map((proto,index)=>({proto,protoIndex:index})).filter(entry=>{
+            if (!Array.isArray(entry.proto?.tasks) || !entry.proto.tasks.some(Boolean)) return false;
+            if (mode === 'inside') return entry.protoIndex === protoIndex;
+            if (mode !== 'type' || entry.protoIndex === protoIndex) return false;
+            return !selectedOnly || document.getElementById(getPrototypeCheckboxId(tid,entry.protoIndex,kind))?.checked;
+        });
+    }
+
+    function sameVariantTaskContent(first, second) {
+        if (!first || !second) return first === second;
+        return ['text','answer','svg_code','imageHTML'].every(field=>String(first[field]??'') === String(second[field]??''));
+    }
+
+    function getVariantReplacementPick({tid, kind = 'main', current, mode, selectedOnly = false, otherPicks = []}) {
+        const prototypes = getVariantReplacementPrototypes(tid,kind,current.protoIndex,mode,selectedOnly);
+        const usedPrototypes = new Set(otherPicks.map(pick=>pick.protoIndex));
+        const freshPrototypes = prototypes.filter(entry=>!usedPrototypes.has(entry.protoIndex));
+        const pool = freshPrototypes.length ? freshPrototypes : prototypes;
+        if (!pool.length) return null;
+        const chosen = pool[Math.floor(Math.random()*pool.length)];
+        // Индексы различают графические аналоги с одинаковыми условием и ответом.
+        const currentTask = chosen.proto.tasks[current.taskIndex];
+        const tasks = chosen.proto.tasks.map((task,taskIndex)=>({task,taskIndex})).filter(entry=>
+            entry.task && (chosen.protoIndex !== current.protoIndex ||
+                (entry.taskIndex !== current.taskIndex && !sameVariantTaskContent(entry.task,currentTask))));
+        const usedTasks = new Set(otherPicks.filter(pick=>pick.protoIndex===chosen.protoIndex).map(pick=>pick.taskIndex));
+        const freshTasks = tasks.filter(entry=>!usedTasks.has(entry.taskIndex));
+        const candidates = freshTasks.length ? freshTasks : tasks;
+        if (!candidates.length) return null;
+        const next = candidates[Math.floor(Math.random()*candidates.length)];
+        return {protoIndex:chosen.protoIndex,taskIndex:next.taskIndex,
+            taskKey:String(next.task.id ?? next.task.text ?? next.taskIndex)};
+    }
+
+    function buildVariantReplacementButtons(tid, kind, item, planIndex, random) {
+        const protoIndex = item.protoIndex;
+        const inside = getVariantReplacementPrototypes(tid,kind,protoIndex,'inside').some(entry=>
+            entry.proto.tasks.some((task,index)=>task && index !== item.sourceTaskIndex &&
+                !sameVariantTaskContent(task,entry.proto.tasks[item.sourceTaskIndex])));
+        const type = getVariantReplacementPrototypes(tid,kind,protoIndex,'type',!random).length > 0;
+        const handler = random ? `replaceRandomVariantTask('${tid}',` : `replaceManualVariantTask(${planIndex},`;
+        const controls = [
+            inside ? `<button type="button" class="random-replace-btn" onclick="${handler}'inside')" title="Другой числовой аналог того же типа; остальные задания сохраняются">🔄 Заменить внутри типа</button>` : '',
+            type ? `<button type="button" class="random-replace-btn ege-replace-type-btn" onclick="${handler}'type')" title="Другой прототип этого номера; остальные задания сохраняются">↔ Заменить тип</button>` : ''
+        ].join('');
+        return controls ? `<div class="ege-replace-bar">${controls}</div>` : '';
+    }
+
+    function replaceRandomVariantTask(tid, mode = 'inside') {
         if (!window.randomVariantMode || !window.randomVariantPicks || !window.randomVariantPicks[tid]) return;
         const oldPick = window.randomVariantPicks[tid];
-        const nextPick = getRandomTaskPick(tid, oldPick);
+        const otherPicks = (window.egeVariantBatch || [])
+            .filter((entry,index)=>index !== (window.egeActiveVariantIndex || 0))
+            .map(entry=>entry.picks?.[tid]).filter(Boolean);
+        const nextPick = getVariantReplacementPick({tid,current:oldPick,mode,otherPicks});
         if (!nextPick) return;
         window.randomVariantPicks[tid] = nextPick;
         generateVariant({ useRandomPicks: true });
@@ -722,36 +776,22 @@
     }
 
 
-    function replaceManualVariantTask(planIndex) {
+    function replaceManualVariantTask(planIndex, mode = 'inside') {
         const plan = Array.isArray(window.manualVariantPlan) ? window.manualVariantPlan : null;
         const current = plan && plan[planIndex];
         if (!current) return;
 
-        const data = getPrototypeData(current.tid, current.kind || 'main');
-        const proto = data && Array.isArray(data.prototypes) ? data.prototypes[current.protoIndex] : null;
-        const tasks = proto && Array.isArray(proto.tasks) ? proto.tasks : [];
-        if (tasks.length < 2) {
-            alert('В этом прототипе нет другого загруженного варианта задачи.');
+        const kind = current.kind || 'main';
+        const otherPicks = plan.filter((pick,index)=>index !== planIndex && pick.tid === current.tid && (pick.kind || 'main') === kind);
+        const next = getVariantReplacementPick({tid:current.tid,kind,current,mode,selectedOnly:true,otherPicks});
+        if (!next) {
+            alert(mode === 'type' ? 'Для замены типа отметьте другие прототипы этого задания в настройках.' : 'В этом прототипе нет другого загруженного варианта задачи.');
             return;
         }
 
-        const currentKey = String(current.taskKey ?? '');
-        const candidates = tasks
-            .map((task, taskIndex) => ({
-                task,
-                taskIndex,
-                taskKey: String(task && (task.id ?? task.text ?? taskIndex))
-            }))
-            .filter(x => x.taskKey !== currentKey || x.taskIndex !== current.taskIndex);
-
-        if (!candidates.length) {
-            alert('В этом прототипе нет другого загруженного варианта задачи.');
-            return;
-        }
-
-        const next = candidates[Math.floor(Math.random() * candidates.length)];
         const nextPlan = plan.map((item, idx) => idx === planIndex ? {
             ...item,
+            protoIndex: next.protoIndex,
             taskIndex: next.taskIndex,
             taskKey: next.taskKey
         } : { ...item });
@@ -1610,11 +1650,8 @@
                     ? `<div style="margin-top:15px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;clear:both;">${drawBtn}${secondPartButtons}<div class="second-part-final-answer" id="second-final-answer-${taskCounter}" style="display:none;width:100%;margin-top:8px;padding:12px 14px;background:#eef6ff;border-left:4px solid #003399;border-radius:6px;"><b>Ответ:</b> ${item.answer}</div></div>`
                     : `<div style="margin-top:15px; display:flex; align-items:center; flex-wrap:wrap; gap:10px; clear:both;"><input type="text" class="ans-box" id="ans-interactive-${taskCounter}" placeholder="Ответ..." data-ans="${item.answer}" style="padding:10px 15px; border:2px solid #ccc; border-radius:6px; font-size:16px; font-weight:bold; width:150px; outline:none; transition:0.3s;">${instantBtn}${drawBtn}${helpBtn}<span class="answer-feedback" id="feedback-${taskCounter}" style="font-weight:bold; font-size:15px; display:none;"></span></div>`;
                 const randomTaskNumber = parseInt(String(tid).replace(/\D/g, ''), 10);
-                const hasSamePrototypeAlternative = !useRandomPicks && Array.isArray(item.allProtoTasks) && item.allProtoTasks.length > 1;
-                const replaceButton = useRandomPicks
-                    ? `<button type="button" class="random-replace-btn" onclick="replaceRandomVariantTask('${tid}')" title="Заменить только это задание, остальные оставить">🎲 Заменить</button>`
-                    : (hasSamePrototypeAlternative ? `<button type="button" class="random-replace-btn" onclick="replaceManualVariantTask(${manualPlanIndex})" title="Заменить на другую задачу этого же прототипа">🔄 Заменить</button>` : '');
-                currentInteractiveHTML += `<div class="generated-task-block ${isSecondPartBlock ? 'second-part-task' : 'first-part-task'}" data-part="${isSecondPartBlock ? 2 : 1}" data-random-task-number="${randomTaskNumber}" data-manual-plan-index="${manualPlanIndex}" style="margin-bottom:30px; clear:both; overflow:visible; position:relative; border-bottom:1px dashed #ddd; padding:8px 0 20px;"><div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; overflow:visible;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0; overflow:visible;"><div style="flex-shrink:0; font-weight:bold; font-size:1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div class="generated-task-diagram" style="flex-shrink:0; min-width:150px; max-width:350px; padding:22px 8px 6px; box-sizing:border-box; overflow:visible;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div class="task-copy">${displayTaskText}</div>${taskActionArea}</div></div><div style="display:flex;align-items:flex-start;gap:8px;">${replaceButton}${stickerHTMLInteractive}</div></div>${scratchpadHTML}</div>`;
+                const replaceButtons = buildVariantReplacementButtons(tid,kind,item,manualPlanIndex,useRandomPicks);
+                currentInteractiveHTML += `<div class="generated-task-block ${isSecondPartBlock ? 'second-part-task' : 'first-part-task'}" data-part="${isSecondPartBlock ? 2 : 1}" data-random-task-number="${randomTaskNumber}" data-manual-plan-index="${manualPlanIndex}" style="margin-bottom:30px; clear:both; overflow:visible; position:relative; border-bottom:1px dashed #ddd; padding:8px 0 20px;">${replaceButtons}<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; overflow:visible;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0; overflow:visible;"><div style="flex-shrink:0; font-weight:bold; font-size:1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div class="generated-task-diagram" style="flex-shrink:0; min-width:150px; max-width:350px; padding:22px 8px 6px; box-sizing:border-box; overflow:visible;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div class="task-copy">${displayTaskText}</div>${taskActionArea}</div></div><div style="display:flex;align-items:flex-start;gap:8px;">${stickerHTMLInteractive}</div></div>${scratchpadHTML}</div>`;
                 
                 // Only the printable copy of Task 9 uses a contrast-boosted raster;
                 // the interactive diagram and mathematical task data stay untouched.
@@ -2226,9 +2263,10 @@
         }
         let showCorrectOnError = document.getElementById('toggle-show-correct').checked;
 
-        // «🎲 Заменить» нужна только в генераторе. В скачанный ученический
+        // Кнопки замены нужны только в генераторе. В скачанный ученический
         // вариант кнопку не переносим.
-        const studentInteractiveHTML = currentInteractiveHTML.replace(
+        const studentInteractiveHTML = currentInteractiveHTML
+            .replace(/<div class="ege-replace-bar">[\s\S]*?<\/div>/g, '').replace(
             /<button\b[^>]*class=["'][^"']*\brandom-replace-btn\b[^"']*["'][^>]*>[\s\S]*?<\/button>/gi,
             ''
         );

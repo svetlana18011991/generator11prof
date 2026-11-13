@@ -391,6 +391,11 @@
         .btn-random-variant:hover { filter:brightness(1.08); box-shadow:0 0 18px rgba(255,140,0,.35); transform:translateY(-1px); }
         .random-replace-btn { flex:0 0 auto; border:1px solid #ffb74d; background:#fff8ee; color:#e65100; border-radius:7px; padding:6px 9px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
         .random-replace-btn:hover { background:#ffedd4; }
+        .ege-replace-bar { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; margin:0 0 9px; }
+        .random-replace-btn:focus-visible { outline:3px solid #14b8a6; outline-offset:2px; }
+        .ege-replace-type-btn { color:#09695c; border-color:#27b5a3; background:#edfffa; }
+        .ege-replace-type-btn:hover { background:#d7f9f0; }
+        @media print { .ege-replace-bar { display:none!important; } }
         #random-inline-answers { display:none; margin-top:18px; padding:18px 20px; border:2px dashed #7b1fa2; border-radius:10px; background:#fff; color:#222; }
         .btn-group { display: none; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
         .btn-dl { flex: 1; min-width: 200px; color: white; border: none; padding: 15px 10px; font-size: 1.05em; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; text-align: center; }
@@ -1144,7 +1149,7 @@ body.auth-locked > *:not(#passwordGate) {
                 <li>для заданий <strong>14–20</strong> используется полная текущая база;</li>
                 <li>прототипы каждого номера сначала проходят без повторов, а затем перемешиваются для следующего круга; задачи внутри прототипов также перебираются по очереди;</li>
                 <li>после сборки нескольких вариантов появляется переключатель, с помощью которого можно просматривать любой готовый вариант;</li>
-                <li>кнопка <strong>«🎲 Заменить»</strong> возле отдельного задания меняет только его, остальные задания остаются прежними.</li>
+                <li>в превью кнопка <strong>«Заменить внутри типа»</strong> выбирает другой числовой аналог текущего прототипа, а <strong>«Заменить тип»</strong> — другой прототип этого номера. Остальные задания сохраняются; повторно нажимать «Сгенерировать» не нужно;</li>
             </ul>
             <p>Кнопка <strong>«🔑 Ключи (Ответы)»</strong> создаёт общую таблицу ответов ко всей пачке. Если отдельное задание было заменено, в таблице будет его обновлённый ответ.</p>
 
@@ -1156,6 +1161,7 @@ body.auth-locked > *:not(#passwordGate) {
                 <li>вписать нужное количество вручную.</li>
             </ul>
             <p>Если нужно выбрать не весь номер задания, а только конкретные типы, нажмите <strong>«Настроить»</strong>. В открывшемся окне можно отметить только нужные прототипы.</p>
+            <p>После генерации доступны те же две замены в превью. Кнопка <strong>«Заменить тип»</strong> выбирает другой из отмеченных прототипов этого блока. Замены сразу применяются к интерактивному варианту, печати, ключам, презентациям и играм.</p>
             <p>Над заданиями второй части расположен отдельный заголовок <strong>«Задания с развёрнутым ответом»</strong>. К ним относятся задания <strong>14–20</strong>.</p>
 
             <h3>3. Аналоги и разборы</h3>
@@ -1515,7 +1521,7 @@ body.auth-locked > *:not(#passwordGate) {
     </div>
 </div>
 
-<script src="app_core.js?v=20261109-printproof3"></script>
+<script src="app_core.js?v=20261113-task-replacement-1"></script>
 
 <script src="presentations.js?v=20261104-3"></script>
 
@@ -1667,6 +1673,6 @@ body.auth-locked > *:not(#passwordGate) {
 })();
 </script>
 
-<script src="ege_full_variants.js?v=20261109-printproof3"></script>
+<script src="ege_full_variants.js?v=20261113-task-replacement-1"></script>
 </body>
 </html>
