@@ -284,6 +284,11 @@
     };
 
 
+    function getActiveExamTaskIds() {
+        return window.egeExamStructure ? window.egeExamStructure.activeTaskIds :
+            Array.from({length: 19}, (_, i) => `task${i + 1}`);
+    }
+
     function getUniqueTaskIds() {
         const seenTitles = new Set();
 
@@ -315,6 +320,7 @@
 
     function getExtraTaskData(tid) {
         const extraDb = window.extraDatabase || window.additionalDatabase || {};
+        if (String(tid).startsWith('archive')) return extraDb[tid] || null;
         const numericId = parseInt(String(tid).replace(/\D/g, ''), 10);
         return extraDb[tid] || extraDb[`task${numericId}`] || extraDb[numericId] || null;
     }
@@ -376,29 +382,36 @@
             return;
         }
 
-        if (!window.database["task9"]) {
-            document.getElementById('info-board').innerHTML = "<b>Внимание:</b> файл задания 9 не загрузился. Проверьте, что рядом с index.html есть файл task9.js или task9_corrected_full.js.";
+        const missingTaskNumbers = getActiveExamTaskIds()
+            .filter(tid => !window.database[tid])
+            .map(tid => Number(tid.replace(/\D/g, '')));
+        if (missingTaskNumbers.length) {
+            document.getElementById('info-board').innerHTML = `<b>Внимание:</b> не загрузились задания № ${missingTaskNumbers.join(', ')}. Обновите страницу.`;
             document.getElementById('info-board').style.display = "block";
         }
 
         let sortedTaskIds = getUniqueTaskIds();
         container.innerHTML = "";
 
+        let archiveHeadingShown = false;
+        let secondPartHeadingShown = false;
         for (let tid of sortedTaskIds) {
-            const taskNumber = parseInt(String(tid).replace(/\D/g, ''), 10);
-            if (String(tid).startsWith('archive')) {
+            const data = window.database[tid];
+            const isArchive = String(tid).startsWith('archive');
+            if (isArchive && !archiveHeadingShown) {
+                archiveHeadingShown = true;
                 container.innerHTML += `
                 <div style="margin:34px 0 14px; padding:11px 14px; border-bottom:2px solid #8a8a8a; color:#666; font-size:21px; font-weight:800; text-align:center;">
                     Архивные задания
                 </div>`;
             }
-            if (taskNumber === 14) {
+            if (!isArchive && Number(data.part || 1) >= 2 && !secondPartHeadingShown) {
+                secondPartHeadingShown = true;
                 container.innerHTML += `
                 <div style="margin:30px 0 14px; padding:11px 14px; border-bottom:2px solid #ff8c00; color:#ff8c00; font-size:21px; font-weight:800; letter-spacing:0.1px; text-align:center;">
                     Задания с развёрнутым ответом
                 </div>`;
             }
-            let data = window.database[tid];
             let listHTML = buildPrototypeListHTML(tid, data, 'main');
             let extraData = getExtraTaskData(tid);
             let extraHTML = '';
@@ -643,11 +656,10 @@
     function buildRandomVariantPicks() {
         const picks = {};
         const missing = [];
-        for (let n = 1; n <= 20; n++) {
-            const tid = `task${n}`;
+        for (const tid of getActiveExamTaskIds()) {
             const pick = getRandomTaskPick(tid);
             if (pick) picks[tid] = pick;
-            else missing.push(n);
+            else missing.push(Number(tid.replace(/\D/g, '')));
         }
         return { picks, missing };
     }
@@ -684,7 +696,7 @@
             try {
                 const result = buildRandomVariantPicks();
                 if (result.missing.length) {
-                    throw new Error(`Не загружена база заданий: ${result.missing.join(', ')}. Проверьте файлы task1.js–task20.js рядом с index.html.`);
+                    throw new Error(`Не загружены задания № ${result.missing.join(', ')}. Обновите страницу.`);
                 }
                 window.randomVariantPicks = result.picks;
                 window.randomVariantMode = true;
@@ -1271,10 +1283,8 @@
         let generationBlocks = [];
         if (useRandomPicks) {
             // Случайный полный вариант: только main-база.
-            // Для 1–13 это принципиально исключает файлы task*_extra.js.
-            // В 14–20 расширенные аналоги уже входят в основные task14–task20.
-            for (let n = 1; n <= 20; n++) {
-                const tid = `task${n}`;
+            // Дополнительные банки и архивные задания в полный вариант не входят.
+            for (const tid of getActiveExamTaskIds()) {
                 const data = window.database[tid];
                 const randomPick = window.randomVariantPicks[tid];
                 if (data && randomPick) generationBlocks.push({ tid, kind: 'main', data, requiredCount: 1, randomPick });
@@ -1454,7 +1464,7 @@
             }
             hasContent = true;
 
-            if (useRandomPicks && parseInt(String(tid).replace(/\D/g, ''), 10) === 14) {
+            if (useRandomPicks && parseInt(String(tid).replace(/\D/g, ''), 10) === (window.egeExamStructure?.secondPartFirst || 13)) {
                 const secondPartHeading = `<div style="margin:34px 0 12px;padding:11px 14px;border-bottom:2px solid #ff8c00;color:#ff8c00;font-size:21px;font-weight:800;text-align:center;">Задания с развёрнутым ответом</div>`;
                 currentInteractiveHTML += secondPartHeading;
                 currentPrintHTML += secondPartHeading;
@@ -1650,9 +1660,9 @@
                 const replaceButtons = buildVariantReplacementButtons(tid,kind,item,manualPlanIndex,useRandomPicks);
                 currentInteractiveHTML += `<div class="generated-task-block ${isSecondPartBlock ? 'second-part-task' : 'first-part-task'}" data-part="${isSecondPartBlock ? 2 : 1}" data-random-task-number="${randomTaskNumber}" data-manual-plan-index="${manualPlanIndex}" style="margin-bottom:30px; clear:both; overflow:visible; position:relative; border-bottom:1px dashed #ddd; padding:8px 0 20px;">${replaceButtons}<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; overflow:visible;"><div style="display:flex; align-items:flex-start; gap:15px; flex-grow:1; min-width:0; overflow:visible;"><div style="flex-shrink:0; font-weight:bold; font-size:1.1em; padding-top:2px;">${taskCounter}.</div>${mainSvg ? `<div class="generated-task-diagram" style="flex-shrink:0; min-width:150px; max-width:350px; padding:22px 8px 6px; box-sizing:border-box; overflow:visible;">${mainSvg}</div>` : ""}<div style="flex-grow:1; min-width:0;"><div class="task-copy">${displayTaskText}</div>${taskActionArea}</div></div><div style="display:flex;align-items:flex-start;gap:8px;">${stickerHTMLInteractive}</div></div>${scratchpadHTML}</div>`;
                 
-                // Only the printable copy of Task 9 uses a contrast-boosted raster;
+                // Only the printable derivative diagram uses a contrast-boosted raster;
                 // the interactive diagram and mathematical task data stay untouched.
-                const printableDiagram = (randomTaskNumber === 9 && mainSvg)
+                const printableDiagram = (data.sourceTaskId === 'task9' && mainSvg)
                     ? mainSvg.replace(/img8\/(img\d+\.png)/g, 'img8/print/$1')
                     : mainSvg;
                 currentPrintHTML += `<div class="task-print-block"><div class="task-print-flex"><div class="task-print-num">${taskCounter}</div>${printableDiagram ? `<div class="task-print-img">${printableDiagram}</div>` : ""}<div class="task-print-text"><div class="task-copy">${displayTaskText}</div>${isSecondPartBlock ? `<div class="task-print-answer" style="margin-top:10px;color:#777;">Решение выполняется с полным обоснованием.</div>` : `<div class="task-print-answer">Ответ: ______________________________</div>`}</div>${stickerHTMLPrint}</div></div>`;
@@ -2516,7 +2526,8 @@
             const info = generated[taskIndex] || {};
             const match = String(info.taskTid || '').match(/(?:task)?(\d{1,2})$/i);
             const examNumber = (match ? Number(match[1]) : sectionNumber) || 0;
-            const isSecondPart = Number(info.part) === 2 || info.isSecondPart === true || examNumber >= 14;
+            const isSecondPart = info.part != null ? Number(info.part) === 2 :
+                info.isSecondPart === true || examNumber >= (window.egeExamStructure?.secondPartFirst || 13);
             task.dataset.egeExamNumber = String(examNumber);
             task.dataset.egeSecondPart = isSecondPart ? '1' : '0';
             const id = 'ege-selective-grid-' + taskIndex;
@@ -3066,7 +3077,7 @@
     <main class="print-page">
         <header class="print-header">
             <h1 class="print-title">${variantTitle}</h1>
-            <div class="print-subtitle">ЕГЭ профильная математика · ${window.randomVariantMode ? 'полный вариант 1–20' : 'тренировочный набор'}</div>
+            <div class="print-subtitle">ЕГЭ профильная математика · ${window.randomVariantMode ? 'полный вариант 1–19' : 'тренировочный набор'}</div>
             ${sigPrint}
         </header>
         ${selectivePrintHTML}
@@ -3146,8 +3157,8 @@
         if (window.currentGeneratedTasks.length === 0) { alert("Сгенерируйте вариант!"); return; }
         const eligible = getGameEligibleTasks();
         const skipped = window.currentGeneratedTasks.length - eligible.length;
-        if (eligible.length === 0) { alert("Игры создаются только по заданиям первой части (№1–13). В выбранном варианте нет заданий первой части."); return; }
-        if (skipped > 0) alert("Игра создаётся только по заданиям первой части (№1–13). Задания второй части (№14–20) в игру не войдут.");
+        if (eligible.length === 0) { alert("Игры создаются только по заданиям первой части (№1–12). В выбранном варианте нет заданий первой части."); return; }
+        if (skipped > 0) alert("Игра создаётся только по заданиям первой части (№1–12). Задания второй части (№13–19) в игру не войдут.");
         document.getElementById('game-modal').style.display='flex';
     }
     function openPresentationMenu() { 
@@ -3162,7 +3173,7 @@
 
     function generateTowerGame() {
         const eligibleTasks = getGameEligibleTasks();
-        if (eligibleTasks.length !== 9) { alert("Для игры 'Башня знаний' нужно ровно 9 заданий первой части (№1–13)."); return; }
+        if (eligibleTasks.length !== 9) { alert("Для игры 'Башня знаний' нужно ровно 9 заданий первой части (№1–12)."); return; }
 
         // Загружаем тяжёлый шаблон только при создании игры, сохраняя исходную генерацию.
         if (typeof TOWER_TEMPLATE === 'undefined') {
@@ -3432,7 +3443,7 @@
         if (note) note.style.display = 'none';
 
         const eligibleTasks = getGameEligibleTasks();
-        if (!eligibleTasks.length) { alert("Мотивационная игра создаётся только по заданиям первой части (№1–13)."); return; }
+        if (!eligibleTasks.length) { alert("Мотивационная игра создаётся только по заданиям первой части (№1–12)."); return; }
         const questions = eligibleTasks.map(t => {
             let fullPrompt = t.text || '';
             if (t.svg) {
@@ -3484,7 +3495,7 @@
         if (typeof BATTLE_TEMPLATE === 'undefined') { alert("Не найден battle_template.js. Подключите файл рядом с index.html."); return; }
 
         const eligibleTasks = getGameEligibleTasks();
-        if (!eligibleTasks.length) { alert("Баттл создаётся только по заданиям первой части (№1–13)."); return; }
+        if (!eligibleTasks.length) { alert("Баттл создаётся только по заданиям первой части (№1–12)."); return; }
         let gameQuestions = eligibleTasks.map(t => {
             let fullPrompt = t.text;
             if (t.svg) {
