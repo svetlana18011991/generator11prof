@@ -2190,32 +2190,85 @@
     }
 
     // Include visible figures and figures inside encoded breakdowns in the saved HTML.
+    // При сохранении одновременно обрабатываем не более трёх удалённых рисунков.
+    // Если внешний сайт запрещает чтение через CORS, оставляем исходную ссылку
+    // и явно предупреждаем учителя: файл в этом случае не полностью автономный.
     async function egeEmbedExportImages(html) {
         const saved = new DOMParser().parseFromString(html, 'text/html');
         const sourceBase = document.baseURI;
+        const baseOrigin = new URL(sourceBase).origin;
         const pending = new Map();
         const byData = new Map();
         const sources = {};
+        const externalFailures = new Map();
         const prefix = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7#ege-image-';
-        async function sourceData(source) {
-            if (/^data:image\//i.test(source)) return source;
-            const url = new URL(source, sourceBase).href;
-            if (!pending.has(url)) pending.set(url, (async () => {
+        const queue = [];
+        const maxConcurrent = 3;
+        let active = 0;
+
+        function drainQueue() {
+            while (active < maxConcurrent && queue.length) {
+                const item = queue.shift();
+                active++;
+                Promise.resolve().then(item.work).then(item.resolve, item.reject).finally(() => {
+                    active--;
+                    drainQueue();
+                });
+            }
+        }
+        function limited(work) {
+            return new Promise((resolve, reject) => {
+                queue.push({work, resolve, reject});
+                drainQueue();
+            });
+        }
+        function sniffImageType(bytes) {
+            if (bytes.length >= 8 && bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71) return 'image/png';
+            if (bytes.length >= 3 && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return 'image/jpeg';
+            if (bytes.length >= 3 && bytes[0] === 71 && bytes[1] === 73 && bytes[2] === 70) return 'image/gif';
+            if (bytes.length >= 12 && String.fromCharCode(...bytes.slice(0, 4)) === 'RIFF' && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP') return 'image/webp';
+            return '';
+        }
+        async function fetchImageData(url) {
+            let lastError;
+            for (let attempt = 0; attempt < 3; attempt++) {
                 const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 20000);
+                const timeout = setTimeout(() => controller.abort(), 35000);
                 try {
-                    const response = await fetch(url, {signal: controller.signal});
-                    if (!response.ok) throw new Error('Не удалось загрузить изображение');
-                    const blob = await response.blob();
-                    if (!/^image\//i.test(blob.type)) throw new Error('Вместо изображения получен другой файл');
+                    const response = await fetch(url, {signal: controller.signal, cache: 'force-cache'});
+                    if (!response.ok) {
+                        const error = new Error('HTTP ' + response.status);
+                        // Повторяем только временные ошибки сервера, но не 404.
+                        if (response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429) error.permanent = true;
+                        throw error;
+                    }
+                    let blob = await response.blob();
+                    if (!/^image\//i.test(blob.type)) {
+                        const header = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
+                        const detected = sniffImageType(header);
+                        if (!detected) throw new Error('Сервер вернул не изображение (' + (blob.type || 'нет MIME-типа') + ')');
+                        blob = new Blob([blob], {type: detected});
+                    }
                     return await new Promise((resolve, reject) => {
                         const reader = new FileReader();
                         reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
+                        reader.onerror = () => reject(reader.error || new Error('Ошибка чтения рисунка'));
                         reader.readAsDataURL(blob);
                     });
-                } finally { clearTimeout(timeout); }
-            })());
+                } catch (error) {
+                    lastError = error;
+                    if (error.permanent || attempt === 2) break;
+                    await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 600));
+                } finally {
+                    clearTimeout(timeout);
+                }
+            }
+            throw new Error('Не удалось получить рисунок ' + url + ': ' + (lastError?.message || lastError));
+        }
+        function sourceData(source) {
+            if (/^data:image\//i.test(source)) return Promise.resolve(source);
+            const url = new URL(source, sourceBase).href;
+            if (!pending.has(url)) pending.set(url, limited(() => fetchImageData(url)));
             return pending.get(url);
         }
         async function embed(root) {
@@ -2223,7 +2276,20 @@
                 const attribute = image.hasAttribute('src') ? 'src' : image.hasAttribute('href') ? 'href' : 'xlink:href';
                 const source = image.getAttribute(attribute);
                 if (!source || source.startsWith('#')) return;
-                const data = await sourceData(source);
+                let data;
+                try {
+                    data = await sourceData(source);
+                } catch (error) {
+                    const url = new URL(source, sourceBase);
+                    if ((url.protocol === 'http:' || url.protocol === 'https:') && url.origin !== baseOrigin) {
+                        // Внешние картинки могут отображаться в <img>, но не
+                        // читаться через fetch из-за CORS. Не удаляем их.
+                        externalFailures.set(url.href, error.message);
+                        console.warn('[ЕГЭ] Внешнее изображение осталось ссылкой:', url.href, error);
+                        return;
+                    }
+                    throw error;
+                }
                 if (!byData.has(data)) {
                     const id = byData.size;
                     byData.set(data, id);
@@ -2245,7 +2311,10 @@
             bootstrap.textContent = '(' + egeHydrateExportImages.toString() + ')(' + JSON.stringify(sources) + ',' + JSON.stringify(prefix) + ');';
             saved.head.prepend(bootstrap);
         }
-        return '<!DOCTYPE html>\n' + saved.documentElement.outerHTML;
+        return {
+            html: '<!DOCTYPE html>\n' + saved.documentElement.outerHTML,
+            externalImages: Array.from(externalFailures.keys())
+        };
     }
 
     async function downloadStudentHTML() {
@@ -2490,12 +2559,30 @@
 </body>
 </html>`;
 
-        html = await egeEmbedExportImages(html);
+        const imageExport = await egeEmbedExportImages(html);
+        html = imageExport.html;
         let blob = new Blob([html], {type:"text/html;charset=utf-8"});
-        let a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Интерактивный_вариант.html"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+        let a = document.createElement("a");
+        const downloadUrl = URL.createObjectURL(blob);
+        a.href = downloadUrl;
+        a.download = "Интерактивный_вариант.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        // Не отзываем ссылку мгновенно: на мобильных загрузка Blob-файла
+        // может начаться уже после завершения обработчика нажатия.
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 60000);
+        if (imageExport.externalImages.length) {
+            const examples = imageExport.externalImages.slice(0, 3).join('\n');
+            alert('Вариант скачан. ВНИМАНИЕ: ' + imageExport.externalImages.length +
+                ' внешних рисунков не удалось встроить в HTML. Они оставлены как интернет-ссылки и могут не отображаться без подключения к сети.\n' +
+                examples + (imageExport.externalImages.length > 3 ? '\nИ другие.' : ''));
+        }
         } catch (error) {
-            console.error(error);
-            alert('Не удалось включить в вариант все изображения. Проверьте соединение и повторите сохранение.');
+            console.error('[ЕГЭ] Ошибка сохранения интерактивного варианта:', error);
+            alert('Не удалось сохранить интерактивный вариант. ' +
+                (error?.message || 'Проверьте доступность изображений и свободную память браузера.') +
+                '\nПопробуйте обновить страницу или выбрать меньше заданий.');
         } finally {
             if (button) { button.disabled = false; button.textContent = buttonText; }
         }
