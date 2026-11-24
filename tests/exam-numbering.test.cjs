@@ -91,7 +91,8 @@ const reference = {
         "extra": {
             "prototypes": 48,
             "tasks": 240,
-            "hash": "6cca11865850c5a8663eaf45b5ec6affd082a35add2b98b51e6e8fc1159a022f"
+            // Equivalent stacked notation was applied to 12 statements in this bank.
+            "hash": "84dc48707de1f243ffcaa0af92cbe7aa6576d319b89336f0fb29a978af884ee9"
         }
     },
     "task8": {

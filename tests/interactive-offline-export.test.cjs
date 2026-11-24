@@ -5,6 +5,8 @@ const {test} = require('node:test');
 
 const root = path.resolve(__dirname,'..');
 const index = fs.readFileSync(path.join(root,'index.html'),'utf8');
+const app = fs.readFileSync(path.join(root,'app_core.js'),'utf8');
+const bundledMathJax = Buffer.from(app.match(/function egeOfflineMathJaxHTML\(\)\s*\{\s*return `<script src="data:text\/javascript;base64,([^"]+)"/)[1],'base64');
 const sessionKey = index.match(/var SESSION_STORAGE_KEY = '([^']+)';/)[1];
 const passwordHash = index.match(/var PASSWORD_HASH = (\d+);/)[1];
 const origin = 'http://ege-offline-export.test';
@@ -15,6 +17,27 @@ try { ({chromium} = require('playwright')); } catch {
     try { ({chromium} = require('/opt/codex/cua_node/lib/node_modules/playwright')); } catch {}
 }
 const executable = process.env.CHROMIUM_PATH || '/usr/bin/chromium';
+
+async function assertStackedLogarithmFraction(page) {
+    const theory = page.locator('#modal-content-box [id^="theory-solution-"]');
+    await theory.locator('mjx-container[jax="CHTML"] mjx-mfrac').first().waitFor();
+    await page.evaluate(() => document.fonts.ready);
+    const state = await theory.evaluate(element => {
+        const outer = element.querySelector('mjx-mfrac:has(mjx-den mjx-mfrac)');
+        const inner = outer?.querySelector('mjx-den mjx-mfrac');
+        function hasStackedBar(fraction) {
+            if (!fraction) return false;
+            const numerator = fraction.querySelector('mjx-num').getBoundingClientRect();
+            const denominator = fraction.querySelector('mjx-den').getBoundingClientRect();
+            const line = fraction.querySelector('mjx-line');
+            const style = getComputedStyle(line);
+            return numerator.y < denominator.y && line.getBoundingClientRect().width > 2 &&
+                parseFloat(style.borderTopWidth) > 0 && style.borderTopStyle === 'solid';
+        }
+        return {outer:hasStackedBar(outer),inner:hasStackedBar(inner),slash:!!element.querySelector('mjx-c.mjx-c2F')};
+    });
+    assert.deepEqual(state,{outer:true,inner:true,slash:false},'Both levels of the logarithm fraction have visible bars');
+}
 
 test('downloaded profile variants display formulas without JavaScript and keep offline interactivity',{
     skip:!chromium || !fs.existsSync(executable) ? 'Requires Playwright and Chromium' : false,
@@ -29,10 +52,9 @@ test('downloaded profile variants display formulas without JavaScript and keep o
         await editor.addInitScript(({key,hash}) => sessionStorage.setItem(key,hash),{key:sessionKey,hash:passwordHash});
         await editor.route('**/*',route => {
             const url = new URL(route.request().url());
-            // Stub only the editor's CDN dependency. Both export renderers run unmodified.
+            // Use the bundled CHTML renderer to run the editor without CDN access.
             if (url.origin !== origin && url.pathname.endsWith('/tex-mml-chtml.js')) {
-                return route.fulfill({contentType:'application/javascript',body:
-                    'window.MathJax=window.MathJax||{};MathJax.typesetPromise=()=>Promise.resolve();MathJax.startup={promise:Promise.resolve()};'});
+                return route.fulfill({contentType:'application/javascript',body:bundledMathJax});
             }
             if (url.origin !== origin) return route.abort();
             const filename = path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));
@@ -40,6 +62,9 @@ test('downloaded profile variants display formulas without JavaScript and keep o
             return route.fulfill({path:filename,contentType:mime[path.extname(filename)]||'application/octet-stream'});
         });
         await editor.goto(origin,{waitUntil:'load'});
+        await editor.evaluate(() => MathJax.startup.promise);
+        await editor.addStyleTag({content:await editor.evaluate(() => new DOMParser()
+            .parseFromString(egeOfflineMathJaxHTML(),'text/html').querySelector('style[data-oge-offline-mathjax]').textContent)});
         await editor.waitForSelector('#dynamic-tasks .task-row',{state:'attached'});
         await editor.evaluate(() => {
             resetTaskCounts();
@@ -49,12 +74,20 @@ test('downloaded profile variants display formulas without JavaScript and keep o
                 document.getElementById('count-'+tid).value='1';
                 document.getElementById(getPrototypeCheckboxId(tid,prototype,'main')).checked=true;
             }
+            const extraTid = getUniqueTaskIds().find(id => Number(id.replace(/\D/g,''))===7);
+            const logarithm = getExtraTaskData(extraTid).prototypes.findIndex(proto => proto.desc==='Логарифм с корнем в основании');
+            document.getElementById('count-extra-'+extraTid).value='1';
+            document.getElementById(getPrototypeCheckboxId(extraTid,logarithm,'extra')).checked=true;
             document.getElementById('toggle-explanations').checked=true;
             document.getElementById('toggle-instant-check').checked=true;
             updateTaskTotal();
         });
         await editor.locator('#generation-controls .btn-generate').click();
-        await editor.waitForFunction(() => window.currentGeneratedTasks?.length===3);
+        await editor.waitForFunction(() => window.currentGeneratedTasks?.length===4);
+        const extraTask = '.generated-task-block[data-random-task-number="7"]';
+        await editor.locator(extraTask).getByRole('button',{name:'РАЗБОР',exact:true}).click();
+        await assertStackedLogarithmFraction(editor);
+        await editor.locator('#modal-overlay .close-btn').click();
         const pending = editor.waitForEvent('download');
         await editor.locator('button[onclick="downloadStudentHTML()"]').click();
         const download = await pending;
@@ -78,7 +111,7 @@ test('downloaded profile variants display formulas without JavaScript and keep o
 
         const preview = await openStudent(false);
         const conditions = preview.locator('.generated-task-block .task-copy');
-        assert.equal(await conditions.count(),3);
+        assert.equal(await conditions.count(),4);
         const equationCondition = preview.locator('.generated-task-block[data-random-task-number="6"] .task-copy');
         const secondCondition = preview.locator('.generated-task-block[data-random-task-number="13"] .task-copy');
         const fraction = equationCondition.locator('mjx-container[jax="SVG"] > svg');
@@ -105,13 +138,18 @@ test('downloaded profile variants display formulas without JavaScript and keep o
         const student = await openStudent(true);
         await student.evaluate(() => MathJax.startup.promise);
         assert.equal(await student.locator('.task-copy mjx-container[jax="CHTML"]').count(),0);
-        const equation = student.locator('.generated-task-block[data-random-task-number="6"]');
-        const answer = equation.locator('.ans-box');
-        await answer.fill(await answer.getAttribute('data-ans'));
-        await equation.locator('.btn-instant').click();
-        assert.ok(await equation.locator('.answer-feedback.correct').isVisible());
-        await equation.getByRole('button',{name:'РАЗБОР',exact:true}).click();
+        async function openAnsweredBreakdown(task) {
+            const answer = task.locator('.ans-box');
+            await answer.fill(await answer.getAttribute('data-ans'));
+            await task.locator('.btn-instant').click();
+            assert.ok(await task.locator('.answer-feedback.correct').isVisible());
+            await task.getByRole('button',{name:'РАЗБОР',exact:true}).click();
+        }
+        await openAnsweredBreakdown(student.locator('.generated-task-block[data-random-task-number="6"]'));
         await student.locator('#modal-content-box mjx-container[jax="CHTML"] mjx-mfrac').first().waitFor();
+        await student.locator('#modal-overlay .close-btn').click();
+        await openAnsweredBreakdown(student.locator(extraTask));
+        await assertStackedLogarithmFraction(student);
         await student.locator('#modal-overlay .close-btn').click();
         const secondPart = student.locator('.generated-task-block[data-part="2"]');
         await secondPart.getByRole('button',{name:'ПОКАЗАТЬ ОТВЕТ',exact:true}).click();
