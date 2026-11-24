@@ -2317,6 +2317,65 @@
         };
     }
 
+    async function egeRenderStudentMath(html, tex) {
+        // Keep the SVG renderer separate from the editor's live CHTML MathJax.
+        const frame = document.createElement('iframe');
+        frame.setAttribute('aria-hidden', 'true');
+        frame.tabIndex = -1;
+        frame.style.cssText = 'position:absolute;left:-10000px;width:640px;height:1px;border:0';
+        document.body.appendChild(frame);
+        const frameWindow = frame.contentWindow;
+        const frameDocument = frame.contentDocument;
+        frameWindow.MathJax = frameWindow.JSON.parse(JSON.stringify({
+            startup: {typeset: false},
+            tex,
+            svg: {fontCache: 'none'},
+            options: {enableMenu: false, skipHtmlTags: {'[+]': ['svg', 'mjx-container']}},
+            loader: {paths: {mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5'}}
+        }));
+
+        let timeout;
+        try {
+            const rendered = (async () => {
+                const script = frameDocument.createElement('script');
+                script.src = new URL('vendor/mathjax/tex-mml-svg.js?v=3.2.2-local-1', document.baseURI).href;
+                await new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Не удалось загрузить модуль отрисовки формул.'));
+                    frameDocument.head.appendChild(script);
+                });
+
+                const math = frameWindow.MathJax;
+                await math.startup.promise;
+                // Detached HTML has no layout. Use MathJax's standalone conversion metrics.
+                math.startup.output.measureMetrics = () => ({
+                    em: 16, ex: 8, containerWidth: 640, lineWidth: 1e6, scale: 1, family: ''
+                });
+                // A template keeps images and scripts inert while we typeset its contents.
+                const template = frameDocument.createElement('template');
+                const content = template.content.ownerDocument.createElement('div');
+                content.innerHTML = html;
+                await math.typesetPromise([content]);
+                for (const item of math.startup.document.math) {
+                    if (item.inputJax.name === 'TeX' && item.typesetRoot?.matches?.('mjx-container[jax="SVG"]')) {
+                        item.typesetRoot.dataset.egeTex = item.start.delim + item.math + item.end.delim;
+                    }
+                }
+                return {
+                    html: content.innerHTML,
+                    styles: frameDocument.getElementById('MJX-SVG-styles')?.textContent || ''
+                };
+            })();
+            const deadline = new Promise((_, reject) => {
+                timeout = setTimeout(() => reject(new Error('Подготовка формул заняла слишком много времени.')), 15000);
+            });
+            return await Promise.race([rendered, deadline]);
+        } finally {
+            clearTimeout(timeout);
+            frame.remove();
+        }
+    }
+
     async function downloadStudentHTML() {
         if (!currentInteractiveHTML) { alert("Сначала сгенерируйте вариант!"); return; }
         const button = document.querySelector('button[onclick="downloadStudentHTML()"]');
@@ -2347,7 +2406,22 @@
             ''
         );
         
-        const mathConfig = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "macros": {"tg": "\\operatorname{tg}", "ctg": "\\operatorname{ctg}", "arctg": "\\operatorname{arctg}", "arcctg": "\\operatorname{arcctg}"}}, "chtml": {"adaptiveCSS": false}};
+        const mathConfig = {
+            startup: {typeset: false},
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                processEscapes: true,
+                macros: {
+                    tg: '\\operatorname{tg}',
+                    ctg: '\\operatorname{ctg}',
+                    arctg: '\\operatorname{arctg}',
+                    arcctg: '\\operatorname{arcctg}'
+                }
+            },
+            chtml: {adaptiveCSS: false},
+            options: {skipHtmlTags: {'[+]': ['mjx-container']}}
+        };
+        const studentMath = await egeRenderStudentMath(studentInteractiveHTML, mathConfig.tex);
         let html = `<!DOCTYPE html>
 <html>
 <head>
@@ -2357,6 +2431,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
     <script>window.MathJax=${JSON.stringify(mathConfig)};${window.SCRIPT_END}
     ${egeOfflineMathJaxHTML()}
+    <style>${studentMath.styles}</style>
     <style>
         body{font-family:sans-serif;margin:0;padding:0;background:#f4f7f6;color:#333;}
         .theme-wrapper{min-height:100vh;padding:40px 20px;}
@@ -2390,7 +2465,7 @@
         <div class="paper">
             <h1 style="text-align: center; color: #003399; border-bottom: 2px solid #ff8c00; padding-bottom: 15px; margin-top:0;">${variantTitle}</h1>
             ${sig}
-            ${studentInteractiveHTML}
+            ${studentMath.html}
             <button id="btn-check" onclick="checkAll()" style="display:block; width:100%; padding:15px; font-size:18px; font-weight:bold; background:#ff8c00; color:#fff; border:none; border-radius:8px; cursor:pointer; margin-top:30px; transition:0.3s;">ПОДВЕСТИ ИТОГИ</button>
             <div id="res-box" style="display:none; text-align:center; margin-top:30px; padding:20px; background:rgba(255,255,255,0.9); border:2px dashed #003399; border-radius:8px; font-size:1.2em; font-weight:bold;"></div>
         </div>

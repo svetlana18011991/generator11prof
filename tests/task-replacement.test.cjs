@@ -105,7 +105,14 @@ test('EGE preview replacements preserve the chosen variant and update its output
             const saved=await downloaded(()=>downloadStudentHTML(),'interactive.html');
             const student=await browser.newPage({javaScriptEnabled:false});
             await student.setContent(saved,{waitUntil:'domcontentloaded'});
-            assert.equal((await student.locator('.generated-task-block').first().locator('.task-copy').textContent()).replace(/\s+/g,' '),changed.previewText);
+            const statement=await student.locator('.generated-task-block').first().locator('.task-copy').evaluate(block=>{
+                const copy=block.cloneNode(true);
+                copy.querySelectorAll('mjx-container[data-ege-tex]').forEach(formula=>{
+                    formula.replaceWith(copy.ownerDocument.createTextNode(formula.dataset.egeTex));
+                });
+                return copy.textContent.replace(/\s+/g,' ');
+            });
+            assert.equal(statement,changed.previewText);
             assert.equal(await student.locator('.ege-replace-bar,.random-replace-btn').count(),0,'author replacement controls are excluded from student files');
             await student.close();
             await selectBank(numericalTid,'main',[eligible[0]]);
